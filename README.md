@@ -1,3 +1,5 @@
+This repository is based on [NVIDIA STORM](https://github.com/NVlabs/storm).
+
 # STORM
 **Stochastic Tensor Optimization for Robot Motion** - *A GPU Robot Motion Toolkit*
 
