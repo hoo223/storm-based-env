@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>storm_kit.geom.sdf package &mdash; STORM Toolkit  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="storm_kit.geom.sdf.primitives module" href="storm_kit.geom.sdf.primitives.html" />
+    <link rel="prev" title="storm_kit.geom.nn_model.robot_self_collision module" href="storm_kit.geom.nn_model.robot_self_collision.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> STORM Toolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.differentiable_robot_model.html">storm_kit.differentiable_robot_model package</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="storm_kit.geom.html">storm_kit.geom package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="storm_kit.geom.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.nn_model.html">storm_kit.geom.nn_model package</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">storm_kit.geom.sdf package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.geom.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.gym.html">storm_kit.gym package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.mpc.html">storm_kit.mpc package</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.util_file.html">storm_kit.util_file module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">STORM Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="storm_kit.geom.html">storm_kit.geom package</a> &raquo;</li>
+      <li>storm_kit.geom.sdf package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/storm_kit.geom.sdf.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-storm_kit.geom.sdf">
+<span id="storm-kit-geom-sdf-package"></span><h1>storm_kit.geom.sdf package<a class="headerlink" href="#module-storm_kit.geom.sdf" title="Permalink to this heading"></a></h1>
+<p>Contains sdf functions and wrappers for collision checking, signed distance between robot and environment and also between links of a robot.</p>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.geom.sdf.primitives.html">storm_kit.geom.sdf.primitives module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.geom.sdf.primitives.html#storm_kit.geom.sdf.primitives.sdf_capsule_to_pt"><code class="docutils literal notranslate"><span class="pre">sdf_capsule_to_pt()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.geom.sdf.primitives.html#storm_kit.geom.sdf.primitives.sdf_capsule_to_sphere"><code class="docutils literal notranslate"><span class="pre">sdf_capsule_to_sphere()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.geom.sdf.primitives.html#storm_kit.geom.sdf.primitives.sdf_pt_to_box"><code class="docutils literal notranslate"><span class="pre">sdf_pt_to_box()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.geom.sdf.primitives.html#storm_kit.geom.sdf.primitives.sdf_pt_to_sphere"><code class="docutils literal notranslate"><span class="pre">sdf_pt_to_sphere()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.geom.sdf.robot.html">storm_kit.geom.sdf.robot module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotCapsuleCollision"><code class="docutils literal notranslate"><span class="pre">RobotCapsuleCollision</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotCapsuleCollision.get_robot_link_objs"><code class="docutils literal notranslate"><span class="pre">RobotCapsuleCollision.get_robot_link_objs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotCapsuleCollision.get_robot_link_points"><code class="docutils literal notranslate"><span class="pre">RobotCapsuleCollision.get_robot_link_points()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotCapsuleCollision.load_robot_collision_model"><code class="docutils literal notranslate"><span class="pre">RobotCapsuleCollision.load_robot_collision_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotCapsuleCollision.update_robot_link_poses"><code class="docutils literal notranslate"><span class="pre">RobotCapsuleCollision.update_robot_link_poses()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotMeshCollision"><code class="docutils literal notranslate"><span class="pre">RobotMeshCollision</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotMeshCollision.build_batch_features"><code class="docutils literal notranslate"><span class="pre">RobotMeshCollision.build_batch_features()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotMeshCollision.get_batch_robot_link_points"><code class="docutils literal notranslate"><span class="pre">RobotMeshCollision.get_batch_robot_link_points()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotMeshCollision.get_link_points"><code class="docutils literal notranslate"><span class="pre">RobotMeshCollision.get_link_points()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotMeshCollision.get_robot_link_objs"><code class="docutils literal notranslate"><span class="pre">RobotMeshCollision.get_robot_link_objs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotMeshCollision.get_robot_link_points"><code class="docutils literal notranslate"><span class="pre">RobotMeshCollision.get_robot_link_points()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotMeshCollision.load_robot_collision_model"><code class="docutils literal notranslate"><span class="pre">RobotMeshCollision.load_robot_collision_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotMeshCollision.update_batch_robot_collision_points"><code class="docutils literal notranslate"><span class="pre">RobotMeshCollision.update_batch_robot_collision_points()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotMeshCollision.update_batch_robot_collision_pose"><code class="docutils literal notranslate"><span class="pre">RobotMeshCollision.update_batch_robot_collision_pose()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotMeshCollision.update_robot_collision_points"><code class="docutils literal notranslate"><span class="pre">RobotMeshCollision.update_robot_collision_points()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotMeshCollision.update_robot_collision_pose"><code class="docutils literal notranslate"><span class="pre">RobotMeshCollision.update_robot_collision_pose()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision"><code class="docutils literal notranslate"><span class="pre">RobotSphereCollision</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision.build_batch_features"><code class="docutils literal notranslate"><span class="pre">RobotSphereCollision.build_batch_features()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision.check_self_collisions"><code class="docutils literal notranslate"><span class="pre">RobotSphereCollision.check_self_collisions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision.check_self_collisions_nn"><code class="docutils literal notranslate"><span class="pre">RobotSphereCollision.check_self_collisions_nn()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision.get_batch_robot_link_spheres"><code class="docutils literal notranslate"><span class="pre">RobotSphereCollision.get_batch_robot_link_spheres()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision.get_link_points"><code class="docutils literal notranslate"><span class="pre">RobotSphereCollision.get_link_points()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision.get_robot_link_objs"><code class="docutils literal notranslate"><span class="pre">RobotSphereCollision.get_robot_link_objs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision.get_robot_link_points"><code class="docutils literal notranslate"><span class="pre">RobotSphereCollision.get_robot_link_points()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision.load_robot_collision_model"><code class="docutils literal notranslate"><span class="pre">RobotSphereCollision.load_robot_collision_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision.update_batch_robot_collision_objs"><code class="docutils literal notranslate"><span class="pre">RobotSphereCollision.update_batch_robot_collision_objs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision.update_batch_robot_collision_pose"><code class="docutils literal notranslate"><span class="pre">RobotSphereCollision.update_batch_robot_collision_pose()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision.update_robot_collision_objs"><code class="docutils literal notranslate"><span class="pre">RobotSphereCollision.update_robot_collision_objs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision.update_robot_collision_pose"><code class="docutils literal notranslate"><span class="pre">RobotSphereCollision.update_robot_collision_pose()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.geom.sdf.robot_world.html">storm_kit.geom.sdf.robot_world module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.geom.sdf.robot_world.html#storm_kit.geom.sdf.robot_world.RobotWorldCollision"><code class="docutils literal notranslate"><span class="pre">RobotWorldCollision</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot_world.html#storm_kit.geom.sdf.robot_world.RobotWorldCollision.update_robot_link_poses"><code class="docutils literal notranslate"><span class="pre">RobotWorldCollision.update_robot_link_poses()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot_world.html#storm_kit.geom.sdf.robot_world.RobotWorldCollision.update_world_robot_pose"><code class="docutils literal notranslate"><span class="pre">RobotWorldCollision.update_world_robot_pose()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.geom.sdf.robot_world.html#storm_kit.geom.sdf.robot_world.RobotWorldCollisionCapsule"><code class="docutils literal notranslate"><span class="pre">RobotWorldCollisionCapsule</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot_world.html#storm_kit.geom.sdf.robot_world.RobotWorldCollisionCapsule.get_signed_distance"><code class="docutils literal notranslate"><span class="pre">RobotWorldCollisionCapsule.get_signed_distance()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.geom.sdf.robot_world.html#storm_kit.geom.sdf.robot_world.RobotWorldCollisionPrimitive"><code class="docutils literal notranslate"><span class="pre">RobotWorldCollisionPrimitive</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot_world.html#storm_kit.geom.sdf.robot_world.RobotWorldCollisionPrimitive.build_batch_features"><code class="docutils literal notranslate"><span class="pre">RobotWorldCollisionPrimitive.build_batch_features()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot_world.html#storm_kit.geom.sdf.robot_world.RobotWorldCollisionPrimitive.check_robot_sphere_collisions"><code class="docutils literal notranslate"><span class="pre">RobotWorldCollisionPrimitive.check_robot_sphere_collisions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot_world.html#storm_kit.geom.sdf.robot_world.RobotWorldCollisionPrimitive.get_robot_env_sdf"><code class="docutils literal notranslate"><span class="pre">RobotWorldCollisionPrimitive.get_robot_env_sdf()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.geom.sdf.robot_world.html#storm_kit.geom.sdf.robot_world.RobotWorldCollisionVoxel"><code class="docutils literal notranslate"><span class="pre">RobotWorldCollisionVoxel</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot_world.html#storm_kit.geom.sdf.robot_world.RobotWorldCollisionVoxel.build_batch_features"><code class="docutils literal notranslate"><span class="pre">RobotWorldCollisionVoxel.build_batch_features()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot_world.html#storm_kit.geom.sdf.robot_world.RobotWorldCollisionVoxel.check_robot_mesh_collisions"><code class="docutils literal notranslate"><span class="pre">RobotWorldCollisionVoxel.check_robot_mesh_collisions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot_world.html#storm_kit.geom.sdf.robot_world.RobotWorldCollisionVoxel.check_robot_sphere_collisions"><code class="docutils literal notranslate"><span class="pre">RobotWorldCollisionVoxel.check_robot_sphere_collisions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot_world.html#storm_kit.geom.sdf.robot_world.RobotWorldCollisionVoxel.set_scene"><code class="docutils literal notranslate"><span class="pre">RobotWorldCollisionVoxel.set_scene()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot_world.html#storm_kit.geom.sdf.robot_world.RobotWorldCollisionVoxel.set_world_transform"><code class="docutils literal notranslate"><span class="pre">RobotWorldCollisionVoxel.set_world_transform()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.robot_world.html#storm_kit.geom.sdf.robot_world.RobotWorldCollisionVoxel.transform_to_table"><code class="docutils literal notranslate"><span class="pre">RobotWorldCollisionVoxel.transform_to_table()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.geom.sdf.world.html">storm_kit.geom.sdf.world module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldCollision"><code class="docutils literal notranslate"><span class="pre">WorldCollision</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldCollision.load_collision_model"><code class="docutils literal notranslate"><span class="pre">WorldCollision.load_collision_model()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldGridCollision"><code class="docutils literal notranslate"><span class="pre">WorldGridCollision</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldGridCollision._compute_sdfgrid"><code class="docutils literal notranslate"><span class="pre">WorldGridCollision._compute_sdfgrid()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldGridCollision.build_transform_matrices"><code class="docutils literal notranslate"><span class="pre">WorldGridCollision.build_transform_matrices()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldGridCollision.check_pts_sdf"><code class="docutils literal notranslate"><span class="pre">WorldGridCollision.check_pts_sdf()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldGridCollision.get_signed_distance"><code class="docutils literal notranslate"><span class="pre">WorldGridCollision.get_signed_distance()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldGridCollision.update_world_sdf"><code class="docutils literal notranslate"><span class="pre">WorldGridCollision.update_world_sdf()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldGridCollision.view_sdf_grid"><code class="docutils literal notranslate"><span class="pre">WorldGridCollision.view_sdf_grid()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldGridCollision.voxel_inds"><code class="docutils literal notranslate"><span class="pre">WorldGridCollision.voxel_inds()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldImageCollision"><code class="docutils literal notranslate"><span class="pre">WorldImageCollision</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldImageCollision.get_pt_value"><code class="docutils literal notranslate"><span class="pre">WorldImageCollision.get_pt_value()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldImageCollision.update_world"><code class="docutils literal notranslate"><span class="pre">WorldImageCollision.update_world()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldImageCollision.voxel_inds"><code class="docutils literal notranslate"><span class="pre">WorldImageCollision.voxel_inds()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPointCloudCollision"><code class="docutils literal notranslate"><span class="pre">WorldPointCloudCollision</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPointCloudCollision._update_trimesh_projection"><code class="docutils literal notranslate"><span class="pre">WorldPointCloudCollision._update_trimesh_projection()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPointCloudCollision.get_scene_mesh_from_voxelgrid"><code class="docutils literal notranslate"><span class="pre">WorldPointCloudCollision.get_scene_mesh_from_voxelgrid()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPointCloudCollision.get_scene_pts_from_voxelgrid"><code class="docutils literal notranslate"><span class="pre">WorldPointCloudCollision.get_scene_pts_from_voxelgrid()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPointCloudCollision.get_signed_distance"><code class="docutils literal notranslate"><span class="pre">WorldPointCloudCollision.get_signed_distance()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPointCloudCollision.update_camera_transform"><code class="docutils literal notranslate"><span class="pre">WorldPointCloudCollision.update_camera_transform()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPointCloudCollision.update_world_pc"><code class="docutils literal notranslate"><span class="pre">WorldPointCloudCollision.update_world_pc()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPointCloudCollision.update_world_sdf"><code class="docutils literal notranslate"><span class="pre">WorldPointCloudCollision.update_world_sdf()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPointCloudCollision.update_world_voxel"><code class="docutils literal notranslate"><span class="pre">WorldPointCloudCollision.update_world_voxel()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPrimitiveCollision"><code class="docutils literal notranslate"><span class="pre">WorldPrimitiveCollision</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPrimitiveCollision.get_cube_objs"><code class="docutils literal notranslate"><span class="pre">WorldPrimitiveCollision.get_cube_objs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPrimitiveCollision.get_pt_distance"><code class="docutils literal notranslate"><span class="pre">WorldPrimitiveCollision.get_pt_distance()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPrimitiveCollision.get_signed_distance"><code class="docutils literal notranslate"><span class="pre">WorldPrimitiveCollision.get_signed_distance()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPrimitiveCollision.get_sphere_distance"><code class="docutils literal notranslate"><span class="pre">WorldPrimitiveCollision.get_sphere_distance()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPrimitiveCollision.get_sphere_objs"><code class="docutils literal notranslate"><span class="pre">WorldPrimitiveCollision.get_sphere_objs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPrimitiveCollision.load_collision_model"><code class="docutils literal notranslate"><span class="pre">WorldPrimitiveCollision.load_collision_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPrimitiveCollision.update_obj_poses"><code class="docutils literal notranslate"><span class="pre">WorldPrimitiveCollision.update_obj_poses()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPrimitiveCollision.update_reference_frame"><code class="docutils literal notranslate"><span class="pre">WorldPrimitiveCollision.update_reference_frame()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="storm_kit.geom.nn_model.robot_self_collision.html" class="btn btn-neutral float-left" title="storm_kit.geom.nn_model.robot_self_collision module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="storm_kit.geom.sdf.primitives.html" class="btn btn-neutral float-right" title="storm_kit.geom.sdf.primitives module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

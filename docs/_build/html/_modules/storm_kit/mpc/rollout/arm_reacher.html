@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>storm_kit.mpc.rollout.arm_reacher &mdash; STORM Toolkit  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> STORM Toolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.differentiable_robot_model.html">storm_kit.differentiable_robot_model package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.geom.html">storm_kit.geom package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.gym.html">storm_kit.gym package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.mpc.html">storm_kit.mpc package</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.util_file.html">storm_kit.util_file module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">STORM Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>storm_kit.mpc.rollout.arm_reacher</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for storm_kit.mpc.rollout.arm_reacher</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># MIT License</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2020-2021 NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a</span>
+<span class="c1"># copy of this software and associated documentation files (the &quot;Software&quot;),</span>
+<span class="c1"># to deal in the Software without restriction, including without limitation</span>
+<span class="c1"># the rights to use, copy, modify, merge, publish, distribute, sublicense,</span>
+<span class="c1"># and/or sell copies of the Software, and to permit persons to whom the</span>
+<span class="c1"># Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c1"># all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL</span>
+<span class="c1"># THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING</span>
+<span class="c1"># FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER</span>
+<span class="c1"># DEALINGS IN THE SOFTWARE.#</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.autograd.profiler</span> <span class="k">as</span> <span class="nn">profiler</span>
+
+<span class="kn">from</span> <span class="nn">...differentiable_robot_model.coordinate_transform</span> <span class="kn">import</span> <span class="n">matrix_to_quaternion</span><span class="p">,</span> <span class="n">quaternion_to_matrix</span>
+<span class="kn">from</span> <span class="nn">..cost</span> <span class="kn">import</span> <span class="n">DistCost</span><span class="p">,</span> <span class="n">PoseCost</span><span class="p">,</span> <span class="n">ZeroCost</span><span class="p">,</span> <span class="n">FiniteDifferenceCost</span>
+<span class="kn">from</span> <span class="nn">...mpc.rollout.arm_base</span> <span class="kn">import</span> <span class="n">ArmBase</span>
+
+<div class="viewcode-block" id="ArmReacher"><a class="viewcode-back" href="../../../../storm_kit.mpc.rollout.arm_reacher.html#storm_kit.mpc.rollout.arm_reacher.ArmReacher">[docs]</a><span class="k">class</span> <span class="nc">ArmReacher</span><span class="p">(</span><span class="n">ArmBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This rollout function is for reaching a cartesian pose for a robot</span>
+
+<span class="sd">    Todo: </span>
+<span class="sd">    1. Update exp_params to be kwargs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp_params</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span> <span class="n">world_params</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ArmReacher</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">exp_params</span><span class="o">=</span><span class="n">exp_params</span><span class="p">,</span>
+                                         <span class="n">tensor_args</span><span class="o">=</span><span class="n">tensor_args</span><span class="p">,</span>
+                                         <span class="n">world_params</span><span class="o">=</span><span class="n">world_params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">goal_state</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">goal_ee_pos</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">goal_ee_rot</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="n">device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">[</span><span class="s1">&#39;device&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">device</span>
+        <span class="n">float_dtype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">[</span><span class="s1">&#39;dtype&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dist_cost</span> <span class="o">=</span> <span class="n">DistCost</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">exp_params</span><span class="p">[</span><span class="s1">&#39;cost&#39;</span><span class="p">][</span><span class="s1">&#39;joint_l2&#39;</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span><span class="n">float_dtype</span><span class="o">=</span><span class="n">float_dtype</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">goal_cost</span> <span class="o">=</span> <span class="n">PoseCost</span><span class="p">(</span><span class="o">**</span><span class="n">exp_params</span><span class="p">[</span><span class="s1">&#39;cost&#39;</span><span class="p">][</span><span class="s1">&#39;goal_pose&#39;</span><span class="p">],</span>
+                                  <span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        
+
+<div class="viewcode-block" id="ArmReacher.cost_fn"><a class="viewcode-back" href="../../../../storm_kit.mpc.rollout.arm_reacher.html#storm_kit.mpc.rollout.arm_reacher.ArmReacher.cost_fn">[docs]</a>    <span class="k">def</span> <span class="nf">cost_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">,</span> <span class="n">action_batch</span><span class="p">,</span> <span class="n">no_coll</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">horizon_cost</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_dist</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+        <span class="n">cost</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ArmReacher</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">cost_fn</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">action_batch</span><span class="p">,</span> <span class="n">no_coll</span><span class="p">,</span> <span class="n">horizon_cost</span><span class="p">)</span>
+        <span class="n">ee_pos_batch</span><span class="p">,</span> <span class="n">ee_rot_batch</span> <span class="o">=</span> <span class="n">state_dict</span><span class="p">[</span><span class="s1">&#39;ee_pos_seq&#39;</span><span class="p">],</span> <span class="n">state_dict</span><span class="p">[</span><span class="s1">&#39;ee_rot_seq&#39;</span><span class="p">]</span>
+        
+        <span class="n">state_batch</span> <span class="o">=</span> <span class="n">state_dict</span><span class="p">[</span><span class="s1">&#39;state_seq&#39;</span><span class="p">]</span>
+        <span class="n">goal_ee_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">goal_ee_pos</span>
+        <span class="n">goal_ee_rot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">goal_ee_rot</span>
+        <span class="n">retract_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">retract_state</span>
+        <span class="n">goal_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">goal_state</span>
+        
+        
+        <span class="n">goal_cost</span><span class="p">,</span> <span class="n">rot_err_norm</span><span class="p">,</span> <span class="n">goal_dist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">goal_cost</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">ee_pos_batch</span><span class="p">,</span> <span class="n">ee_rot_batch</span><span class="p">,</span>
+                                                                    <span class="n">goal_ee_pos</span><span class="p">,</span> <span class="n">goal_ee_rot</span><span class="p">)</span>
+
+
+        <span class="n">cost</span> <span class="o">+=</span> <span class="n">goal_cost</span>
+        
+        <span class="c1"># joint l2 cost</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exp_params</span><span class="p">[</span><span class="s1">&#39;cost&#39;</span><span class="p">][</span><span class="s1">&#39;joint_l2&#39;</span><span class="p">][</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">goal_state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">disp_vec</span> <span class="o">=</span> <span class="n">state_batch</span><span class="p">[:,:,</span><span class="mi">0</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">-</span> <span class="n">goal_state</span><span class="p">[:,</span><span class="mi">0</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span>
+            <span class="n">cost</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist_cost</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">disp_vec</span><span class="p">)</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="n">return_dist</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">cost</span><span class="p">,</span> <span class="n">rot_err_norm</span><span class="p">,</span> <span class="n">goal_dist</span>
+
+            
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp_params</span><span class="p">[</span><span class="s1">&#39;cost&#39;</span><span class="p">][</span><span class="s1">&#39;zero_acc&#39;</span><span class="p">][</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">cost</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_acc_cost</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">state_batch</span><span class="p">[:,</span> <span class="p">:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="o">*</span><span class="mi">2</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="o">*</span><span class="mi">3</span><span class="p">],</span> <span class="n">goal_dist</span><span class="o">=</span><span class="n">goal_dist</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp_params</span><span class="p">[</span><span class="s1">&#39;cost&#39;</span><span class="p">][</span><span class="s1">&#39;zero_vel&#39;</span><span class="p">][</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">cost</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_vel_cost</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">state_batch</span><span class="p">[:,</span> <span class="p">:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="o">*</span><span class="mi">2</span><span class="p">],</span> <span class="n">goal_dist</span><span class="o">=</span><span class="n">goal_dist</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">cost</span></div>
+
+
+<div class="viewcode-block" id="ArmReacher.update_params"><a class="viewcode-back" href="../../../../storm_kit.mpc.rollout.arm_reacher.html#storm_kit.mpc.rollout.arm_reacher.ArmReacher.update_params">[docs]</a>    <span class="k">def</span> <span class="nf">update_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">retract_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">goal_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">goal_ee_pos</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">goal_ee_rot</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">goal_ee_quat</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update params for the cost terms and dynamics model.</span>
+<span class="sd">        goal_state: n_dofs</span>
+<span class="sd">        goal_ee_pos: 3</span>
+<span class="sd">        goal_ee_rot: 3,3</span>
+<span class="sd">        goal_ee_quat: 4</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="nb">super</span><span class="p">(</span><span class="n">ArmReacher</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">update_params</span><span class="p">(</span><span class="n">retract_state</span><span class="o">=</span><span class="n">retract_state</span><span class="p">)</span>
+        
+        <span class="k">if</span><span class="p">(</span><span class="n">goal_ee_pos</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">goal_ee_pos</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">goal_ee_pos</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">goal_state</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">goal_ee_rot</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">goal_ee_rot</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">goal_ee_rot</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">goal_ee_quat</span> <span class="o">=</span> <span class="n">matrix_to_quaternion</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">goal_ee_rot</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">goal_state</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">goal_ee_quat</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">goal_ee_quat</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">goal_ee_quat</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">goal_ee_rot</span> <span class="o">=</span> <span class="n">quaternion_to_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">goal_ee_quat</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">goal_state</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">goal_state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">goal_state</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">goal_state</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">goal_ee_pos</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">goal_ee_rot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynamics_model</span><span class="o">.</span><span class="n">robot_model</span><span class="o">.</span><span class="n">compute_forward_kinematics</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">goal_state</span><span class="p">[:,</span><span class="mi">0</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">goal_state</span><span class="p">[:,</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">:</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">],</span> <span class="n">link_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">exp_params</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">][</span><span class="s1">&#39;ee_link_name&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">goal_ee_quat</span> <span class="o">=</span> <span class="n">matrix_to_quaternion</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">goal_ee_rot</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="kc">True</span></div></div>
+    
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

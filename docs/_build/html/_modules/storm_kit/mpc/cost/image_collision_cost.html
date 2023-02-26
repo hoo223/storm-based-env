@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>storm_kit.mpc.cost.image_collision_cost &mdash; STORM Toolkit  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> STORM Toolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.differentiable_robot_model.html">storm_kit.differentiable_robot_model package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.geom.html">storm_kit.geom package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.gym.html">storm_kit.gym package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.mpc.html">storm_kit.mpc package</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.util_file.html">storm_kit.util_file module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">STORM Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>storm_kit.mpc.cost.image_collision_cost</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for storm_kit.mpc.cost.image_collision_cost</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># MIT License</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2020-2021 NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a</span>
+<span class="c1"># copy of this software and associated documentation files (the &quot;Software&quot;),</span>
+<span class="c1"># to deal in the Software without restriction, including without limitation</span>
+<span class="c1"># the rights to use, copy, modify, merge, publish, distribute, sublicense,</span>
+<span class="c1"># and/or sell copies of the Software, and to permit persons to whom the</span>
+<span class="c1"># Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c1"># all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL</span>
+<span class="c1"># THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING</span>
+<span class="c1"># FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER</span>
+<span class="c1"># DEALINGS IN THE SOFTWARE.#</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="c1"># import torch.nn.functional as F</span>
+<span class="kn">from</span> <span class="nn">...geom.geom_types</span> <span class="kn">import</span> <span class="n">tensor_circle</span>
+<span class="kn">from</span> <span class="nn">.gaussian_projection</span> <span class="kn">import</span> <span class="n">GaussianProjection</span>
+<span class="kn">from</span> <span class="nn">...util_file</span> <span class="kn">import</span> <span class="n">get_configs_path</span><span class="p">,</span> <span class="n">get_gym_configs_path</span><span class="p">,</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">load_yaml</span><span class="p">,</span> <span class="n">get_assets_path</span>
+<span class="kn">from</span> <span class="nn">...geom.sdf.world</span> <span class="kn">import</span> <span class="n">WorldImageCollision</span>
+
+
+<div class="viewcode-block" id="ImageCollisionCost"><a class="viewcode-back" href="../../../../storm_kit.mpc.cost.image_collision_cost.html#storm_kit.mpc.cost.image_collision_cost.ImageCollisionCost">[docs]</a><span class="k">class</span> <span class="nc">ImageCollisionCost</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">collision_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">[],</span> <span class="n">dist_thresh</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">gaussian_params</span><span class="o">=</span><span class="p">{},</span> <span class="n">tensor_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">),</span> <span class="s1">&#39;dtype&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">}):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ImageCollisionCost</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span> <span class="o">=</span> <span class="n">tensor_args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">weight</span><span class="p">,</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">proj_gaussian</span> <span class="o">=</span> <span class="n">GaussianProjection</span><span class="p">(</span><span class="n">gaussian_params</span><span class="o">=</span><span class="n">gaussian_params</span><span class="p">)</span>
+        
+        <span class="c1"># BUILD world and robot:</span>
+        <span class="n">world_image</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="n">get_assets_path</span><span class="p">(),</span> <span class="n">collision_file</span><span class="p">)</span> <span class="c1"># storm/content/assets/collision_maps/collision_map_cem.png</span>
+        
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">world_coll</span> <span class="o">=</span> <span class="n">WorldImageCollision</span><span class="p">(</span><span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">world_coll</span><span class="o">.</span><span class="n">update_world</span><span class="p">(</span><span class="n">world_image</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dist_thresh</span> <span class="o">=</span> <span class="n">dist_thresh</span> <span class="c1"># meters</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_mat</span> <span class="o">=</span> <span class="kc">None</span>
+<div class="viewcode-block" id="ImageCollisionCost.forward"><a class="viewcode-back" href="../../../../storm_kit.mpc.cost.image_collision_cost.html#storm_kit.mpc.cost.image_collision_cost.ImageCollisionCost.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos_seq</span><span class="p">):</span>
+        
+        <span class="n">inp_device</span> <span class="o">=</span> <span class="n">pos_seq</span><span class="o">.</span><span class="n">device</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">pos_seq</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">horizon</span> <span class="o">=</span> <span class="n">pos_seq</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">pos_batch</span> <span class="o">=</span> <span class="n">pos_seq</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">batch_size</span> <span class="o">*</span> <span class="n">horizon</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># query sdf for points:</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">world_coll</span><span class="o">.</span><span class="n">get_pt_value</span><span class="p">(</span><span class="n">pos_batch</span><span class="p">)</span>
+        
+        
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">horizon</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># cost only when dist is less</span>
+
+        <span class="c1"># values are signed distance: positive inside object, negative outside</span>
+        <span class="n">dist</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist_thresh</span>
+        <span class="n">dist</span><span class="p">[</span><span class="n">dist</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">dist</span><span class="p">[</span><span class="n">dist</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">*</span> <span class="n">dist</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t_mat</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">res</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">t_mat</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">res</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">res</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span><span class="o">.</span><span class="n">tril</span><span class="p">()</span>
+            
+        <span class="n">t_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_mat</span>
+
+        <span class="n">res</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">inp_device</span><span class="p">)</span></div></div>
+
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

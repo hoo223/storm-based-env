@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>storm_kit.geom.sdf.robot &mdash; STORM Toolkit  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> STORM Toolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.differentiable_robot_model.html">storm_kit.differentiable_robot_model package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.geom.html">storm_kit.geom package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.gym.html">storm_kit.gym package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.mpc.html">storm_kit.mpc package</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.util_file.html">storm_kit.util_file module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">STORM Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>storm_kit.geom.sdf.robot</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for storm_kit.geom.sdf.robot</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># MIT License</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2020-2021 NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a</span>
+<span class="c1"># copy of this software and associated documentation files (the &quot;Software&quot;),</span>
+<span class="c1"># to deal in the Software without restriction, including without limitation</span>
+<span class="c1"># the rights to use, copy, modify, merge, publish, distribute, sublicense,</span>
+<span class="c1"># and/or sell copies of the Software, and to permit persons to whom the</span>
+<span class="c1"># Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c1"># all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL</span>
+<span class="c1"># THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING</span>
+<span class="c1"># FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER</span>
+<span class="c1"># DEALINGS IN THE SOFTWARE.#</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">trimesh</span>
+
+<span class="kn">from</span> <span class="nn">...differentiable_robot_model.coordinate_transform</span> <span class="kn">import</span> <span class="n">CoordinateTransform</span><span class="p">,</span> <span class="n">rpy_angles_to_matrix</span><span class="p">,</span> <span class="n">multiply_transform</span><span class="p">,</span> <span class="n">transform_point</span>
+<span class="kn">from</span> <span class="nn">...differentiable_robot_model.urdf_utils</span> <span class="kn">import</span> <span class="n">URDFRobotModel</span>
+<span class="kn">from</span> <span class="nn">...geom.geom_types</span> <span class="kn">import</span> <span class="n">tensor_capsule</span><span class="p">,</span> <span class="n">tensor_sphere</span>
+<span class="kn">from</span> <span class="nn">...util_file</span> <span class="kn">import</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">get_mpc_configs_path</span>
+<span class="kn">from</span> <span class="nn">...geom.nn_model.robot_self_collision</span> <span class="kn">import</span> <span class="n">RobotSelfCollisionNet</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+
+<div class="viewcode-block" id="RobotCapsuleCollision"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotCapsuleCollision">[docs]</a><span class="k">class</span> <span class="nc">RobotCapsuleCollision</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot; This class holds a batched collision model where the robot is represented as capsules [one per link]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot_collision_params</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">}):</span>
+        <span class="c1"># read capsules</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span> <span class="o">=</span> <span class="n">tensor_args</span>
+        <span class="c1"># keep track of their pose in world frame</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_link_capsules</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">link_capsules</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_T_c</span> <span class="o">=</span> <span class="n">CoordinateTransform</span><span class="p">(</span><span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot_collision_params</span> <span class="o">=</span> <span class="n">robot_collision_params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_robot_collision_model</span><span class="p">(</span><span class="n">robot_collision_params</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="RobotCapsuleCollision.load_robot_collision_model"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotCapsuleCollision.load_robot_collision_model">[docs]</a>    <span class="k">def</span> <span class="nf">load_robot_collision_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot_collision_params</span><span class="p">):</span>
+        
+        <span class="n">robot_links</span> <span class="o">=</span> <span class="n">robot_collision_params</span><span class="p">[</span><span class="s1">&#39;link_objs&#39;</span><span class="p">]</span>
+
+        <span class="c1"># we store as [Batch, n_link, 7]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_link_capsules</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">robot_links</span><span class="p">),</span> <span class="mi">7</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">j_idx</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">robot_links</span><span class="p">):</span>
+            <span class="n">pose</span> <span class="o">=</span> <span class="n">robot_links</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="s1">&#39;pose_offset&#39;</span><span class="p">]</span>
+            <span class="c1"># create a transform from pose offset:</span>
+            <span class="n">trans</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">pose</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">],</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">rpy</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">pose</span><span class="p">[</span><span class="mi">3</span><span class="p">:],</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="c1"># rotation matrix from euler:</span>
+            <span class="n">rot</span> <span class="o">=</span> <span class="n">rpy_angles_to_matrix</span><span class="p">(</span><span class="n">rpy</span><span class="p">)</span>
+            
+            
+            <span class="n">l_T_c</span> <span class="o">=</span> <span class="n">CoordinateTransform</span><span class="p">(</span><span class="n">trans</span><span class="o">=</span><span class="n">trans</span><span class="p">,</span> <span class="n">rot</span><span class="o">=</span><span class="n">rot</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+            
+            <span class="n">r</span> <span class="o">=</span> <span class="n">robot_links</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="s1">&#39;radius&#39;</span><span class="p">]</span>
+
+            <span class="c1"># transform base, tip by pose_offset:</span>
+            
+            <span class="n">base</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">robot_links</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="s1">&#39;base&#39;</span><span class="p">],</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            
+            <span class="n">tip</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">robot_links</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="s1">&#39;tip&#39;</span><span class="p">],</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">base</span> <span class="o">=</span> <span class="n">l_T_c</span><span class="o">.</span><span class="n">transform_point</span><span class="p">(</span><span class="n">base</span><span class="p">)</span>
+            <span class="n">tip</span> <span class="o">=</span> <span class="n">l_T_c</span><span class="o">.</span><span class="n">transform_point</span><span class="p">(</span><span class="n">tip</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_link_capsules</span><span class="p">[:,</span> <span class="n">j_idx</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">tensor_capsule</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">tip</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="c1">#print(self.link_capsules)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">link_capsules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_link_capsules</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span></div>
+    
+<div class="viewcode-block" id="RobotCapsuleCollision.update_robot_link_poses"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotCapsuleCollision.update_robot_link_poses">[docs]</a>    <span class="k">def</span> <span class="nf">update_robot_link_poses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">links_pos</span><span class="p">,</span> <span class="n">links_rot</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update link collision poses</span>
+<span class="sd">        Args:</span>
+<span class="sd">           link_pos: [batch, n_links , 3]</span>
+<span class="sd">           link_rot: [batch, n_links , 3 , 3]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">links_pos</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">links_pos</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_robot_collision_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot_collision_params</span><span class="p">)</span>
+        
+        <span class="c1"># This contains coordinate tranforms as [batch_size * n_links ]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_T_c</span><span class="o">.</span><span class="n">set_translation</span><span class="p">(</span><span class="n">links_pos</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_T_c</span><span class="o">.</span><span class="n">set_rotation</span><span class="p">(</span><span class="n">links_rot</span><span class="p">)</span>
+        
+        <span class="c1"># Update tranform of link points:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">link_capsules</span><span class="p">[:,:,:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">l_T_c</span><span class="o">.</span><span class="n">transform_point</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_link_capsules</span><span class="p">[:,:,:</span><span class="mi">3</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">link_capsules</span><span class="p">[:,:,</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">l_T_c</span><span class="o">.</span><span class="n">transform_point</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_link_capsules</span><span class="p">[:,:,</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">])</span></div>
+        
+       
+<div class="viewcode-block" id="RobotCapsuleCollision.get_robot_link_objs"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotCapsuleCollision.get_robot_link_objs">[docs]</a>    <span class="k">def</span> <span class="nf">get_robot_link_objs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># return capsule spheres in world frame</span>
+        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">link_capsules</span></div>
+    
+<div class="viewcode-block" id="RobotCapsuleCollision.get_robot_link_points"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotCapsuleCollision.get_robot_link_points">[docs]</a>    <span class="k">def</span> <span class="nf">get_robot_link_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
+
+
+<div class="viewcode-block" id="RobotMeshCollision"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotMeshCollision">[docs]</a><span class="k">class</span> <span class="nc">RobotMeshCollision</span><span class="p">:</span> 
+    <span class="sd">&quot;&quot;&quot; This class holds a batched collision model with meshes loaded using trimesh. </span>
+<span class="sd">    Points are sampled from the mesh which can be used for collision checking.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot_collision_params</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">}):</span>
+        <span class="c1"># read capsules</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span> <span class="o">=</span> <span class="n">tensor_args</span>
+        <span class="c1"># keep track of their pose in world frame</span>
+        
+        <span class="c1">#self.link_points = None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_batch_link_points</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_link_points</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_link_collision_trans</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_link_collision_rot</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_batch_link_collision_trans</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_batch_link_collision_rot</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_robot_collision_trans</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_robot_collision_rot</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_batch_robot_collision_trans</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_batch_robot_collision_rot</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">w_link_points</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w_batch_link_points</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_T_c</span> <span class="o">=</span> <span class="n">CoordinateTransform</span><span class="p">(</span><span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot_collision_params</span> <span class="o">=</span> <span class="n">robot_collision_params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_robot_collision_model</span><span class="p">(</span><span class="n">robot_collision_params</span><span class="p">)</span>
+        
+        
+<div class="viewcode-block" id="RobotMeshCollision.load_robot_collision_model"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotMeshCollision.load_robot_collision_model">[docs]</a>    <span class="k">def</span> <span class="nf">load_robot_collision_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot_collision_params</span><span class="p">):</span>
+        
+        <span class="n">robot_links</span> <span class="o">=</span> <span class="n">robot_collision_params</span><span class="p">[</span><span class="s1">&#39;link_objs&#39;</span><span class="p">]</span>
+        <span class="n">robot_urdf</span> <span class="o">=</span> <span class="n">robot_collision_params</span><span class="p">[</span><span class="s1">&#39;urdf&#39;</span><span class="p">]</span>
+        <span class="n">n_pts</span> <span class="o">=</span> <span class="n">robot_collision_params</span><span class="p">[</span><span class="s1">&#39;sample_points&#39;</span><span class="p">]</span>
+
+        <span class="c1"># read robot urdf</span>
+        <span class="n">robot_urdf</span> <span class="o">=</span> <span class="n">URDFRobotModel</span><span class="p">(</span><span class="n">robot_urdf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        
+        <span class="c1"># read meshes, sample points and store</span>
+        
+        
+        <span class="c1"># we store as [n_link, 7]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_link_points</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">robot_links</span><span class="p">),</span> <span class="n">n_pts</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_link_collision_trans</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">robot_links</span><span class="p">),</span> <span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_link_collision_rot</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">robot_links</span><span class="p">),</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">j_idx</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">robot_links</span><span class="p">):</span>
+            <span class="c1"># read mesh</span>
+            <span class="n">mesh_fname</span><span class="p">,</span> <span class="n">mesh_origin</span> <span class="o">=</span> <span class="n">robot_urdf</span><span class="o">.</span><span class="n">get_link_collision_mesh</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+            
+            <span class="c1"># sample points</span>
+            <span class="n">mesh</span> <span class="o">=</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">load_mesh</span><span class="p">(</span><span class="n">mesh_fname</span><span class="p">)</span>
+            <span class="n">mesh_centroid</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">centroid</span> 
+            <span class="n">mesh</span><span class="o">.</span><span class="n">vertices</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">vertices</span> <span class="o">-</span> <span class="n">mesh_centroid</span> <span class="c1">#* 0.0</span>
+            <span class="n">points</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">trimesh</span><span class="o">.</span><span class="n">sample</span><span class="o">.</span><span class="n">sample_surface</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">n_pts</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+            <span class="c1">#points = torch.tensor(trimesh.sample.volume_mesh(mesh, n_pts), **self.tensor_args)</span>
+
+            
+            <span class="c1"># transform points from mesh frame to link frame:</span>
+            <span class="n">pose</span> <span class="o">=</span> <span class="n">mesh_origin</span>
+            <span class="c1"># create a transform from pose offset:</span>
+            <span class="n">trans</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">pose</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">],</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">rpy</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">pose</span><span class="p">[</span><span class="mi">3</span><span class="p">:],</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            
+            <span class="c1"># rotation matrix from euler:</span>
+            <span class="n">rot</span> <span class="o">=</span> <span class="n">rpy_angles_to_matrix</span><span class="p">(</span><span class="n">rpy</span><span class="p">)</span>
+            <span class="n">mesh_cent</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">mesh_centroid</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="c1">#.unsqueeze(0)</span>
+
+
+            <span class="n">trans</span> <span class="o">=</span> <span class="n">trans</span> <span class="o">+</span> <span class="p">(</span><span class="n">mesh_cent</span> <span class="o">@</span> <span class="n">rot</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">2</span><span class="p">))</span>
+
+            <span class="n">l_T_c</span> <span class="o">=</span> <span class="n">CoordinateTransform</span><span class="p">(</span><span class="n">trans</span><span class="o">=</span><span class="n">trans</span><span class="p">,</span> <span class="n">rot</span><span class="o">=</span><span class="n">rot</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+
+            
+                        
+            <span class="c1">#points = l_T_c.transform_point(points)</span>
+
+            <span class="c1"># store points</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_link_points</span><span class="p">[</span><span class="n">j_idx</span><span class="p">,</span> <span class="p">:,:]</span> <span class="o">=</span> <span class="n">points</span>
+
+            <span class="c1"># store tranform:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_link_collision_rot</span><span class="p">[</span><span class="n">j_idx</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="n">l_T_c</span><span class="o">.</span><span class="n">rotation</span><span class="p">()</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_link_collision_trans</span><span class="p">[</span><span class="n">j_idx</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">l_T_c</span><span class="o">.</span><span class="n">translation</span><span class="p">()</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
+        
+<div class="viewcode-block" id="RobotMeshCollision.build_batch_features"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotMeshCollision.build_batch_features">[docs]</a>    <span class="k">def</span> <span class="nf">build_batch_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clone_points</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">clone_pose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">batch_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">clone_points</span><span class="p">):</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">_batch_link_points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_link_points</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">clone_pose</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_batch_link_collision_trans</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_link_collision_trans</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_batch_link_collision_rot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_link_collision_rot</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span></div>
+<div class="viewcode-block" id="RobotMeshCollision.update_batch_robot_collision_pose"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotMeshCollision.update_batch_robot_collision_pose">[docs]</a>    <span class="k">def</span> <span class="nf">update_batch_robot_collision_pose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">links_pos</span><span class="p">,</span> <span class="n">links_rot</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update link collision poses</span>
+<span class="sd">        Args:</span>
+<span class="sd">           link_pos: [batch, n_links , 3] </span>
+<span class="sd">           link_rot: [batch, n_links , 3 , 3] </span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_batch_robot_collision_rot</span><span class="p">,</span>
+         <span class="bp">self</span><span class="o">.</span><span class="n">_batch_robot_collision_trans</span><span class="p">)</span> <span class="o">=</span> <span class="n">multiply_transform</span><span class="p">(</span><span class="n">links_rot</span><span class="p">,</span> <span class="n">links_pos</span><span class="p">,</span>
+                                                                 <span class="bp">self</span><span class="o">.</span><span class="n">_batch_link_collision_rot</span><span class="p">,</span>
+                                                                 <span class="bp">self</span><span class="o">.</span><span class="n">_batch_link_collision_trans</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+        
+<div class="viewcode-block" id="RobotMeshCollision.update_robot_collision_pose"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotMeshCollision.update_robot_collision_pose">[docs]</a>    <span class="k">def</span> <span class="nf">update_robot_collision_pose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">links_pos</span><span class="p">,</span> <span class="n">links_rot</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update link collision poses</span>
+<span class="sd">        Args:</span>
+<span class="sd">           link_pos: [n_links, 3]</span>
+<span class="sd">           link_rot: [n_links, 3, 3]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_robot_collision_rot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_robot_collision_trans</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">multiply_transform</span><span class="p">(</span><span class="n">links_rot</span><span class="p">,</span> <span class="n">links_pos</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">_link_collision_rot</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">_link_collision_trans</span><span class="p">,</span>
+                               <span class="p">))</span>
+        
+        
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="RobotMeshCollision.update_robot_collision_points"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotMeshCollision.update_robot_collision_points">[docs]</a>    <span class="k">def</span> <span class="nf">update_robot_collision_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">links_pos</span><span class="p">,</span> <span class="n">links_rot</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_robot_collision_pose</span><span class="p">(</span><span class="n">links_pos</span><span class="p">,</span> <span class="n">links_rot</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">w_link_points</span> <span class="o">=</span> <span class="n">transform_point</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_link_points</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_robot_collision_rot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_robot_collision_trans</span><span class="p">)</span></div>
+        
+
+<div class="viewcode-block" id="RobotMeshCollision.update_batch_robot_collision_points"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotMeshCollision.update_batch_robot_collision_points">[docs]</a>    <span class="k">def</span> <span class="nf">update_batch_robot_collision_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">links_pos</span><span class="p">,</span> <span class="n">links_rot</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_batch_robot_collision_pose</span><span class="p">(</span><span class="n">links_pos</span><span class="p">,</span> <span class="n">links_rot</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w_batch_link_points</span> <span class="o">=</span> <span class="n">transform_point</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_batch_link_points</span><span class="p">,</span>
+                                                   <span class="bp">self</span><span class="o">.</span><span class="n">_batch_robot_collision_rot</span><span class="p">,</span>
+                                                   <span class="bp">self</span><span class="o">.</span><span class="n">_batch_robot_collision_trans</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">))</span></div>
+<div class="viewcode-block" id="RobotMeshCollision.get_robot_link_objs"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotMeshCollision.get_robot_link_objs">[docs]</a>    <span class="k">def</span> <span class="nf">get_robot_link_objs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+<div class="viewcode-block" id="RobotMeshCollision.get_batch_robot_link_points"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotMeshCollision.get_batch_robot_link_points">[docs]</a>    <span class="k">def</span> <span class="nf">get_batch_robot_link_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_batch_link_points</span></div>
+<div class="viewcode-block" id="RobotMeshCollision.get_robot_link_points"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotMeshCollision.get_robot_link_points">[docs]</a>    <span class="k">def</span> <span class="nf">get_robot_link_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_link_points</span></div>
+<div class="viewcode-block" id="RobotMeshCollision.get_link_points"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotMeshCollision.get_link_points">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_link_points</span></div></div>
+
+<div class="viewcode-block" id="RobotSphereCollision"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision">[docs]</a><span class="k">class</span> <span class="nc">RobotSphereCollision</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot; This class holds a batched collision model where the robot is represented as spheres.</span>
+<span class="sd">        All points are stored in the world reference frame, obtained by using update_pose calls.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot_collision_params</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">}):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize with robot collision parameters, look at franka_reacher.py for an example.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            robot_collision_params (Dict): collision model parameters</span>
+<span class="sd">            batch_size (int, optional): Batch size of parallel sdf computation. Defaults to 1.</span>
+<span class="sd">            tensor_args (dict, optional): compute device and data type. Defaults to {&#39;device&#39;:&quot;cpu&quot;, &#39;dtype&#39;:torch.float32}.</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+        <span class="c1"># read capsules</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span> <span class="o">=</span> <span class="n">tensor_args</span>
+
+        
+        <span class="c1"># keep track of their pose in world frame</span>
+        
+        <span class="c1">#self.link_points = None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_link_spheres</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_batch_link_spheres</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_link_points</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_link_collision_trans</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_link_collision_rot</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_batch_link_collision_trans</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_batch_link_collision_rot</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_robot_collision_trans</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_robot_collision_rot</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_batch_robot_collision_trans</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_batch_robot_collision_rot</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">w_link_points</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w_batch_link_spheres</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_T_c</span> <span class="o">=</span> <span class="n">CoordinateTransform</span><span class="p">(</span><span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot_collision_params</span> <span class="o">=</span> <span class="n">robot_collision_params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_robot_collision_model</span><span class="p">(</span><span class="n">robot_collision_params</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">dist</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># load nn collision model:</span>
+        <span class="n">dof</span> <span class="o">=</span> <span class="n">robot_collision_params</span><span class="p">[</span><span class="s1">&#39;dof&#39;</span><span class="p">]</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot_nn</span> <span class="o">=</span> <span class="n">RobotSelfCollisionNet</span><span class="p">(</span><span class="n">n_joints</span><span class="o">=</span><span class="n">dof</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot_nn</span><span class="o">.</span><span class="n">load_weights</span><span class="p">(</span><span class="n">robot_collision_params</span><span class="p">[</span><span class="s1">&#39;self_collision_weights&#39;</span><span class="p">],</span> <span class="n">tensor_args</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="RobotSphereCollision.load_robot_collision_model"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision.load_robot_collision_model">[docs]</a>    <span class="k">def</span> <span class="nf">load_robot_collision_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot_collision_params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Load robot collision model, called from constructor</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            robot_collision_params (Dict): loaded from yml file</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+        <span class="n">robot_links</span> <span class="o">=</span> <span class="n">robot_collision_params</span><span class="p">[</span><span class="s1">&#39;link_objs&#39;</span><span class="p">]</span>
+
+        <span class="c1"># load collision file:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">robot_collision_params</span><span class="p">)</span>
+        <span class="n">coll_yml</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="n">get_mpc_configs_path</span><span class="p">(),</span> <span class="n">robot_collision_params</span><span class="p">[</span><span class="s1">&#39;collision_spheres&#39;</span><span class="p">])</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">coll_yml</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">coll_params</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">yaml</span><span class="o">.</span><span class="n">FullLoader</span><span class="p">)</span>
+
+        <span class="n">coll_params</span> <span class="o">=</span> <span class="n">coll_params</span><span class="p">[</span><span class="s1">&#39;collision_spheres&#39;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_link_spheres</span> <span class="o">=</span> <span class="p">[]</span>
+
+        
+        <span class="c1"># we store as [n_link, 7]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_link_collision_trans</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">robot_links</span><span class="p">),</span> <span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_link_collision_rot</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">robot_links</span><span class="p">),</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">j_idx</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">robot_links</span><span class="p">):</span>
+            
+            <span class="n">n_spheres</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">coll_params</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+            <span class="n">link_spheres</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_spheres</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_spheres</span><span class="p">):</span>
+                <span class="n">link_spheres</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">tensor_sphere</span><span class="p">(</span><span class="n">coll_params</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;center&#39;</span><span class="p">],</span> <span class="n">coll_params</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;radius&#39;</span><span class="p">],</span> <span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">,</span> <span class="n">tensor</span><span class="o">=</span><span class="n">link_spheres</span><span class="p">[</span><span class="n">i</span><span class="p">,:])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_link_spheres</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">link_spheres</span><span class="p">)</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">_w_link_spheres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_link_spheres</span></div>
+        
+<div class="viewcode-block" id="RobotSphereCollision.build_batch_features"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision.build_batch_features">[docs]</a>    <span class="k">def</span> <span class="nf">build_batch_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clone_objs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">clone_pose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;clones poses/object instances for computing across batch. Use this once per batch size change to avoid re-initialization over repeated calls.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            clone_objs (bool, optional): clones objects. Defaults to False.</span>
+<span class="sd">            clone_pose (bool, optional): clones pose. Defaults to True.</span>
+<span class="sd">            batch_size ([type], optional): batch_size to clone. Defaults to None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+        <span class="k">if</span><span class="p">(</span><span class="n">batch_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">clone_objs</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_batch_link_spheres</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_link_spheres</span><span class="p">)):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_batch_link_spheres</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_link_spheres</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">clone</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w_batch_link_spheres</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_batch_link_spheres</span><span class="p">)</span></div>
+        
+<div class="viewcode-block" id="RobotSphereCollision.update_batch_robot_collision_pose"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision.update_batch_robot_collision_pose">[docs]</a>    <span class="k">def</span> <span class="nf">update_batch_robot_collision_pose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">links_pos</span><span class="p">,</span> <span class="n">links_rot</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update link collision poses</span>
+<span class="sd">        Args:</span>
+<span class="sd">           link_pos: [batch, n_links , 3] </span>
+<span class="sd">           link_rot: [batch, n_links , 3 , 3] </span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        (self._batch_robot_collision_rot,</span>
+<span class="sd">         self._batch_robot_collision_trans) = multiply_transform(links_rot, links_pos,</span>
+<span class="sd">                                                                 self._batch_link_collision_rot,</span>
+<span class="sd">                                                                 self._batch_link_collision_trans)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+        
+<div class="viewcode-block" id="RobotSphereCollision.update_robot_collision_pose"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision.update_robot_collision_pose">[docs]</a>    <span class="k">def</span> <span class="nf">update_robot_collision_pose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">links_pos</span><span class="p">,</span> <span class="n">links_rot</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update link collision poses</span>
+<span class="sd">        Args:</span>
+<span class="sd">           link_pos: [n_links, 3]</span>
+<span class="sd">           link_rot: [n_links, 3, 3]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        self._robot_collision_rot, self._robot_collision_trans = (</span>
+<span class="sd">            multiply_transform(links_rot, links_pos,</span>
+<span class="sd">                               self._link_collision_rot,</span>
+<span class="sd">                               self._link_collision_trans,</span>
+<span class="sd">                               ))</span>
+<span class="sd">        </span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="RobotSphereCollision.update_robot_collision_objs"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision.update_robot_collision_objs">[docs]</a>    <span class="k">def</span> <span class="nf">update_robot_collision_objs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">links_pos</span><span class="p">,</span> <span class="n">links_rot</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;update pose of link spheres</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">        links_pos: nx3</span>
+<span class="sd">        links_rot: nx3x3</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="c1"># transform link points:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_link_spheres</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_w_link_spheres</span><span class="p">[</span><span class="n">i</span><span class="p">][:,:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">transform_point</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_link_spheres</span><span class="p">[:,:</span><span class="mi">3</span><span class="p">],</span> <span class="n">links_rot</span><span class="p">[</span><span class="n">i</span><span class="p">,:,:],</span> <span class="n">links_pos</span><span class="p">[</span><span class="n">i</span><span class="p">,:,:])</span></div>
+        
+
+<div class="viewcode-block" id="RobotSphereCollision.update_batch_robot_collision_objs"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision.update_batch_robot_collision_objs">[docs]</a>    <span class="k">def</span> <span class="nf">update_batch_robot_collision_objs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">links_pos</span><span class="p">,</span> <span class="n">links_rot</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;update pose of link spheres</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">        links_pos: bxnx3</span>
+<span class="sd">        links_rot: bxnx3x3</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="n">b</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">links_pos</span><span class="o">.</span><span class="n">shape</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">link_pts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_batch_link_spheres</span><span class="p">[</span><span class="n">i</span><span class="p">][:,:,:</span><span class="mi">3</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">w_batch_link_spheres</span><span class="p">[</span><span class="n">i</span><span class="p">][:,:,:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">transform_point</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_batch_link_spheres</span><span class="p">[</span><span class="n">i</span><span class="p">][:,:,:</span><span class="mi">3</span><span class="p">],</span> <span class="n">links_rot</span><span class="p">[:,</span><span class="n">i</span><span class="p">,:,:],</span> <span class="n">links_pos</span><span class="p">[:,</span><span class="n">i</span><span class="p">,:]</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="RobotSphereCollision.check_self_collisions_nn"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision.check_self_collisions_nn">[docs]</a>    <span class="k">def</span> <span class="nf">check_self_collisions_nn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;compute signed distance using NN, uses an instance of :class:`.nn_model.robot_self_collision.RobotSelfCollisionNet`</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            q ([type]): [description]</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            [type]: [description]</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+        <span class="n">dist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot_nn</span><span class="o">.</span><span class="n">compute_signed_distance</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dist</span></div>
+
+
+<div class="viewcode-block" id="RobotSphereCollision.check_self_collisions"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision.check_self_collisions">[docs]</a>    <span class="k">def</span> <span class="nf">check_self_collisions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">link_trans</span><span class="p">,</span> <span class="n">link_rot</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Analytic method to compute signed distance between links. This is used to train the NN method :func:`check_self_collisions_nn` amd is not used directly as it is slower.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            link_trans ([tensor]): link translation as batch [b,3]</span>
+<span class="sd">            link_rot ([type]): link rotation as batch [b,3,3]</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            [tensor]: signed distance [b,1]</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+        <span class="n">n_links</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">w_batch_link_spheres</span><span class="p">)</span>
+        <span class="n">b</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">link_trans</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">b</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_batch_robot_collision_objs</span><span class="p">(</span><span class="n">link_trans</span><span class="p">,</span> <span class="n">link_rot</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dist</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">b</span><span class="p">,</span><span class="n">n_links</span><span class="p">,</span><span class="n">n_links</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span> <span class="o">-</span> <span class="mf">100.0</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">find_link_distance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">w_batch_link_spheres</span><span class="p">,</span> <span class="n">dist</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">dist</span></div>
+<div class="viewcode-block" id="RobotSphereCollision.get_robot_link_objs"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision.get_robot_link_objs">[docs]</a>    <span class="k">def</span> <span class="nf">get_robot_link_objs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="RobotSphereCollision.get_batch_robot_link_spheres"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision.get_batch_robot_link_spheres">[docs]</a>    <span class="k">def</span> <span class="nf">get_batch_robot_link_spheres</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_batch_link_spheres</span></div>
+
+<div class="viewcode-block" id="RobotSphereCollision.get_robot_link_points"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision.get_robot_link_points">[docs]</a>    <span class="k">def</span> <span class="nf">get_robot_link_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_link_points</span></div>
+
+<div class="viewcode-block" id="RobotSphereCollision.get_link_points"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.robot.html#storm_kit.geom.sdf.robot.RobotSphereCollision.get_link_points">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_link_points</span></div></div>
+
+
+<span class="nd">@torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span>
+<span class="k">def</span> <span class="nf">compute_spheres_distance</span><span class="p">(</span><span class="n">spheres_1</span><span class="p">,</span> <span class="n">spheres_2</span><span class="p">):</span>
+    
+    <span class="n">b</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">spheres_1</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">b_l</span><span class="p">,</span> <span class="n">n_l</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">spheres_2</span><span class="o">.</span><span class="n">shape</span>
+    
+    <span class="c1">#dist = torch.zeros((b, n), device=spheres_1.device,</span>
+    <span class="c1">#                   dtype=spheres_2.dtype)</span>
+    
+    
+
+
+    <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">link_sphere_pts</span> <span class="o">=</span> <span class="n">spheres_1</span><span class="p">[:,</span><span class="n">j</span><span class="p">,:]</span>
+    <span class="n">link_sphere_pts</span> <span class="o">=</span> <span class="n">link_sphere_pts</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># find closest distance to other link spheres:</span>
+    
+    
+    
+    <span class="c1">#print(l_spheres.shape, link_sphere_pts.shape)</span>
+    <span class="n">s_dist</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">spheres_2</span><span class="p">[:,:,:</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">link_sphere_pts</span><span class="p">[:,:,:</span><span class="mi">3</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">s_dist</span> <span class="o">=</span> <span class="n">spheres_2</span><span class="p">[:,:,</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="n">link_sphere_pts</span><span class="p">[:,:,</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">s_dist</span>
+    <span class="n">max_dist</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">s_dist</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    
+    
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">link_sphere_pts</span> <span class="o">=</span> <span class="n">spheres_1</span><span class="p">[:,</span><span class="n">j</span><span class="p">,:]</span>
+        <span class="n">link_sphere_pts</span> <span class="o">=</span> <span class="n">link_sphere_pts</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># find closest distance to other link spheres:</span>
+        <span class="n">s_dist</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">spheres_2</span><span class="p">[:,:,:</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">link_sphere_pts</span><span class="p">[:,:,:</span><span class="mi">3</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">s_dist</span> <span class="o">=</span> <span class="n">spheres_2</span><span class="p">[:,:,</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="n">link_sphere_pts</span><span class="p">[:,:,</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">s_dist</span>
+        <span class="n">s_dist</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">s_dist</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">max_dist</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">max_dist</span><span class="p">,</span> <span class="n">s_dist</span><span class="p">)</span>
+        
+    <span class="n">dist</span> <span class="o">=</span> <span class="n">max_dist</span> <span class="c1">#torch.max(dist,dim=-1)[0]</span>
+    <span class="k">return</span> <span class="n">dist</span>
+
+<span class="nd">@torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span>
+<span class="k">def</span> <span class="nf">find_closest_distance</span><span class="p">(</span><span class="n">link_idx</span><span class="p">,</span> <span class="n">links_sphere_list</span><span class="p">):</span>
+    <span class="c1"># type: (int, List[Tensor]) -&gt; Tensor</span>
+    <span class="sd">&quot;&quot;&quot;closet distance computed via iteration between sphere sets.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        link_idx ([type]): [description]</span>
+<span class="sd">        links_sphere_list ([type]): [description]</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        [type]: [description]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">spheres</span> <span class="o">=</span> <span class="n">links_sphere_list</span><span class="p">[</span><span class="n">link_idx</span><span class="p">]</span>
+    <span class="n">b</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">spheres</span><span class="o">.</span><span class="n">shape</span>
+    <span class="c1">#spheres = spheres.view(b * n, 4)</span>
+    <span class="c1">#link_pts = spheres[:,:,:3]</span>
+    <span class="c1">#link_dist = torch.zeros((b,len(links_sphere_list)), **self.tensor_args)</span>
+    <span class="n">dist</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">b</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">links_sphere_list</span><span class="p">),</span> <span class="n">n</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">spheres</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+                       <span class="n">dtype</span><span class="o">=</span><span class="n">spheres</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="c1"># for every sphere in current link</span>
+        <span class="n">link_sphere_pts</span> <span class="o">=</span> <span class="n">spheres</span><span class="p">[:,</span><span class="n">j</span><span class="p">,:]</span>
+        <span class="n">link_sphere_pts</span> <span class="o">=</span> <span class="n">link_sphere_pts</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># find closest distance to other link spheres:</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">links_sphere_list</span><span class="p">)):</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="n">link_idx</span> <span class="ow">or</span> <span class="n">i</span><span class="o">==</span><span class="n">link_idx</span><span class="o">-</span><span class="mi">1</span> <span class="ow">or</span> <span class="n">i</span><span class="o">==</span><span class="n">link_idx</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">dist</span><span class="p">[:,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">100.0</span>
+                <span class="k">continue</span>
+            <span class="c1"># transform link_idx spheres to current link frame:</span>
+            <span class="c1"># given a link and another link, find closest distance between them:</span>
+            <span class="n">l_spheres</span> <span class="o">=</span> <span class="n">links_sphere_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        
+            <span class="n">b_l</span><span class="p">,</span> <span class="n">n_l</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">l_spheres</span><span class="o">.</span><span class="n">shape</span>
+            
+            <span class="c1">#print(l_spheres.shape, link_sphere_pts.shape)</span>
+            <span class="n">s_dist</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">l_spheres</span><span class="p">[:,:,:</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">link_sphere_pts</span><span class="p">[:,:,:</span><span class="mi">3</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">s_dist</span> <span class="o">=</span> <span class="n">l_spheres</span><span class="p">[:,:,</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="n">link_sphere_pts</span><span class="p">[:,:,</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">s_dist</span> 
+
+            <span class="c1"># dist: b, n_l -&gt; b</span>
+            <span class="n">dist</span><span class="p">[:,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">s_dist</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">link_dist</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">link_dist</span>
+
+<span class="nd">@torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span>
+<span class="k">def</span> <span class="nf">find_link_distance</span><span class="p">(</span><span class="n">links_sphere_list</span><span class="p">,</span> <span class="n">dist</span><span class="p">):</span>
+    <span class="c1"># type: (List[Tensor], Tensor) -&gt; Tensor</span>
+    <span class="n">futures</span> <span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">Future</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">b</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">links_sphere_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">spheres</span> <span class="o">=</span> <span class="n">links_sphere_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">n_links</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">links_sphere_list</span><span class="p">)</span>
+    <span class="n">dist</span> <span class="o">*=</span> <span class="mf">0.0</span>
+    <span class="n">dist</span> <span class="o">-=</span> <span class="mf">100.0</span>
+    <span class="c1">#dist = torch.zeros((b,n_links,n_links), device=spheres.device,</span>
+    <span class="c1">#                   dtype=spheres.dtype) - 100.0</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_links</span><span class="p">):</span>
+        <span class="c1"># for every link, compute the distance to the other links:</span>
+        <span class="n">current_spheres</span> <span class="o">=</span> <span class="n">links_sphere_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">n_links</span><span class="p">):</span>
+            <span class="n">compute_spheres</span> <span class="o">=</span> <span class="n">links_sphere_list</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+
+            <span class="c1"># find the distance between the two links:</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">fork</span><span class="p">(</span><span class="n">compute_spheres_distance</span><span class="p">,</span> <span class="n">current_spheres</span><span class="p">,</span> <span class="n">compute_spheres</span><span class="p">)</span>
+            <span class="n">futures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+
+    <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_links</span><span class="p">):</span>
+        <span class="c1"># for every link, compute the distance to the other links:</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">n_links</span><span class="p">):</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">futures</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+            <span class="n">dist</span><span class="p">[:,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span>
+            <span class="n">dist</span><span class="p">[:,</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span>
+            <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">link_dist</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">link_dist</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

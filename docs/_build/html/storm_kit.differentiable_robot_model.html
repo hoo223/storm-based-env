@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>storm_kit.differentiable_robot_model package &mdash; STORM Toolkit  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="storm_kit.differentiable_robot_model.coordinate_transform module" href="storm_kit.differentiable_robot_model.coordinate_transform.html" />
+    <link rel="prev" title="STORM" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> STORM Toolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">storm_kit.differentiable_robot_model package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html">storm_kit.differentiable_robot_model.coordinate_transform module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_rigid_body.html">storm_kit.differentiable_robot_model.differentiable_rigid_body module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_robot_model.html">storm_kit.differentiable_robot_model.differentiable_robot_model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.urdf_utils.html">storm_kit.differentiable_robot_model.urdf_utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.utils.html">storm_kit.differentiable_robot_model.utils module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.geom.html">storm_kit.geom package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.gym.html">storm_kit.gym package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.mpc.html">storm_kit.mpc package</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.util_file.html">storm_kit.util_file module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">STORM Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>storm_kit.differentiable_robot_model package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/storm_kit.differentiable_robot_model.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-storm_kit.differentiable_robot_model">
+<span id="storm-kit-differentiable-robot-model-package"></span><h1>storm_kit.differentiable_robot_model package<a class="headerlink" href="#module-storm_kit.differentiable_robot_model" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html">storm_kit.differentiable_robot_model.coordinate_transform module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform"><code class="docutils literal notranslate"><span class="pre">CoordinateTransform</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.get_quaternion"><code class="docutils literal notranslate"><span class="pre">CoordinateTransform.get_quaternion()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.get_transform_matrix"><code class="docutils literal notranslate"><span class="pre">CoordinateTransform.get_transform_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.inverse"><code class="docutils literal notranslate"><span class="pre">CoordinateTransform.inverse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.multiply_inv_transform"><code class="docutils literal notranslate"><span class="pre">CoordinateTransform.multiply_inv_transform()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.multiply_transform"><code class="docutils literal notranslate"><span class="pre">CoordinateTransform.multiply_transform()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.rotation"><code class="docutils literal notranslate"><span class="pre">CoordinateTransform.rotation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.set_pose"><code class="docutils literal notranslate"><span class="pre">CoordinateTransform.set_pose()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.set_rotation"><code class="docutils literal notranslate"><span class="pre">CoordinateTransform.set_rotation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.set_translation"><code class="docutils literal notranslate"><span class="pre">CoordinateTransform.set_translation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.trans_cross_rot"><code class="docutils literal notranslate"><span class="pre">CoordinateTransform.trans_cross_rot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.transform_point"><code class="docutils literal notranslate"><span class="pre">CoordinateTransform.transform_point()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.translation"><code class="docutils literal notranslate"><span class="pre">CoordinateTransform.translation()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform._angle_from_tan"><code class="docutils literal notranslate"><span class="pre">_angle_from_tan()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform._copysign"><code class="docutils literal notranslate"><span class="pre">_copysign()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform._index_from_letter"><code class="docutils literal notranslate"><span class="pre">_index_from_letter()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.matrix_to_euler_angles"><code class="docutils literal notranslate"><span class="pre">matrix_to_euler_angles()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.matrix_to_quaternion"><code class="docutils literal notranslate"><span class="pre">matrix_to_quaternion()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.quaternion_to_matrix"><code class="docutils literal notranslate"><span class="pre">quaternion_to_matrix()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.rotation_matrix_to_quaternion"><code class="docutils literal notranslate"><span class="pre">rotation_matrix_to_quaternion()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.rpy_angles_to_matrix"><code class="docutils literal notranslate"><span class="pre">rpy_angles_to_matrix()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.x_rot"><code class="docutils literal notranslate"><span class="pre">x_rot()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.y_rot"><code class="docutils literal notranslate"><span class="pre">y_rot()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.z_rot"><code class="docutils literal notranslate"><span class="pre">z_rot()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_rigid_body.html">storm_kit.differentiable_robot_model.differentiable_rigid_body module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_rigid_body.html#storm_kit.differentiable_robot_model.differentiable_rigid_body.DifferentiableRigidBody"><code class="docutils literal notranslate"><span class="pre">DifferentiableRigidBody</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_rigid_body.html#storm_kit.differentiable_robot_model.differentiable_rigid_body.DifferentiableRigidBody._get_dynamics_parameters_values"><code class="docutils literal notranslate"><span class="pre">DifferentiableRigidBody._get_dynamics_parameters_values()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_rigid_body.html#storm_kit.differentiable_robot_model.differentiable_rigid_body.DifferentiableRigidBody._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">DifferentiableRigidBody._is_full_backward_hook</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_rigid_body.html#storm_kit.differentiable_robot_model.differentiable_rigid_body.DifferentiableRigidBody.get_joint_damping_const"><code class="docutils literal notranslate"><span class="pre">DifferentiableRigidBody.get_joint_damping_const()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_rigid_body.html#storm_kit.differentiable_robot_model.differentiable_rigid_body.DifferentiableRigidBody.get_joint_limits"><code class="docutils literal notranslate"><span class="pre">DifferentiableRigidBody.get_joint_limits()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_rigid_body.html#storm_kit.differentiable_robot_model.differentiable_rigid_body.DifferentiableRigidBody.multiply_inertia_with_motion_vec"><code class="docutils literal notranslate"><span class="pre">DifferentiableRigidBody.multiply_inertia_with_motion_vec()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_rigid_body.html#storm_kit.differentiable_robot_model.differentiable_rigid_body.DifferentiableRigidBody.training"><code class="docutils literal notranslate"><span class="pre">DifferentiableRigidBody.training</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_rigid_body.html#storm_kit.differentiable_robot_model.differentiable_rigid_body.DifferentiableRigidBody.update_joint_acc"><code class="docutils literal notranslate"><span class="pre">DifferentiableRigidBody.update_joint_acc()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_rigid_body.html#storm_kit.differentiable_robot_model.differentiable_rigid_body.DifferentiableRigidBody.update_joint_state"><code class="docutils literal notranslate"><span class="pre">DifferentiableRigidBody.update_joint_state()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_rigid_body.html#storm_kit.differentiable_robot_model.differentiable_rigid_body.LearnableRigidBody"><code class="docutils literal notranslate"><span class="pre">LearnableRigidBody</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_rigid_body.html#storm_kit.differentiable_robot_model.differentiable_rigid_body.LearnableRigidBody._get_dynamics_parameters_values"><code class="docutils literal notranslate"><span class="pre">LearnableRigidBody._get_dynamics_parameters_values()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_rigid_body.html#storm_kit.differentiable_robot_model.differentiable_rigid_body.LearnableRigidBody._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">LearnableRigidBody._is_full_backward_hook</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_rigid_body.html#storm_kit.differentiable_robot_model.differentiable_rigid_body.LearnableRigidBody.training"><code class="docutils literal notranslate"><span class="pre">LearnableRigidBody.training</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_robot_model.html">storm_kit.differentiable_robot_model.differentiable_robot_model module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_robot_model.html#storm_kit.differentiable_robot_model.differentiable_robot_model.DifferentiableRobotModel"><code class="docutils literal notranslate"><span class="pre">DifferentiableRobotModel</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_robot_model.html#storm_kit.differentiable_robot_model.differentiable_robot_model.DifferentiableRobotModel._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">DifferentiableRobotModel._is_full_backward_hook</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_robot_model.html#storm_kit.differentiable_robot_model.differentiable_robot_model.DifferentiableRobotModel.compute_endeffector_jacobian"><code class="docutils literal notranslate"><span class="pre">DifferentiableRobotModel.compute_endeffector_jacobian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_robot_model.html#storm_kit.differentiable_robot_model.differentiable_robot_model.DifferentiableRobotModel.compute_fk_and_jacobian"><code class="docutils literal notranslate"><span class="pre">DifferentiableRobotModel.compute_fk_and_jacobian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_robot_model.html#storm_kit.differentiable_robot_model.differentiable_robot_model.DifferentiableRobotModel.compute_forward_dynamics"><code class="docutils literal notranslate"><span class="pre">DifferentiableRobotModel.compute_forward_dynamics()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_robot_model.html#storm_kit.differentiable_robot_model.differentiable_robot_model.DifferentiableRobotModel.compute_forward_kinematics"><code class="docutils literal notranslate"><span class="pre">DifferentiableRobotModel.compute_forward_kinematics()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_robot_model.html#storm_kit.differentiable_robot_model.differentiable_robot_model.DifferentiableRobotModel.compute_inverse_dynamics"><code class="docutils literal notranslate"><span class="pre">DifferentiableRobotModel.compute_inverse_dynamics()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_robot_model.html#storm_kit.differentiable_robot_model.differentiable_robot_model.DifferentiableRobotModel.compute_lagrangian_inertia_matrix"><code class="docutils literal notranslate"><span class="pre">DifferentiableRobotModel.compute_lagrangian_inertia_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_robot_model.html#storm_kit.differentiable_robot_model.differentiable_robot_model.DifferentiableRobotModel.compute_link_jacobian"><code class="docutils literal notranslate"><span class="pre">DifferentiableRobotModel.compute_link_jacobian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_robot_model.html#storm_kit.differentiable_robot_model.differentiable_robot_model.DifferentiableRobotModel.compute_non_linear_effects"><code class="docutils literal notranslate"><span class="pre">DifferentiableRobotModel.compute_non_linear_effects()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_robot_model.html#storm_kit.differentiable_robot_model.differentiable_robot_model.DifferentiableRobotModel.delete_lxml_objects"><code class="docutils literal notranslate"><span class="pre">DifferentiableRobotModel.delete_lxml_objects()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_robot_model.html#storm_kit.differentiable_robot_model.differentiable_robot_model.DifferentiableRobotModel.get_joint_limits"><code class="docutils literal notranslate"><span class="pre">DifferentiableRobotModel.get_joint_limits()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_robot_model.html#storm_kit.differentiable_robot_model.differentiable_robot_model.DifferentiableRobotModel.get_link_names"><code class="docutils literal notranslate"><span class="pre">DifferentiableRobotModel.get_link_names()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_robot_model.html#storm_kit.differentiable_robot_model.differentiable_robot_model.DifferentiableRobotModel.get_link_pose"><code class="docutils literal notranslate"><span class="pre">DifferentiableRobotModel.get_link_pose()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_robot_model.html#storm_kit.differentiable_robot_model.differentiable_robot_model.DifferentiableRobotModel.iterative_newton_euler"><code class="docutils literal notranslate"><span class="pre">DifferentiableRobotModel.iterative_newton_euler()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_robot_model.html#storm_kit.differentiable_robot_model.differentiable_robot_model.DifferentiableRobotModel.load_lxml_objects"><code class="docutils literal notranslate"><span class="pre">DifferentiableRobotModel.load_lxml_objects()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_robot_model.html#storm_kit.differentiable_robot_model.differentiable_robot_model.DifferentiableRobotModel.print_learnable_params"><code class="docutils literal notranslate"><span class="pre">DifferentiableRobotModel.print_learnable_params()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_robot_model.html#storm_kit.differentiable_robot_model.differentiable_robot_model.DifferentiableRobotModel.print_link_names"><code class="docutils literal notranslate"><span class="pre">DifferentiableRobotModel.print_link_names()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_robot_model.html#storm_kit.differentiable_robot_model.differentiable_robot_model.DifferentiableRobotModel.training"><code class="docutils literal notranslate"><span class="pre">DifferentiableRobotModel.training</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_robot_model.html#storm_kit.differentiable_robot_model.differentiable_robot_model.DifferentiableRobotModel.update_kinematic_state"><code class="docutils literal notranslate"><span class="pre">DifferentiableRobotModel.update_kinematic_state()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_robot_model.html#storm_kit.differentiable_robot_model.differentiable_robot_model.LearnableRigidBodyConfig"><code class="docutils literal notranslate"><span class="pre">LearnableRigidBodyConfig</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.differentiable_robot_model.urdf_utils.html">storm_kit.differentiable_robot_model.urdf_utils module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.urdf_utils.html#storm_kit.differentiable_robot_model.urdf_utils.URDFRobotModel"><code class="docutils literal notranslate"><span class="pre">URDFRobotModel</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.urdf_utils.html#storm_kit.differentiable_robot_model.urdf_utils.URDFRobotModel.find_joint_of_body"><code class="docutils literal notranslate"><span class="pre">URDFRobotModel.find_joint_of_body()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.urdf_utils.html#storm_kit.differentiable_robot_model.urdf_utils.URDFRobotModel.find_link_idx"><code class="docutils literal notranslate"><span class="pre">URDFRobotModel.find_link_idx()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.urdf_utils.html#storm_kit.differentiable_robot_model.urdf_utils.URDFRobotModel.get_body_parameters_from_urdf"><code class="docutils literal notranslate"><span class="pre">URDFRobotModel.get_body_parameters_from_urdf()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.urdf_utils.html#storm_kit.differentiable_robot_model.urdf_utils.URDFRobotModel.get_link_collision_mesh"><code class="docutils literal notranslate"><span class="pre">URDFRobotModel.get_link_collision_mesh()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.urdf_utils.html#storm_kit.differentiable_robot_model.urdf_utils.URDFRobotModel.get_name_of_parent_body"><code class="docutils literal notranslate"><span class="pre">URDFRobotModel.get_name_of_parent_body()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.differentiable_robot_model.utils.html">storm_kit.differentiable_robot_model.utils module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.utils.html#storm_kit.differentiable_robot_model.utils.bfill_diagonal"><code class="docutils literal notranslate"><span class="pre">bfill_diagonal()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.utils.html#storm_kit.differentiable_robot_model.utils.bfill_lowertriangle"><code class="docutils literal notranslate"><span class="pre">bfill_lowertriangle()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.utils.html#storm_kit.differentiable_robot_model.utils.convert_into_at_least_2d_pytorch_tensor"><code class="docutils literal notranslate"><span class="pre">convert_into_at_least_2d_pytorch_tensor()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.utils.html#storm_kit.differentiable_robot_model.utils.convert_into_pytorch_tensor"><code class="docutils literal notranslate"><span class="pre">convert_into_pytorch_tensor()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.utils.html#storm_kit.differentiable_robot_model.utils.cross_product"><code class="docutils literal notranslate"><span class="pre">cross_product()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.utils.html#storm_kit.differentiable_robot_model.utils.exp_map_so3"><code class="docutils literal notranslate"><span class="pre">exp_map_so3()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.utils.html#storm_kit.differentiable_robot_model.utils.prod"><code class="docutils literal notranslate"><span class="pre">prod()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.utils.html#storm_kit.differentiable_robot_model.utils.torch_square"><code class="docutils literal notranslate"><span class="pre">torch_square()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.differentiable_robot_model.utils.html#storm_kit.differentiable_robot_model.utils.vector3_to_skew_symm_matrix"><code class="docutils literal notranslate"><span class="pre">vector3_to_skew_symm_matrix()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="STORM" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="storm_kit.differentiable_robot_model.coordinate_transform.html" class="btn btn-neutral float-right" title="storm_kit.differentiable_robot_model.coordinate_transform module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

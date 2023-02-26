@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>storm_kit.mpc.utils.mpc_process_wrapper &mdash; STORM Toolkit  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> STORM Toolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.differentiable_robot_model.html">storm_kit.differentiable_robot_model package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.geom.html">storm_kit.geom package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.gym.html">storm_kit.gym package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.mpc.html">storm_kit.mpc package</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.util_file.html">storm_kit.util_file module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">STORM Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>storm_kit.mpc.utils.mpc_process_wrapper</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for storm_kit.mpc.utils.mpc_process_wrapper</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># MIT License</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2020-2021 NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a</span>
+<span class="c1"># copy of this software and associated documentation files (the &quot;Software&quot;),</span>
+<span class="c1"># to deal in the Software without restriction, including without limitation</span>
+<span class="c1"># the rights to use, copy, modify, merge, publish, distribute, sublicense,</span>
+<span class="c1"># and/or sell copies of the Software, and to permit persons to whom the</span>
+<span class="c1"># Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c1"># all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL</span>
+<span class="c1"># THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING</span>
+<span class="c1"># FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER</span>
+<span class="c1"># DEALINGS IN THE SOFTWARE.#</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="c1">#import numpy as np</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+
+
+<span class="kn">from</span> <span class="nn">..utils.torch_utils</span> <span class="kn">import</span> <span class="n">find_first_idx</span><span class="p">,</span> <span class="n">find_last_idx</span>
+<span class="c1">#import multiprocessing import Queue</span>
+<span class="kn">from</span> <span class="nn">torch.multiprocessing</span> <span class="kn">import</span> <span class="n">Pool</span><span class="p">,</span> <span class="n">Process</span><span class="p">,</span> <span class="n">set_start_method</span><span class="p">,</span> <span class="n">Queue</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<div class="viewcode-block" id="ControlProcess"><a class="viewcode-back" href="../../../../storm_kit.mpc.utils.mpc_process_wrapper.html#storm_kit.mpc.utils.mpc_process_wrapper.ControlProcess">[docs]</a><span class="k">class</span> <span class="nc">ControlProcess</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">controller</span><span class="p">,</span> <span class="n">control_space</span><span class="o">=</span><span class="s1">&#39;acc&#39;</span><span class="p">,</span> <span class="n">control_dt</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">controller</span><span class="o">.</span><span class="n">rollout_fn</span><span class="o">.</span><span class="n">dynamics_model</span><span class="o">.</span><span class="n">robot_model</span><span class="o">.</span><span class="n">delete_lxml_objects</span><span class="p">()</span> <span class="c1"># delete urdf model</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+            
+        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">controller</span><span class="p">,</span> <span class="s1">&#39;control_instance.p&#39;</span><span class="p">)</span> <span class="c1"># &lt;class &#39;storm_kit.mpc.control.mppi.MPPI&#39;&gt;</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">controller</span><span class="o">.</span><span class="n">rollout_fn</span><span class="o">.</span><span class="n">dynamics_model</span><span class="o">.</span><span class="n">robot_model</span><span class="o">.</span><span class="n">load_lxml_objects</span><span class="p">()</span> <span class="c1"># load urdf model</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">command</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_state</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">done</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opt_data</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span> <span class="o">=</span> <span class="n">controller</span><span class="o">.</span><span class="n">rollout_fn</span><span class="o">.</span><span class="n">dynamics_model</span><span class="o">.</span><span class="n">n_dofs</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">traj_tstep</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">controller</span><span class="o">.</span><span class="n">rollout_fn</span><span class="o">.</span><span class="n">dynamics_model</span><span class="o">.</span><span class="n">_traj_tstep</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">command_tstep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">traj_tstep</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mpc_dt</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="c1">#None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_trajs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_values</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_idx</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">control_space</span> <span class="o">=</span> <span class="n">control_space</span>
+        
+        <span class="c1">#</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result_queue</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opt_queue</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">opt_process</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">optimize_process</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;control_instance.p&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_queue</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">result_queue</span><span class="p">))</span> <span class="c1"># pytorch multiprocessing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opt_process</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opt_process</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">controller</span> <span class="o">=</span> <span class="n">controller</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">control_dt</span> <span class="o">=</span> <span class="n">control_dt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_mpc_tstep</span> <span class="o">=</span> <span class="mf">0.0</span>
+<div class="viewcode-block" id="ControlProcess.predict_next_state"><a class="viewcode-back" href="../../../../storm_kit.mpc.utils.mpc_process_wrapper.html#storm_kit.mpc.utils.mpc_process_wrapper.ControlProcess.predict_next_state">[docs]</a>    <span class="k">def</span> <span class="nf">predict_next_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_step</span><span class="p">,</span> <span class="n">curr_state</span><span class="p">):</span>
+        <span class="c1"># predict next state</span>
+        <span class="c1"># given current t_step, integrate to t_step+mpc_dt</span>
+        <span class="n">t1_idx</span> <span class="o">=</span> <span class="n">find_first_idx</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command_tstep</span><span class="p">,</span> <span class="n">t_step</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">t2_idx</span> <span class="o">=</span> <span class="n">find_first_idx</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command_tstep</span><span class="p">,</span> <span class="n">t_step</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpc_dt</span><span class="p">)</span> <span class="c1">#- 1</span>
+
+        <span class="c1"># integrate from t1-&gt;t2</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">t1_idx</span><span class="p">,</span> <span class="n">t2_idx</span><span class="p">):</span>
+            <span class="n">command</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">curr_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">rollout_fn</span><span class="o">.</span><span class="n">dynamics_model</span><span class="o">.</span><span class="n">get_next_state</span><span class="p">(</span><span class="n">curr_state</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpc_dt</span><span class="p">)</span>
+    
+        <span class="k">return</span> <span class="n">curr_state</span></div>
+<div class="viewcode-block" id="ControlProcess.get_command_debug"><a class="viewcode-back" href="../../../../storm_kit.mpc.utils.mpc_process_wrapper.html#storm_kit.mpc.utils.mpc_process_wrapper.ControlProcess.get_command_debug">[docs]</a>    <span class="k">def</span> <span class="nf">get_command_debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_step</span><span class="p">,</span> <span class="n">curr_state</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">control_dt</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; This function runs the controller in the same process and waits for optimization to complete before return of a new command</span>
+<span class="sd">        Args:</span>
+<span class="sd">        t_step: current timestep</span>
+<span class="sd">        curr_state: current state to give to mpc</span>
+<span class="sd">        debug: flag to enable debug commands [not implemented]</span>
+<span class="sd">        control_dt: dt to integrate command to acceleration space from a higher order space(jerk, snap). </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">curr_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_next_state</span><span class="p">(</span><span class="n">t_step</span><span class="p">,</span> <span class="n">curr_state</span><span class="p">)</span>
+
+        <span class="n">current_state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">curr_state</span><span class="p">,</span> <span class="n">t_step</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpc_dt</span><span class="p">)</span>
+        <span class="n">shift_steps</span> <span class="o">=</span> <span class="n">find_first_idx</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command_tstep</span><span class="p">,</span> <span class="n">t_step</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpc_dt</span><span class="p">)</span>
+        
+        <span class="n">state_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">current_state</span><span class="p">,</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+
+        <span class="n">mpc_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">command</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">state_tensor</span><span class="p">,</span> <span class="n">shift_steps</span><span class="o">=</span><span class="n">shift_steps</span><span class="p">))</span>
+        <span class="n">mpc_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">mpc_time</span>
+        <span class="n">command</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">command</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">command_tstep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">traj_tstep</span> <span class="o">+</span> <span class="n">t_step</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">opt_dt</span> <span class="o">=</span> <span class="n">mpc_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mpc_dt</span> <span class="o">=</span> <span class="n">t_step</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">prev_mpc_tstep</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_mpc_tstep</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">t_step</span><span class="p">)</span>
+        
+        <span class="c1"># get command data:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">top_idx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">top_values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_trajs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">top_trajs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">command</span> <span class="o">=</span> <span class="n">command</span>
+
+        <span class="n">command_buffer</span><span class="p">,</span> <span class="n">command_tstep_buffer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">truncate_command</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">t_step</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">command_tstep</span><span class="p">)</span>
+        
+        <span class="n">act</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">rollout_fn</span><span class="o">.</span><span class="n">dynamics_model</span><span class="o">.</span><span class="n">integrate_action_step</span><span class="p">(</span><span class="n">command_buffer</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">control_dt</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">act</span><span class="p">,</span> <span class="n">command_tstep_buffer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">command_buffer</span></div>
+
+<div class="viewcode-block" id="ControlProcess.get_command"><a class="viewcode-back" href="../../../../storm_kit.mpc.utils.mpc_process_wrapper.html#storm_kit.mpc.utils.mpc_process_wrapper.ControlProcess.get_command">[docs]</a>    <span class="k">def</span> <span class="nf">get_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_step</span><span class="p">,</span> <span class="n">curr_state</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">control_dt</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opt_queue</span><span class="o">.</span><span class="n">empty</span><span class="p">()):</span><span class="c1"># and self.command is None):</span>
+            <span class="c1"># integrate current state to mpc_dt:</span>
+            <span class="c1">#</span>
+            <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="n">curr_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_next_state</span><span class="p">(</span><span class="n">t_step</span><span class="p">,</span> <span class="n">curr_state</span><span class="p">)</span>
+            
+            <span class="n">curr_state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">curr_state</span><span class="p">,</span> <span class="n">t_step</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpc_dt</span><span class="p">)</span>
+            
+            <span class="c1"># planned command:</span>
+            
+            <span class="n">shift_steps</span> <span class="o">=</span> <span class="n">find_first_idx</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command_tstep</span><span class="p">,</span> <span class="n">t_step</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpc_dt</span><span class="p">)</span> <span class="c1">#- 1</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">shift_steps</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="n">shift_steps</span> <span class="o">=</span> <span class="mi">0</span>
+            
+            <span class="n">opt_data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;state&#39;</span><span class="p">:</span> <span class="n">curr_state</span><span class="p">,</span> <span class="s1">&#39;t_step&#39;</span><span class="p">:</span><span class="n">t_step</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpc_dt</span><span class="p">,</span> <span class="s1">&#39;done&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">done</span><span class="p">,</span> <span class="s1">&#39;params&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="s1">&#39;shift_steps&#39;</span><span class="p">:</span><span class="n">shift_steps</span><span class="p">,</span> <span class="s1">&#39;pred_mpc_dt&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">mpc_dt</span><span class="p">}</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mpc_dt</span> <span class="o">=</span> <span class="n">t_step</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">prev_mpc_tstep</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">opt_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">opt_data</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># wait for first command</span>
+        <span class="k">while</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">result_queue</span><span class="o">.</span><span class="n">empty</span><span class="p">()):</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
+
+        
+        <span class="k">if</span><span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">result_queue</span><span class="o">.</span><span class="n">empty</span><span class="p">()):</span><span class="c1"># and self.command is None):</span>
+            <span class="n">command_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result_queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">command_tstep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">traj_tstep</span> <span class="o">+</span> <span class="n">command_data</span><span class="p">[</span><span class="s1">&#39;t_step&#39;</span><span class="p">]</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">command</span> <span class="o">=</span> <span class="n">command_data</span><span class="p">[</span><span class="s1">&#39;command&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opt_dt</span> <span class="o">=</span> <span class="n">command_data</span><span class="p">[</span><span class="s1">&#39;mpc_dt&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prev_mpc_tstep</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">t_step</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">top_values</span> <span class="o">=</span> <span class="n">command_data</span><span class="p">[</span><span class="s1">&#39;top_values&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">top_trajs</span> <span class="o">=</span> <span class="n">command_data</span><span class="p">[</span><span class="s1">&#39;top_trajs&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">top_idx</span> <span class="o">=</span> <span class="n">command_data</span><span class="p">[</span><span class="s1">&#39;top_idx&#39;</span><span class="p">]</span>
+            
+            
+            
+        <span class="c1"># send to process</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span>
+
+        <span class="n">command_buffer</span><span class="p">,</span> <span class="n">command_tstep_buffer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">truncate_command</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">t_step</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">command_tstep</span><span class="p">)</span>
+        
+        <span class="c1">#print(command_buffer.shape)</span>
+        <span class="n">act</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">rollout_fn</span><span class="o">.</span><span class="n">dynamics_model</span><span class="o">.</span><span class="n">integrate_action_step</span><span class="p">(</span><span class="n">command_buffer</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">control_dt</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">act</span><span class="p">,</span> <span class="n">command_tstep_buffer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">command_buffer</span></div>
+    
+<div class="viewcode-block" id="ControlProcess.truncate_command"><a class="viewcode-back" href="../../../../storm_kit.mpc.utils.mpc_process_wrapper.html#storm_kit.mpc.utils.mpc_process_wrapper.ControlProcess.truncate_command">[docs]</a>    <span class="k">def</span> <span class="nf">truncate_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">trunc_tstep</span><span class="p">,</span> <span class="n">command_tstep</span><span class="p">):</span>
+        <span class="c1">#print(trunc_tstep, command_tstep[:4])</span>
+        <span class="n">f_idx</span> <span class="o">=</span> <span class="n">find_first_idx</span><span class="p">(</span><span class="n">command_tstep</span><span class="p">,</span> <span class="n">trunc_tstep</span><span class="p">)</span> <span class="c1">#- 1</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">f_idx</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">f_idx</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1">#print(f_idx)</span>
+        <span class="k">return</span> <span class="n">command</span><span class="p">[</span><span class="n">f_idx</span><span class="p">:],</span> <span class="n">command_tstep</span><span class="p">[</span><span class="n">f_idx</span><span class="p">:]</span></div>
+
+<div class="viewcode-block" id="ControlProcess.update_params"><a class="viewcode-back" href="../../../../storm_kit.mpc.utils.mpc_process_wrapper.html#storm_kit.mpc.utils.mpc_process_wrapper.ControlProcess.update_params">[docs]</a>    <span class="k">def</span> <span class="nf">update_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">kwargs</span></div>
+
+ 
+<div class="viewcode-block" id="ControlProcess.close"><a class="viewcode-back" href="../../../../storm_kit.mpc.utils.mpc_process_wrapper.html#storm_kit.mpc.utils.mpc_process_wrapper.ControlProcess.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">done</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">opt_data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;state&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;dt&#39;</span><span class="p">:</span><span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;done&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">done</span><span class="p">,</span> <span class="s1">&#39;params&#39;</span><span class="p">:</span><span class="kc">None</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opt_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">opt_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opt_process</span><span class="o">.</span><span class="n">join</span><span class="p">()</span></div></div>
+
+<div class="viewcode-block" id="optimize_process"><a class="viewcode-back" href="../../../../storm_kit.mpc.utils.mpc_process_wrapper.html#storm_kit.mpc.utils.mpc_process_wrapper.optimize_process">[docs]</a><span class="k">def</span> <span class="nf">optimize_process</span><span class="p">(</span><span class="n">control_string</span><span class="p">,</span> <span class="n">opt_queue</span><span class="p">,</span> <span class="n">result_queue</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This runs mpc in a seperate process.</span>
+
+<span class="sd">    Input:</span>
+<span class="sd">    current_state: current state</span>
+<span class="sd">    shift_steps: how much to shift from the previous optimization</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    command: command trajectory</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">controller</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">control_string</span><span class="p">)</span> <span class="c1"># &lt;class &#39;storm_kit.mpc.control.mppi.MPPI&#39;&gt;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">controller</span><span class="o">.</span><span class="n">rollout_fn</span><span class="o">.</span><span class="n">dynamics_model</span><span class="o">.</span><span class="n">robot_model</span><span class="o">.</span><span class="n">load_lxml_objects</span><span class="p">()</span> <span class="c1"># load urdf model</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">state_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">controller</span><span class="o">.</span><span class="n">rollout_fn</span><span class="o">.</span><span class="n">dynamics_model</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">),</span> <span class="o">**</span><span class="n">controller</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+    <span class="n">goal_count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="p">(</span><span class="kc">True</span><span class="p">):</span> <span class="c1"># optimization이 될 때까지 돌아감</span>
+        <span class="n">opt_data</span> <span class="o">=</span> <span class="n">opt_queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">opt_data</span><span class="p">[</span><span class="s1">&#39;done&#39;</span><span class="p">]):</span>
+            <span class="k">break</span>
+        <span class="n">current_state</span> <span class="o">=</span> <span class="n">opt_data</span><span class="p">[</span><span class="s1">&#39;state&#39;</span><span class="p">]</span>
+        <span class="n">state_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">current_state</span><span class="p">,</span><span class="o">**</span><span class="n">controller</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">shift_steps</span> <span class="o">=</span> <span class="n">opt_data</span><span class="p">[</span><span class="s1">&#39;shift_steps&#39;</span><span class="p">]</span>
+
+        
+        <span class="c1"># update goal pose if it&#39;s not none</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">opt_data</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="c1">#print(&#39;updating goal...&#39;)</span>
+            <span class="n">controller</span><span class="o">.</span><span class="n">rollout_fn</span><span class="o">.</span><span class="n">update_params</span><span class="p">(</span><span class="o">**</span><span class="n">opt_data</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">])</span>
+            <span class="n">goal_count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">goal_count</span> <span class="o">==</span> <span class="mi">100</span><span class="p">):</span>
+                <span class="c1">#controller.reset_mean()</span>
+                <span class="n">controller</span><span class="o">.</span><span class="n">reset_covariance</span><span class="p">()</span>
+
+        <span class="n">mpc_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">command</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">controller</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">state_tensor</span><span class="p">,</span> <span class="n">shift_steps</span><span class="o">=</span><span class="n">shift_steps</span><span class="p">))</span> <span class="c1"># storm_kit/mpc/control/control_base.py - act_seq, value, info </span>
+        <span class="n">mpc_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">mpc_time</span>
+
+        <span class="c1"># get command data: -&gt; from controller._update_distribution</span>
+        <span class="n">top_idx</span> <span class="o">=</span> <span class="n">controller</span><span class="o">.</span><span class="n">top_idx</span>
+        <span class="n">top_values</span> <span class="o">=</span> <span class="n">controller</span><span class="o">.</span><span class="n">top_values</span>
+        <span class="n">top_trajs</span> <span class="o">=</span> <span class="n">controller</span><span class="o">.</span><span class="n">top_trajs</span>
+        
+        <span class="n">command</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">command</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;command&#39;</span><span class="p">:</span><span class="n">command</span><span class="p">,</span> <span class="s1">&#39;t_step&#39;</span><span class="p">:</span> <span class="n">opt_data</span><span class="p">[</span><span class="s1">&#39;t_step&#39;</span><span class="p">],</span> <span class="s1">&#39;mpc_dt&#39;</span><span class="p">:</span> <span class="n">mpc_time</span><span class="p">,</span>
+                  <span class="s1">&#39;top_values&#39;</span><span class="p">:</span><span class="n">top_values</span><span class="p">,</span> <span class="s1">&#39;top_trajs&#39;</span><span class="p">:</span><span class="n">top_trajs</span><span class="p">,</span> <span class="s1">&#39;top_idx&#39;</span><span class="p">:</span><span class="n">top_idx</span><span class="p">}</span>
+        <span class="n">result_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

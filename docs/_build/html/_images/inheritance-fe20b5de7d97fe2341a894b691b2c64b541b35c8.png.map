@@ -1,0 +1,5 @@
+<map id="inheritanceb0992275a9" name="inheritanceb0992275a9">
+<area shape="rect" id="node1" href="storm_kit.mpc.task.arm_task.html#storm_kit.mpc.task.arm_task.ArmTask" target="_top" title="ArmTask" alt="" coords="136,5,215,31"/>
+<area shape="rect" id="node3" href="#storm_kit.mpc.task.reacher_task.ReacherTask" target="_top" title=".. inheritance&#45;diagram:: ReacherTask" alt="" coords="263,5,365,31"/>
+<area shape="rect" id="node2" href="storm_kit.mpc.task.task_base.html#storm_kit.mpc.task.task_base.BaseTask" target="_top" title="BaseTask" alt="" coords="5,5,88,31"/>
+</map>

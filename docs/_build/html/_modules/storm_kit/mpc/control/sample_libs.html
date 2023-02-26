@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>storm_kit.mpc.control.sample_libs &mdash; STORM Toolkit  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> STORM Toolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.differentiable_robot_model.html">storm_kit.differentiable_robot_model package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.geom.html">storm_kit.geom package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.gym.html">storm_kit.gym package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.mpc.html">storm_kit.mpc package</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.util_file.html">storm_kit.util_file module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">STORM Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>storm_kit.mpc.control.sample_libs</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for storm_kit.mpc.control.sample_libs</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># MIT License</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2020-2021 NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a</span>
+<span class="c1"># copy of this software and associated documentation files (the &quot;Software&quot;),</span>
+<span class="c1"># to deal in the Software without restriction, including without limitation</span>
+<span class="c1"># the rights to use, copy, modify, merge, publish, distribute, sublicense,</span>
+<span class="c1"># and/or sell copies of the Software, and to permit persons to whom the</span>
+<span class="c1"># Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c1"># all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL</span>
+<span class="c1"># THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING</span>
+<span class="c1"># FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER</span>
+<span class="c1"># DEALINGS IN THE SOFTWARE.#</span>
+
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">BSpline</span>
+<span class="kn">import</span> <span class="nn">scipy.interpolate</span> <span class="k">as</span> <span class="nn">si</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.distributions.multivariate_normal</span> <span class="kn">import</span> <span class="n">MultivariateNormal</span>
+
+<span class="kn">from</span> <span class="nn">.control_utils</span> <span class="kn">import</span> <span class="n">generate_noise</span><span class="p">,</span> <span class="n">scale_ctrl</span><span class="p">,</span> <span class="n">generate_gaussian_halton_samples</span><span class="p">,</span> <span class="n">generate_gaussian_sobol_samples</span><span class="p">,</span> <span class="n">gaussian_entropy</span><span class="p">,</span> <span class="n">matrix_cholesky</span><span class="p">,</span> <span class="n">batch_cholesky</span><span class="p">,</span> <span class="n">get_stomp_cov</span>
+
+<div class="viewcode-block" id="SampleLib"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.SampleLib">[docs]</a><span class="k">class</span> <span class="nc">SampleLib</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">horizon</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">d_action</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scale_tril</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">covariance_matrix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">tensor_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span> <span class="n">fixed_samples</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">filter_coeffs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span> <span class="o">=</span> <span class="n">tensor_args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span> <span class="o">=</span> <span class="n">horizon</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d_action</span> <span class="o">=</span> <span class="n">d_action</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seed_val</span> <span class="o">=</span> <span class="n">seed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Z</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">horizon</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_action</span><span class="p">,</span> <span class="o">**</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_tril</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">scale_tril</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">covariance_matrix</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale_tril</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="n">covariance_matrix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">covariance_matrix</span> <span class="o">=</span> <span class="n">covariance_matrix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fixed_samples</span> <span class="o">=</span> <span class="n">fixed_samples</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_shape</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_coeffs</span> <span class="o">=</span> <span class="n">filter_coeffs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ndims</span> <span class="o">=</span> <span class="n">horizon</span> <span class="o">*</span> <span class="n">d_action</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stomp_matrix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stomp_scale_tril</span> <span class="o">=</span> <span class="n">get_stomp_cov</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">horizon</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_action</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+<div class="viewcode-block" id="SampleLib.get_samples"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.SampleLib.get_samples">[docs]</a>    <span class="k">def</span> <span class="nf">get_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_shape</span><span class="p">,</span> <span class="n">base_seed</span><span class="p">,</span> <span class="n">current_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+    
+<div class="viewcode-block" id="SampleLib.filter_samples"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.SampleLib.filter_samples">[docs]</a>    <span class="k">def</span> <span class="nf">filter_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eps</span><span class="p">):</span>
+        <span class="c1">#print(eps)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_coeffs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">beta_0</span><span class="p">,</span> <span class="n">beta_1</span><span class="p">,</span> <span class="n">beta_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_coeffs</span>
+
+            <span class="c1"># This could be tensorized:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">eps</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                <span class="n">eps</span><span class="p">[:,</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">beta_0</span> <span class="o">*</span> <span class="n">eps</span><span class="p">[:,</span><span class="n">i</span><span class="p">,:]</span> <span class="o">+</span> <span class="n">beta_1</span> <span class="o">*</span> <span class="n">eps</span><span class="p">[:,</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span> <span class="o">+</span> <span class="n">beta_2</span> <span class="o">*</span> <span class="n">eps</span><span class="p">[:,</span><span class="n">i</span><span class="o">-</span><span class="mi">2</span><span class="p">,:]</span>
+        <span class="k">return</span> <span class="n">eps</span></div>
+<div class="viewcode-block" id="SampleLib.filter_smooth"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.SampleLib.filter_smooth">[docs]</a>    <span class="k">def</span> <span class="nf">filter_smooth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">samples</span><span class="p">):</span>
+        
+        
+        <span class="c1"># scale by stomp matrix:</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">samples</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">samples</span>
+
+        <span class="c1"># fit bspline:</span>
+        
+        <span class="n">filter_samples</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stomp_matrix</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">horizon</span><span class="p">,:</span><span class="bp">self</span><span class="o">.</span><span class="n">horizon</span><span class="p">]</span> <span class="o">@</span> <span class="n">samples</span><span class="p">)</span>
+        <span class="c1">#print(filter_samples.shape)</span>
+        <span class="n">filter_samples</span> <span class="o">=</span> <span class="n">filter_samples</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">filter_samples</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">filter_samples</span></div></div>
+
+
+<div class="viewcode-block" id="HaltonSampleLib"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.HaltonSampleLib">[docs]</a><span class="k">class</span> <span class="nc">HaltonSampleLib</span><span class="p">(</span><span class="n">SampleLib</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">horizon</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">d_action</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scale_tril</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">covariance_matrix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">tensor_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span> <span class="n">fixed_samples</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">HaltonSampleLib</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span> <span class="n">d_action</span><span class="o">=</span><span class="n">d_action</span><span class="p">,</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="n">tensor_args</span><span class="p">,</span>
+                                              <span class="n">fixed_samples</span><span class="o">=</span><span class="n">fixed_samples</span><span class="p">)</span>
+
+       
+
+<div class="viewcode-block" id="HaltonSampleLib.get_samples"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.HaltonSampleLib.get_samples">[docs]</a>    <span class="k">def</span> <span class="nf">get_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_shape</span><span class="p">,</span> <span class="n">base_seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filter_smooth</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_shape</span> <span class="o">!=</span> <span class="n">sample_shape</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed_samples</span><span class="p">):</span>
+            <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sample_shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;sample shape should be a single value&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span>
+            <span class="n">seed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">seed_val</span> <span class="k">if</span> <span class="n">base_seed</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">base_seed</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sample_shape</span> <span class="o">=</span> <span class="n">sample_shape</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">seed_val</span> <span class="o">=</span> <span class="n">seed</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="n">generate_gaussian_halton_samples</span><span class="p">(</span><span class="n">sample_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                                            <span class="bp">self</span><span class="o">.</span><span class="n">ndims</span><span class="p">,</span>
+                                                            <span class="n">use_ghalton</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">seed_val</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">seed_val</span><span class="p">,</span>
+                                                            <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">[</span><span class="s1">&#39;device&#39;</span><span class="p">],</span>
+                                                            <span class="n">float_dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">[</span><span class="s1">&#39;dtype&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_action</span><span class="p">)</span>
+
+            <span class="k">if</span><span class="p">(</span><span class="n">filter_smooth</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_smooth</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_samples</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">)</span>
+
+
+            
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span></div></div>
+
+<div class="viewcode-block" id="bspline"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.bspline">[docs]</a><span class="k">def</span> <span class="nf">bspline</span><span class="p">(</span><span class="n">c_arr</span><span class="p">,</span> <span class="n">t_arr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">sample_device</span> <span class="o">=</span> <span class="n">c_arr</span><span class="o">.</span><span class="n">device</span>
+    <span class="n">sample_dtype</span> <span class="o">=</span> <span class="n">c_arr</span><span class="o">.</span><span class="n">dtype</span>
+    <span class="n">cv</span> <span class="o">=</span> <span class="n">c_arr</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cv</span><span class="p">)</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="n">t_arr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">t_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">cv</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cv</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">t_arr</span> <span class="o">=</span> <span class="n">t_arr</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="n">spl</span> <span class="o">=</span> <span class="n">si</span><span class="o">.</span><span class="n">splrep</span><span class="p">(</span><span class="n">t_arr</span><span class="p">,</span> <span class="n">cv</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">degree</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+    <span class="c1">#spl = BSpline(t, c, k, extrapolate=False)</span>
+    <span class="n">xx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">cv</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">si</span><span class="o">.</span><span class="n">splev</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">spl</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">sample_device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">sample_dtype</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">samples</span></div>
+
+
+<div class="viewcode-block" id="KnotSampleLib"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.KnotSampleLib">[docs]</a><span class="k">class</span> <span class="nc">KnotSampleLib</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">horizon</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">d_action</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_knots</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span> <span class="n">sample_method</span><span class="o">=</span><span class="s1">&#39;halton&#39;</span><span class="p">,</span>
+                 <span class="n">covariance_matrix</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ndims</span> <span class="o">=</span> <span class="n">n_knots</span> <span class="o">*</span> <span class="n">d_action</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_knots</span> <span class="o">=</span> <span class="n">n_knots</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span> <span class="o">=</span> <span class="n">horizon</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d_action</span> <span class="o">=</span> <span class="n">d_action</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span> <span class="o">=</span> <span class="n">tensor_args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seed_val</span> <span class="o">=</span> <span class="n">seed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">degree</span> <span class="o">=</span> <span class="n">degree</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_method</span> <span class="o">=</span> <span class="n">sample_method</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Z</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ndims</span><span class="p">,</span> <span class="o">**</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">covariance_matrix</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cov_matrix</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ndims</span><span class="p">,</span> <span class="o">**</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_tril</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_matrix</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="o">**</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mvn</span> <span class="o">=</span> <span class="n">MultivariateNormal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Z</span><span class="p">,</span> <span class="n">scale_tril</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scale_tril</span><span class="p">,</span> <span class="p">)</span>
+<div class="viewcode-block" id="KnotSampleLib.get_samples"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.KnotSampleLib.get_samples">[docs]</a>    <span class="k">def</span> <span class="nf">get_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_shape</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># sample shape is the number of particles to sample</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_method</span><span class="o">==</span><span class="s1">&#39;halton&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">knot_points</span> <span class="o">=</span> <span class="n">generate_gaussian_halton_samples</span><span class="p">(</span>
+                <span class="n">sample_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ndims</span><span class="p">,</span>
+                <span class="n">use_ghalton</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">seed_val</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">seed_val</span><span class="p">,</span>
+                <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">[</span><span class="s1">&#39;device&#39;</span><span class="p">],</span>
+                <span class="n">float_dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">[</span><span class="s1">&#39;dtype&#39;</span><span class="p">])</span>
+        <span class="k">elif</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_method</span> <span class="o">==</span> <span class="s1">&#39;random&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">knot_points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mvn</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">sample_shape</span><span class="o">=</span><span class="n">sample_shape</span><span class="p">)</span>
+            
+    <span class="c1"># Sample splines from knot points:</span>
+        <span class="c1"># iteratre over action dimension:</span>
+        <span class="n">knot_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">knot_points</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">sample_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_action</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_knots</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">sample_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_action</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sample_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d_action</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">[</span><span class="n">i</span><span class="p">,:,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">bspline</span><span class="p">(</span><span class="n">knot_samples</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,:],</span> <span class="n">n</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">horizon</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">degree</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span></div></div>
+<div class="viewcode-block" id="RandomSampleLib"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.RandomSampleLib">[docs]</a><span class="k">class</span> <span class="nc">RandomSampleLib</span><span class="p">(</span><span class="n">SampleLib</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">horizon</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">d_action</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scale_tril</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">covariance_matrix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">tensor_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span> <span class="n">fixed_samples</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RandomSampleLib</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span> <span class="n">d_action</span><span class="o">=</span><span class="n">d_action</span><span class="p">,</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="n">tensor_args</span><span class="p">,</span>
+                                              <span class="n">fixed_samples</span><span class="o">=</span><span class="n">fixed_samples</span><span class="p">)</span>
+        
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scale_tril</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale_tril</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ndims</span><span class="p">,</span> <span class="o">**</span><span class="n">tensor_args</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">mvn</span> <span class="o">=</span> <span class="n">MultivariateNormal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Z</span><span class="p">,</span> <span class="n">scale_tril</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scale_tril</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RandomSampleLib.get_samples"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.RandomSampleLib.get_samples">[docs]</a>    <span class="k">def</span> <span class="nf">get_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sample_shape</span><span class="p">,</span> <span class="n">base_seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filter_smooth</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="n">base_seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">base_seed</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">seed_val</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">seed_val</span> <span class="o">=</span> <span class="n">base_seed</span>
+            <span class="c1">#print(self.seed_val)</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seed_val</span><span class="p">)</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_shape</span> <span class="o">!=</span> <span class="n">sample_shape</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed_samples</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sample_shape</span> <span class="o">=</span> <span class="n">sample_shape</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mvn</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">sample_shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_shape</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_action</span><span class="p">)</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">filter_smooth</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_smooth</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_samples</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span></div></div>
+
+<div class="viewcode-block" id="SineSampleLib"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.SineSampleLib">[docs]</a><span class="k">class</span> <span class="nc">SineSampleLib</span><span class="p">(</span><span class="n">SampleLib</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">horizon</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">d_action</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scale_tril</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">covariance_matrix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">tensor_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span> <span class="n">fixed_samples</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">filter_coeffs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SineSampleLib</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span> <span class="n">d_action</span><span class="o">=</span><span class="n">d_action</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                                            <span class="n">tensor_args</span><span class="o">=</span><span class="n">tensor_args</span><span class="p">,</span>
+                                            <span class="n">fixed_samples</span><span class="o">=</span><span class="n">fixed_samples</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">const_pi</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">acos</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">ndims</span> <span class="o">=</span> <span class="n">d_action</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">period</span> <span class="o">=</span> <span class="n">period</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sine_wave</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_sine_wave</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">diag_sine_wave</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sine_wave</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SineSampleLib.get_samples"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.SineSampleLib.get_samples">[docs]</a>    <span class="k">def</span> <span class="nf">get_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_shape</span><span class="p">,</span> <span class="n">base_seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_shape</span> <span class="o">!=</span> <span class="n">sample_shape</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed_samples</span><span class="p">):</span>
+            <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sample_shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;sample shape should be a single value&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span>
+            <span class="n">seed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">seed_val</span> <span class="k">if</span> <span class="n">base_seed</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">base_seed</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sample_shape</span> <span class="o">=</span> <span class="n">sample_shape</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">seed_val</span> <span class="o">=</span> <span class="n">seed</span>
+
+            <span class="c1"># sample only amplitudes from halton sequence:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">amplitude_samples</span> <span class="o">=</span> <span class="n">generate_gaussian_halton_samples</span><span class="p">(</span><span class="n">sample_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                                                      <span class="bp">self</span><span class="o">.</span><span class="n">ndims</span><span class="p">,</span>
+                                                                      <span class="n">use_ghalton</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">seed_val</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">seed_val</span><span class="p">,</span>
+                                                                      <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">[</span><span class="s1">&#39;device&#39;</span><span class="p">],</span>
+                                                                      <span class="n">float_dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">[</span><span class="s1">&#39;dtype&#39;</span><span class="p">])</span>
+
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">amplitude_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_samples</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">amplitude_samples</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">amplitude_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">amplitude_samples</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            
+            <span class="c1"># generate sine waves from samples for the full horizon:</span>
+            <span class="c1"># amp_samples: [B, d_action], sine: [H] -&gt; B, H, d_action </span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">diag_sine_wave</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">amplitude_samples</span> 
+
+            <span class="c1">#self.samples = self.samples.view(self.samples.shape[0], self.horizon, self.d_action)</span>
+            
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span></div>
+<div class="viewcode-block" id="SineSampleLib.generate_sine_wave"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.SineSampleLib.generate_sine_wave">[docs]</a>    <span class="k">def</span> <span class="nf">generate_sine_wave</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">horizon</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">horizon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span> <span class="k">if</span> <span class="n">horizon</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">horizon</span>
+
+        <span class="c1"># generate a sine wave:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">const_pi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="p">,</span> <span class="n">horizon</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span> 
+        <span class="n">sin_out</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">sin_out</span></div></div>
+    
+<div class="viewcode-block" id="StompSampleLib"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.StompSampleLib">[docs]</a><span class="k">class</span> <span class="nc">StompSampleLib</span><span class="p">(</span><span class="n">SampleLib</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">horizon</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">d_action</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                 <span class="n">tensor_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span> <span class="n">fixed_samples</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">StompSampleLib</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span> <span class="n">d_action</span><span class="o">=</span><span class="n">d_action</span><span class="p">,</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="n">tensor_args</span><span class="p">,</span>
+                                             <span class="n">fixed_samples</span><span class="o">=</span><span class="n">fixed_samples</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">stomp_matrix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stomp_scale_tril</span> <span class="o">=</span> <span class="n">get_stomp_cov</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">horizon</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_action</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Z</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">horizon</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_action</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sample_cov</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stomp_matrix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mvn</span> <span class="o">=</span> <span class="n">MultivariateNormal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Z</span><span class="p">,</span> <span class="n">scale_tril</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stomp_scale_tril</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_coeffs</span> <span class="o">=</span> <span class="kc">None</span>
+<div class="viewcode-block" id="StompSampleLib.get_samples"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.StompSampleLib.get_samples">[docs]</a>    <span class="k">def</span> <span class="nf">get_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_shape</span><span class="p">,</span> <span class="n">base_seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_shape</span> <span class="o">!=</span> <span class="n">sample_shape</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed_samples</span><span class="p">):</span>
+            <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sample_shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;sample shape should be a single value&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span>
+            <span class="n">seed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">seed_val</span> <span class="k">if</span> <span class="n">base_seed</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">base_seed</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sample_shape</span> <span class="o">=</span> <span class="n">sample_shape</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">seed_val</span> <span class="o">=</span> <span class="n">seed</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seed_val</span><span class="p">)</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mvn</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">sample_shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_shape</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_action</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span></div></div>
+
+<div class="viewcode-block" id="MultipleSampleLib"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.MultipleSampleLib">[docs]</a><span class="k">class</span> <span class="nc">MultipleSampleLib</span><span class="p">(</span><span class="n">SampleLib</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">horizon</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">d_action</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">covariance_matrix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">tensor_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span> <span class="n">fixed_samples</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">sample_ratio</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;halton&#39;</span><span class="p">:</span><span class="mf">0.2</span><span class="p">,</span> <span class="s1">&#39;halton-knot&#39;</span><span class="p">:</span><span class="mf">0.2</span><span class="p">,</span> <span class="s1">&#39;random&#39;</span><span class="p">:</span><span class="mf">0.2</span><span class="p">,</span> <span class="s1">&#39;random-knot&#39;</span><span class="p">:</span><span class="mf">0.2</span><span class="p">},</span> <span class="n">knot_scale</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="c1"># sample from a mix of possibilities:</span>
+
+        <span class="c1"># halton</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">halton_sample_lib</span> <span class="o">=</span> <span class="n">HaltonSampleLib</span><span class="p">(</span><span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span> <span class="n">d_action</span><span class="o">=</span><span class="n">d_action</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                                                 <span class="n">tensor_args</span><span class="o">=</span><span class="n">tensor_args</span><span class="p">,</span>
+                                                 <span class="n">fixed_samples</span><span class="o">=</span><span class="n">fixed_samples</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">knot_halton_sample_lib</span> <span class="o">=</span> <span class="n">KnotSampleLib</span><span class="p">(</span><span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span> <span class="n">d_action</span><span class="o">=</span><span class="n">d_action</span><span class="p">,</span> <span class="n">n_knots</span><span class="o">=</span><span class="n">horizon</span><span class="o">//</span><span class="n">knot_scale</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">sample_method</span><span class="o">=</span><span class="s1">&#39;halton&#39;</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="n">tensor_args</span><span class="p">)</span>
+        
+        <span class="c1">#random</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_sample_lib</span> <span class="o">=</span> <span class="n">RandomSampleLib</span><span class="p">(</span><span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span> <span class="n">d_action</span><span class="o">=</span><span class="n">d_action</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                                                 <span class="n">tensor_args</span><span class="o">=</span><span class="n">tensor_args</span><span class="p">,</span>
+                                                 <span class="n">fixed_samples</span><span class="o">=</span><span class="n">fixed_samples</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">knot_random_sample_lib</span> <span class="o">=</span> <span class="n">KnotSampleLib</span><span class="p">(</span><span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span> <span class="n">d_action</span><span class="o">=</span><span class="n">d_action</span><span class="p">,</span> <span class="n">n_knots</span><span class="o">=</span><span class="n">horizon</span><span class="o">//</span><span class="n">knot_scale</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">sample_method</span><span class="o">=</span><span class="s1">&#39;random&#39;</span><span class="p">,</span> <span class="n">covariance_matrix</span><span class="o">=</span><span class="n">covariance_matrix</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="n">tensor_args</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_ratio</span> <span class="o">=</span> <span class="n">sample_ratio</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_fns</span> <span class="o">=</span> <span class="p">[]</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_fns</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;halton&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">halton_sample_lib</span><span class="o">.</span><span class="n">get_samples</span><span class="p">,</span>
+                           <span class="s1">&#39;halton-knot&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">knot_halton_sample_lib</span><span class="o">.</span><span class="n">get_samples</span><span class="p">,</span>
+                           <span class="s1">&#39;random&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_sample_lib</span><span class="o">.</span><span class="n">get_samples</span><span class="p">,</span>
+                           <span class="s1">&#39;random-knot&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">knot_random_sample_lib</span><span class="o">.</span><span class="n">get_samples</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span> <span class="o">=</span> <span class="n">tensor_args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fixed_samples</span> <span class="o">=</span> <span class="n">fixed_samples</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="kc">None</span>
+<div class="viewcode-block" id="MultipleSampleLib.get_samples"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.MultipleSampleLib.get_samples">[docs]</a>    <span class="k">def</span> <span class="nf">get_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_shape</span><span class="p">,</span> <span class="n">base_seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fixed_samples</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">cat_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">sample_shape</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sample_shape</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">ki</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_ratio</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_ratio</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
+                    <span class="k">continue</span>
+                <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">sample_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_ratio</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+                <span class="n">s_shape</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="n">n_samples</span><span class="p">])</span>
+                <span class="c1">#if(k == &#39;halton&#39; or k == &#39;random&#39;):</span>
+                <span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_fns</span><span class="p">[</span><span class="n">k</span><span class="p">](</span><span class="n">sample_shape</span><span class="o">=</span><span class="n">s_shape</span><span class="p">)</span>
+                <span class="c1">#else:</span>
+                <span class="c1">#    samples = self.sample_fns[k](sample_shape=s_shape)</span>
+                <span class="n">cat_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+                <span class="n">samples</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">cat_list</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="n">samples</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span></div></div>
+        
+<div class="viewcode-block" id="HaltonStompSampleLib"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.HaltonStompSampleLib">[docs]</a><span class="k">class</span> <span class="nc">HaltonStompSampleLib</span><span class="p">(</span><span class="n">SampleLib</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">horizon</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">d_action</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scale_tril</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">covariance_matrix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">tensor_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span> <span class="n">fixed_samples</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">sample_ratio</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">HaltonStompSampleLib</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span> <span class="n">d_action</span><span class="o">=</span><span class="n">d_action</span><span class="p">,</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                                                   <span class="n">tensor_args</span><span class="o">=</span><span class="n">tensor_args</span><span class="p">,</span>
+                                                   <span class="n">fixed_samples</span><span class="o">=</span><span class="n">fixed_samples</span><span class="p">)</span>
+
+        <span class="c1"># sample ratio</span>
+        
+        <span class="c1"># generate stomp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stomp_sample_lib</span> <span class="o">=</span> <span class="n">StompSampleLib</span><span class="p">(</span><span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span> <span class="n">d_action</span><span class="o">=</span><span class="n">d_action</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                                               <span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span> <span class="n">scale_tril</span><span class="o">=</span><span class="n">scale_tril</span><span class="p">,</span>
+                                               <span class="n">covariance_matrix</span><span class="o">=</span><span class="n">covariance_matrix</span><span class="p">,</span>
+                                               <span class="n">tensor_args</span><span class="o">=</span><span class="n">tensor_args</span><span class="p">,</span>
+                                               <span class="n">fixed_samples</span><span class="o">=</span><span class="n">fixed_samples</span><span class="p">)</span>
+
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">sine_sample_lib</span> <span class="o">=</span> <span class="n">SineSampleLib</span><span class="p">(</span><span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span> <span class="n">d_action</span><span class="o">=</span><span class="n">d_action</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                                             <span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span> <span class="n">scale_tril</span><span class="o">=</span><span class="n">scale_tril</span><span class="p">,</span>
+                                             <span class="n">covariance_matrix</span><span class="o">=</span><span class="n">covariance_matrix</span><span class="p">,</span>
+                                             <span class="n">tensor_args</span><span class="o">=</span><span class="n">tensor_args</span><span class="p">,</span>
+                                             <span class="n">fixed_samples</span><span class="o">=</span><span class="n">fixed_samples</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+        <span class="c1"># generate halton</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">halton_sample_lib</span> <span class="o">=</span> <span class="n">HaltonSampleLib</span><span class="p">(</span><span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span> <span class="n">d_action</span><span class="o">=</span><span class="n">d_action</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                                                 <span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span> <span class="n">scale_tril</span><span class="o">=</span><span class="n">scale_tril</span><span class="p">,</span>
+                                                 <span class="n">covariance_matrix</span><span class="o">=</span><span class="n">covariance_matrix</span><span class="p">,</span>
+                                                 <span class="n">tensor_args</span><span class="o">=</span><span class="n">tensor_args</span><span class="p">,</span>
+                                                 <span class="n">fixed_samples</span><span class="o">=</span><span class="n">fixed_samples</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">knot_sample_lib</span> <span class="o">=</span> <span class="n">KnotSampleLib</span><span class="p">(</span><span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span> <span class="n">d_action</span><span class="o">=</span><span class="n">d_action</span><span class="p">,</span> <span class="n">n_knots</span><span class="o">=</span><span class="n">horizon</span><span class="o">//</span><span class="mi">10</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="c1"># split ratio:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">halton_ratio</span> <span class="o">=</span> <span class="n">sample_ratio</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stomp_ratio</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">halton_ratio</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stomp_cov_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stomp_sample_lib</span><span class="o">.</span><span class="n">_sample_cov</span>
+        <span class="c1"># some samples full halton, full random</span>
+        <span class="c1"># some samples with zeros at the end</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zero_ratio</span> <span class="o">=</span> <span class="mf">0.1</span>
+<div class="viewcode-block" id="HaltonStompSampleLib.get_samples"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.HaltonStompSampleLib.get_samples">[docs]</a>    <span class="k">def</span> <span class="nf">get_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_shape</span><span class="p">,</span> <span class="n">base_seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1">#print(sample_shape, self.halton_ratio, self.stomp_ratio)</span>
+        <span class="n">halton_sample_size</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sample_shape</span><span class="p">)</span>
+        <span class="n">halton_sample_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">halton_ratio</span> <span class="o">*</span> <span class="n">halton_sample_size</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="n">halton_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">knot_sample_lib</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="n">sample_shape</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">(</span><span class="n">halton_sample_size</span><span class="p">))</span>
+        <span class="c1">#halton_samples = self.halton_sample_lib.get_samples(sample_shape=torch.Size(halton_sample_size,**self.tensor_args), filter_smooth=False)</span>
+
+        <span class="c1"># filter halton samples:</span>
+        <span class="c1">#print(halton_samples)</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">halton_ratio</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">halton_samples</span>
+        
+        <span class="n">stomp_sample_size</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sample_shape</span><span class="p">)</span>
+        <span class="n">stomp_sample_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stomp_ratio</span> <span class="o">*</span> <span class="n">stomp_sample_size</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">stomp_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stomp_sample_lib</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="n">sample_shape</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">(</span><span class="n">stomp_sample_size</span><span class="p">))</span>
+        
+        
+        <span class="c1">#sine_samples = self.sine_sample_lib.get_samples(sample_shape=torch.Size(stomp_sample_size,**self.tensor_args))</span>
+
+        <span class="n">samples</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">halton_samples</span><span class="p">,</span> <span class="n">stomp_samples</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># zero out some samples after 0.1 tsteps:</span>
+        
+        <span class="k">return</span> <span class="n">samples</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>storm_kit.differentiable_robot_model.differentiable_rigid_body &mdash; STORM Toolkit  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> STORM Toolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../storm_kit.differentiable_robot_model.html">storm_kit.differentiable_robot_model package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../storm_kit.geom.html">storm_kit.geom package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../storm_kit.gym.html">storm_kit.gym package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../storm_kit.mpc.html">storm_kit.mpc package</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../storm_kit.util_file.html">storm_kit.util_file module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">STORM Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>storm_kit.differentiable_robot_model.differentiable_rigid_body</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for storm_kit.differentiable_robot_model.differentiable_rigid_body</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># MIT License</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2020-2021 NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a</span>
+<span class="c1"># copy of this software and associated documentation files (the &quot;Software&quot;),</span>
+<span class="c1"># to deal in the Software without restriction, including without limitation</span>
+<span class="c1"># the rights to use, copy, modify, merge, publish, distribute, sublicense,</span>
+<span class="c1"># and/or sell copies of the Software, and to permit persons to whom the</span>
+<span class="c1"># Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c1"># all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL</span>
+<span class="c1"># THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING</span>
+<span class="c1"># FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER</span>
+<span class="c1"># DEALINGS IN THE SOFTWARE.</span>
+<span class="c1">#</span>
+<span class="c1"># **********************************************************************</span>
+<span class="c1"># The first version was licensed as &quot;Original Source License&quot;(see below).</span>
+<span class="c1"># Several enhancements and bug fixes were done at NVIDIA CORPORATION</span>
+<span class="c1"># since obtaining the first version. </span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1"># Original Source License:</span>
+<span class="c1">#</span>
+<span class="c1"># MIT License</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) Facebook, Inc. and its affiliates.</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c1"># in the Software without restriction, including without limitation the rights</span>
+<span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c1"># furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in all</span>
+<span class="c1"># copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span class="c1"># SOFTWARE.#</span>
+
+<span class="c1"># Copyright (c) Facebook, Inc. and its affiliates.</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">.coordinate_transform</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CoordinateTransform</span><span class="p">,</span>
+    <span class="n">z_rot</span><span class="p">,</span>
+    <span class="n">y_rot</span><span class="p">,</span>
+    <span class="n">x_rot</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">hydra</span>
+
+
+<div class="viewcode-block" id="DifferentiableRigidBody"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.differentiable_rigid_body.html#storm_kit.differentiable_robot_model.differentiable_rigid_body.DifferentiableRigidBody">[docs]</a><span class="k">class</span> <span class="nc">DifferentiableRigidBody</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Differentiable Representation of a link</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rigid_body_params</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">}):</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span> <span class="o">=</span> <span class="n">tensor_args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">tensor_args</span><span class="p">[</span><span class="s1">&#39;device&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint_id</span> <span class="o">=</span> <span class="n">rigid_body_params</span><span class="p">[</span><span class="s2">&quot;joint_id&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">rigid_body_params</span><span class="p">[</span><span class="s2">&quot;link_name&quot;</span><span class="p">]</span>
+
+        <span class="c1"># dynamics parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mass</span> <span class="o">=</span> <span class="n">rigid_body_params</span><span class="p">[</span><span class="s2">&quot;mass&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">com</span> <span class="o">=</span> <span class="n">rigid_body_params</span><span class="p">[</span><span class="s2">&quot;com&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inertia_mat</span> <span class="o">=</span> <span class="n">rigid_body_params</span><span class="p">[</span><span class="s2">&quot;inertia_mat&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint_damping</span> <span class="o">=</span> <span class="n">rigid_body_params</span><span class="p">[</span><span class="s2">&quot;joint_damping&quot;</span><span class="p">]</span>
+
+        <span class="c1"># kinematics parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trans</span> <span class="o">=</span> <span class="n">rigid_body_params</span><span class="p">[</span><span class="s2">&quot;trans&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rot_angles</span> <span class="o">=</span> <span class="n">rigid_body_params</span><span class="p">[</span><span class="s2">&quot;rot_angles&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        
+        <span class="n">roll</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rot_angles</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">pitch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rot_angles</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">yaw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rot_angles</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fixed_rotation</span> <span class="o">=</span> <span class="p">(</span><span class="n">z_rot</span><span class="p">(</span><span class="n">yaw</span><span class="p">)</span> <span class="o">@</span> <span class="n">y_rot</span><span class="p">(</span><span class="n">pitch</span><span class="p">))</span> <span class="o">@</span> <span class="n">x_rot</span><span class="p">(</span><span class="n">roll</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint_limits</span> <span class="o">=</span> <span class="n">rigid_body_params</span><span class="p">[</span><span class="s2">&quot;joint_limits&quot;</span><span class="p">]</span>
+
+        <span class="c1"># local joint axis (w.r.t. joint coordinate frame):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint_axis</span> <span class="o">=</span> <span class="n">rigid_body_params</span><span class="p">[</span><span class="s2">&quot;joint_axis&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axis_idx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">joint_axis</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_idx</span><span class="o">.</span><span class="n">nelement</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">axis_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">joint_axis</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">axis_rot_fn</span> <span class="o">=</span> <span class="n">x_rot</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">joint_axis</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">axis_rot_fn</span> <span class="o">=</span> <span class="n">y_rot</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">axis_rot_fn</span> <span class="o">=</span> <span class="n">z_rot</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint_pose</span> <span class="o">=</span> <span class="n">CoordinateTransform</span><span class="p">(</span><span class="n">tensor_args</span><span class="o">=</span><span class="n">tensor_args</span><span class="p">)</span> <span class="c1">#.to(device)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint_pose</span><span class="o">.</span><span class="n">set_translation</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_batch_size</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_batch_trans</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_batch_rot</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="c1"># local velocities and accelerations (w.r.t. joint coordinate frame):</span>
+        <span class="c1"># in spatial vector terminology: linear velocity v</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint_lin_vel</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="c1"># in spatial vector terminology: angular velocity w</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint_ang_vel</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="c1"># in spatial vector terminology: linear acceleration vd</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint_lin_acc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="c1"># in spatial vector terminology: angular acceleration wd</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint_ang_acc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_joint_state</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">))</span>
+
+
+        <span class="c1"># self.update_joint_acc(torch.zeros(1, 1).to(self.device, dtype=self.float_dtype))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_joint_acc</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">))</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pose</span> <span class="o">=</span> <span class="n">CoordinateTransform</span><span class="p">(</span><span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="c1"># I have different vectors for angular/linear motion/force, but they usually always appear as a pair</span>
+        <span class="c1"># meaning we usually always compute both angular/linear components.</span>
+        <span class="c1"># Maybe worthwile thinking of a structure for this - in math notation we would use the notion of spatial vectors</span>
+        <span class="c1"># drake uses some form of spatial vector implementation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lin_vel</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ang_vel</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lin_acc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ang_acc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+
+        <span class="c1"># in spatial vector terminology this is the &quot;linear force f&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lin_force</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="c1"># in spatial vector terminology this is the &quot;couple n&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ang_force</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+
+        <span class="k">return</span>
+
+<div class="viewcode-block" id="DifferentiableRigidBody.update_joint_state"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.differentiable_rigid_body.html#storm_kit.differentiable_robot_model.differentiable_rigid_body.DifferentiableRigidBody.update_joint_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_joint_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">qd</span><span class="p">):</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint_ang_vel</span> <span class="o">=</span> <span class="n">qd</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">joint_axis</span>
+
+
+        <span class="k">if</span><span class="p">(</span><span class="n">batch_size</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_batch_size</span><span class="p">):</span>
+            <span class="c1">#print(&#39;calling once&#39;, self._batch_size, batch_size)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_batch_trans</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_batch_size</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_batch_rot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed_rotation</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            
+        <span class="c1"># when we update the joint angle, we also need to update the transformation</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint_pose</span><span class="o">.</span><span class="n">set_translation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_batch_trans</span><span class="p">)</span><span class="c1">#</span>
+        <span class="c1">#self.joint_pose.set_translation(torch.reshape(self.trans, (1, 3)))</span>
+        <span class="c1">#print(q.shape)</span>
+        <span class="n">rot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_rot_fn</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint_pose</span><span class="o">.</span><span class="n">set_rotation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_batch_rot</span> <span class="o">@</span> <span class="n">rot</span><span class="p">)</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="DifferentiableRigidBody.update_joint_acc"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.differentiable_rigid_body.html#storm_kit.differentiable_robot_model.differentiable_rigid_body.DifferentiableRigidBody.update_joint_acc">[docs]</a>    <span class="k">def</span> <span class="nf">update_joint_acc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qdd</span><span class="p">):</span>
+        <span class="c1"># local z axis (w.r.t. joint coordinate frame):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint_ang_acc</span> <span class="o">=</span> <span class="n">qdd</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">joint_axis</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="DifferentiableRigidBody.multiply_inertia_with_motion_vec"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.differentiable_rigid_body.html#storm_kit.differentiable_robot_model.differentiable_rigid_body.DifferentiableRigidBody.multiply_inertia_with_motion_vec">[docs]</a>    <span class="k">def</span> <span class="nf">multiply_inertia_with_motion_vec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lin</span><span class="p">,</span> <span class="n">ang</span><span class="p">):</span>
+
+        <span class="n">mass</span><span class="p">,</span> <span class="n">com</span><span class="p">,</span> <span class="n">inertia_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_dynamics_parameters_values</span><span class="p">()</span>
+
+        <span class="n">mcom</span> <span class="o">=</span> <span class="n">com</span> <span class="o">*</span> <span class="n">mass</span>
+        <span class="n">com_skew_symm_mat</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">vector3_to_skew_symm_matrix</span><span class="p">(</span><span class="n">com</span><span class="p">)</span>
+        <span class="n">inertia</span> <span class="o">=</span> <span class="n">inertia_mat</span> <span class="o">+</span> <span class="n">mass</span> <span class="o">*</span> <span class="p">(</span>
+            <span class="n">com_skew_symm_mat</span> <span class="o">@</span> <span class="n">com_skew_symm_mat</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">lin</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">new_lin_force</span> <span class="o">=</span> <span class="n">mass</span> <span class="o">*</span> <span class="n">lin</span> <span class="o">-</span> <span class="n">utils</span><span class="o">.</span><span class="n">cross_product</span><span class="p">(</span>
+            <span class="n">mcom</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">ang</span>
+        <span class="p">)</span>
+        <span class="n">new_ang_force</span> <span class="o">=</span> <span class="p">(</span><span class="n">inertia</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">@</span> <span class="n">ang</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span>
+            <span class="mi">2</span>
+        <span class="p">)</span> <span class="o">+</span> <span class="n">utils</span><span class="o">.</span><span class="n">cross_product</span><span class="p">(</span><span class="n">mcom</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">lin</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">new_lin_force</span><span class="p">,</span> <span class="n">new_ang_force</span></div>
+
+<div class="viewcode-block" id="DifferentiableRigidBody._get_dynamics_parameters_values"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.differentiable_rigid_body.html#storm_kit.differentiable_robot_model.differentiable_rigid_body.DifferentiableRigidBody._get_dynamics_parameters_values">[docs]</a>    <span class="k">def</span> <span class="nf">_get_dynamics_parameters_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">com</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">inertia_mat</span></div>
+
+<div class="viewcode-block" id="DifferentiableRigidBody.get_joint_limits"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.differentiable_rigid_body.html#storm_kit.differentiable_robot_model.differentiable_rigid_body.DifferentiableRigidBody.get_joint_limits">[docs]</a>    <span class="k">def</span> <span class="nf">get_joint_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">joint_limits</span></div>
+
+<div class="viewcode-block" id="DifferentiableRigidBody.get_joint_damping_const"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.differentiable_rigid_body.html#storm_kit.differentiable_robot_model.differentiable_rigid_body.DifferentiableRigidBody.get_joint_damping_const">[docs]</a>    <span class="k">def</span> <span class="nf">get_joint_damping_const</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">joint_damping</span></div></div>
+
+
+<div class="viewcode-block" id="LearnableRigidBody"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.differentiable_rigid_body.html#storm_kit.differentiable_robot_model.differentiable_rigid_body.LearnableRigidBody">[docs]</a><span class="k">class</span> <span class="nc">LearnableRigidBody</span><span class="p">(</span><span class="n">DifferentiableRigidBody</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Learnable Representation of a link</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">learnable_rigid_body_config</span><span class="p">,</span> <span class="n">gt_rigid_body_params</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="n">float_dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">):</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">rigid_body_params</span><span class="o">=</span><span class="n">gt_rigid_body_params</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="c1"># we overwrite dynamics parameters</span>
+        <span class="k">if</span> <span class="s2">&quot;mass&quot;</span> <span class="ow">in</span> <span class="n">learnable_rigid_body_config</span><span class="o">.</span><span class="n">learnable_dynamics_params</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mass_fn</span> <span class="o">=</span> <span class="n">hydra</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">instantiate</span><span class="p">(</span>
+                <span class="n">learnable_rigid_body_config</span><span class="o">.</span><span class="n">mass_parametrization</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mass_fn</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mass</span>
+
+        <span class="k">if</span> <span class="s2">&quot;com&quot;</span> <span class="ow">in</span> <span class="n">learnable_rigid_body_config</span><span class="o">.</span><span class="n">learnable_dynamics_params</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">com_fn</span> <span class="o">=</span> <span class="n">hydra</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">instantiate</span><span class="p">(</span>
+                <span class="n">learnable_rigid_body_config</span><span class="o">.</span><span class="n">com_parametrization</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">com_fn</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">com</span>
+
+        <span class="k">if</span> <span class="s2">&quot;inertia_mat&quot;</span> <span class="ow">in</span> <span class="n">learnable_rigid_body_config</span><span class="o">.</span><span class="n">learnable_dynamics_params</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inertia_mat_fn</span> <span class="o">=</span> <span class="n">hydra</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">instantiate</span><span class="p">(</span><span class="n">learnable_rigid_body_config</span><span class="o">.</span><span class="n">inertia_parametrization</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inertia_mat_fn</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">inertia_mat</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint_damping</span> <span class="o">=</span> <span class="n">gt_rigid_body_params</span><span class="p">[</span><span class="s2">&quot;joint_damping&quot;</span><span class="p">]</span>
+
+        <span class="c1"># kinematics parameters</span>
+        <span class="k">if</span> <span class="s2">&quot;trans&quot;</span> <span class="ow">in</span> <span class="n">learnable_rigid_body_config</span><span class="o">.</span><span class="n">learnable_kinematics_params</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trans</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">rand_like</span><span class="p">(</span><span class="n">gt_rigid_body_params</span><span class="p">[</span><span class="s2">&quot;trans&quot;</span><span class="p">])</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">joint_pose</span><span class="o">.</span><span class="n">set_translation</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
+
+        <span class="k">if</span> <span class="s2">&quot;rot_angles&quot;</span> <span class="ow">in</span> <span class="n">learnable_rigid_body_config</span><span class="o">.</span><span class="n">learnable_kinematics_params</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rot_angles</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">gt_rigid_body_params</span><span class="p">[</span><span class="s2">&quot;rot_angles&quot;</span><span class="p">])</span>
+
+        <span class="k">return</span>
+
+<div class="viewcode-block" id="LearnableRigidBody._get_dynamics_parameters_values"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.differentiable_rigid_body.html#storm_kit.differentiable_robot_model.differentiable_rigid_body.LearnableRigidBody._get_dynamics_parameters_values">[docs]</a>    <span class="k">def</span> <span class="nf">_get_dynamics_parameters_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mass_fn</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">com_fn</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">inertia_mat_fn</span><span class="p">()</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

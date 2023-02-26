@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>storm_kit.mpc.model.urdf_kinematic_model &mdash; STORM Toolkit  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> STORM Toolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.differentiable_robot_model.html">storm_kit.differentiable_robot_model package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.geom.html">storm_kit.geom package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.gym.html">storm_kit.gym package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.mpc.html">storm_kit.mpc package</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.util_file.html">storm_kit.util_file module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">STORM Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>storm_kit.mpc.model.urdf_kinematic_model</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for storm_kit.mpc.model.urdf_kinematic_model</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># MIT License</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2020-2021 NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a</span>
+<span class="c1"># copy of this software and associated documentation files (the &quot;Software&quot;),</span>
+<span class="c1"># to deal in the Software without restriction, including without limitation</span>
+<span class="c1"># the rights to use, copy, modify, merge, publish, distribute, sublicense,</span>
+<span class="c1"># and/or sell copies of the Software, and to permit persons to whom the</span>
+<span class="c1"># Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c1"># all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL</span>
+<span class="c1"># THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING</span>
+<span class="c1"># FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER</span>
+<span class="c1"># DEALINGS IN THE SOFTWARE.#</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.autograd.profiler</span> <span class="k">as</span> <span class="nn">profiler</span>
+
+<span class="kn">from</span> <span class="nn">...differentiable_robot_model.differentiable_robot_model</span> <span class="kn">import</span> <span class="n">DifferentiableRobotModel</span>
+<span class="kn">from</span> <span class="nn">urdfpy</span> <span class="kn">import</span> <span class="n">URDF</span>
+<span class="kn">from</span> <span class="nn">.model_base</span> <span class="kn">import</span> <span class="n">DynamicsModelBase</span>
+<span class="kn">from</span> <span class="nn">.integration_utils</span> <span class="kn">import</span> <span class="n">build_int_matrix</span><span class="p">,</span> <span class="n">build_fd_matrix</span><span class="p">,</span> <span class="n">tensor_step_acc</span><span class="p">,</span> <span class="n">tensor_step_vel</span><span class="p">,</span> <span class="n">tensor_step_pos</span><span class="p">,</span> <span class="n">tensor_step_jerk</span>
+
+<div class="viewcode-block" id="URDFKinematicModel"><a class="viewcode-back" href="../../../../storm_kit.mpc.model.urdf_kinematic_model.html#storm_kit.mpc.model.urdf_kinematic_model.URDFKinematicModel">[docs]</a><span class="k">class</span> <span class="nc">URDFKinematicModel</span><span class="p">(</span><span class="n">DynamicsModelBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">urdf_path</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">horizon</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                 <span class="n">tensor_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="s1">&#39;cpu&#39;</span><span class="p">,</span><span class="s1">&#39;dtype&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span> <span class="n">ee_link_name</span><span class="o">=</span><span class="s1">&#39;ee_link&#39;</span><span class="p">,</span> <span class="n">link_names</span><span class="o">=</span><span class="p">[],</span> <span class="n">dt_traj_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vel_scale</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">control_space</span><span class="o">=</span><span class="s1">&#39;acc&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">urdf_path</span> <span class="o">=</span> <span class="n">urdf_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">tensor_args</span><span class="p">[</span><span class="s1">&#39;device&#39;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">float_dtype</span> <span class="o">=</span> <span class="n">tensor_args</span><span class="p">[</span><span class="s1">&#39;dtype&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span> <span class="o">=</span> <span class="n">tensor_args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ee_link_name</span> <span class="o">=</span> <span class="n">ee_link_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span> <span class="o">=</span> <span class="n">horizon</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_traj_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">horizon</span> <span class="o">/</span> <span class="n">dt</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">link_names</span> <span class="o">=</span> <span class="n">link_names</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot_model</span> <span class="o">=</span> <span class="n">DifferentiableRobotModel</span><span class="p">(</span><span class="n">urdf_path</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="n">tensor_args</span><span class="p">)</span>
+
+        <span class="c1">#self.robot_model.half()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot_model</span><span class="o">.</span><span class="n">_n_dofs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">urdfpy_robot</span> <span class="o">=</span> <span class="n">URDF</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">urdf_path</span><span class="p">)</span> <span class="c1">#only for visualization</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">d_state</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d_action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span>
+
+        <span class="c1">#Variables for enforcing joint limits</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">urdfpy_robot</span><span class="o">.</span><span class="n">actuated_joint_names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint_lim_dicts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot_model</span><span class="o">.</span><span class="n">get_joint_limits</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_upper_bounds</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d_state</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">float_dtype</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_lower_bounds</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d_state</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">float_dtype</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_upper_bounds</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">joint_lim_dicts</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;upper&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_lower_bounds</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">joint_lim_dicts</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;lower&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_upper_bounds</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">joint_lim_dicts</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;velocity&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">vel_scale</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_lower_bounds</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">joint_lim_dicts</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;velocity&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">vel_scale</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_upper_bounds</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">=</span> <span class="mf">10.0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_lower_bounds</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">10.0</span>
+
+        <span class="c1">#print(self.state_upper_bounds, self.state_lower_bounds)</span>
+        <span class="c1"># #pre-allocating memory for rollouts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_seq</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_traj_points</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_state</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">float_dtype</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ee_pos_seq</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_traj_points</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">float_dtype</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ee_rot_seq</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_traj_points</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">float_dtype</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Z</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">float_dtype</span><span class="p">)</span> <span class="c1">#torch.zeros(batch_size, self.n_dofs, device=self.device, dtype=self.float_dtype)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_integrate_matrix</span> <span class="o">=</span> <span class="n">build_int_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_traj_points</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">float_dtype</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">control_space</span> <span class="o">=</span> <span class="n">control_space</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">control_space</span> <span class="o">==</span> <span class="s1">&#39;acc&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">step_fn</span> <span class="o">=</span> <span class="n">tensor_step_acc</span>
+        <span class="k">elif</span><span class="p">(</span><span class="n">control_space</span> <span class="o">==</span> <span class="s1">&#39;vel&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">step_fn</span> <span class="o">=</span> <span class="n">tensor_step_vel</span>
+        <span class="k">elif</span><span class="p">(</span><span class="n">control_space</span> <span class="o">==</span> <span class="s1">&#39;jerk&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">step_fn</span> <span class="o">=</span> <span class="n">tensor_step_jerk</span>
+        <span class="k">elif</span><span class="p">(</span><span class="n">control_space</span> <span class="o">==</span> <span class="s1">&#39;pos&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">step_fn</span> <span class="o">=</span> <span class="n">tensor_step_pos</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fd_matrix</span> <span class="o">=</span> <span class="n">build_fd_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_traj_points</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+                                          <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">float_dtype</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">dt_traj_params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">dt_array</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">]</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_traj_points</span><span class="p">)</span> 
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dt_array</span> <span class="o">=</span> <span class="p">[</span><span class="n">dt_traj_params</span><span class="p">[</span><span class="s1">&#39;base_dt&#39;</span><span class="p">]]</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="n">dt_traj_params</span><span class="p">[</span><span class="s1">&#39;base_ratio&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_traj_points</span><span class="p">)</span>
+            <span class="n">smooth_blending</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">dt_traj_params</span><span class="p">[</span><span class="s1">&#39;base_dt&#39;</span><span class="p">],</span><span class="n">dt_traj_params</span><span class="p">[</span><span class="s1">&#39;max_dt&#39;</span><span class="p">],</span> <span class="n">steps</span><span class="o">=</span><span class="nb">int</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">dt_traj_params</span><span class="p">[</span><span class="s1">&#39;base_ratio&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_traj_points</span><span class="p">))</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="n">dt_array</span> <span class="o">+=</span> <span class="n">smooth_blending</span>
+            
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">dt_traj_params</span><span class="p">[</span><span class="s1">&#39;base_dt&#39;</span><span class="p">]</span>
+        <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dt_array</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_traj_points</span><span class="p">):</span>
+            <span class="n">dt_array</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">dt_array</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt_traj_params</span> <span class="o">=</span> <span class="n">dt_traj_params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dt_h</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">dt_array</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">float_dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt_traj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dt_h</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">traj_dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dt_h</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_traj_tstep</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_integrate_matrix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dt_h</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">link_pos_seq</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_traj_points</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">link_names</span><span class="p">),</span><span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">link_rot_seq</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_traj_points</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">link_names</span><span class="p">),</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_state_buffer</span> <span class="o">=</span> <span class="kc">None</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_state_fd</span> <span class="o">=</span> <span class="n">build_fd_matrix</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">float_dtype</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">PREV_STATE</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_order</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_integrate_matrix_nth</span> <span class="o">=</span> <span class="n">build_int_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_traj_points</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">action_order</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">float_dtype</span><span class="p">,</span> <span class="n">traj_dt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">traj_dt</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_nth_traj_dt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">traj_dt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_order</span><span class="p">)</span>
+
+<div class="viewcode-block" id="URDFKinematicModel.get_next_state"><a class="viewcode-back" href="../../../../storm_kit.mpc.model.urdf_kinematic_model.html#storm_kit.mpc.model.urdf_kinematic_model.URDFKinematicModel.get_next_state">[docs]</a>    <span class="k">def</span> <span class="nf">get_next_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">curr_state</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">act</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Does a single step from the current state</span>
+<span class="sd">        Args:</span>
+<span class="sd">        curr_state: current state</span>
+<span class="sd">        act: action</span>
+<span class="sd">        dt: time to integrate</span>
+<span class="sd">        Returns:</span>
+<span class="sd">        next_state</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">control_space</span> <span class="o">==</span> <span class="s1">&#39;jerk&#39;</span><span class="p">):</span>
+            <span class="n">curr_state</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">:</span><span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">=</span> <span class="n">curr_state</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">:</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">+</span> <span class="n">act</span> <span class="o">*</span> <span class="n">dt</span>
+            <span class="n">curr_state</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">:</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">=</span> <span class="n">curr_state</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">:</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">+</span> <span class="n">curr_state</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="o">*</span><span class="mi">2</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="o">*</span><span class="mi">3</span><span class="p">]</span> <span class="o">*</span> <span class="n">dt</span>
+            
+            <span class="n">curr_state</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">=</span> <span class="n">curr_state</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">+</span> <span class="n">curr_state</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">:</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">*</span> <span class="n">dt</span>
+        <span class="k">elif</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">control_space</span> <span class="o">==</span> <span class="s1">&#39;acc&#39;</span><span class="p">):</span>
+            <span class="n">curr_state</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">:</span><span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">=</span> <span class="n">act</span> 
+            <span class="n">curr_state</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">:</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">=</span> <span class="n">curr_state</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">:</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">+</span> <span class="n">curr_state</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="o">*</span><span class="mi">2</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="o">*</span><span class="mi">3</span><span class="p">]</span> <span class="o">*</span> <span class="n">dt</span>
+            
+            <span class="n">curr_state</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">=</span> <span class="n">curr_state</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">+</span> <span class="n">curr_state</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">:</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">*</span> <span class="n">dt</span>
+        <span class="k">elif</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">control_space</span> <span class="o">==</span> <span class="s1">&#39;vel&#39;</span><span class="p">):</span>
+            <span class="n">curr_state</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">:</span><span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">curr_state</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">:</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">=</span> <span class="n">act</span> <span class="o">*</span> <span class="n">dt</span>
+            
+            <span class="n">curr_state</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">=</span> <span class="n">curr_state</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">+</span> <span class="n">curr_state</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">:</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">*</span> <span class="n">dt</span>
+        <span class="k">elif</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">control_space</span> <span class="o">==</span> <span class="s1">&#39;pos&#39;</span><span class="p">):</span>
+            <span class="n">curr_state</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">:</span><span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">curr_state</span><span class="p">[</span><span class="mi">1</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">:</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">curr_state</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">=</span> <span class="n">act</span>
+        <span class="k">return</span> <span class="n">curr_state</span></div>
+<div class="viewcode-block" id="URDFKinematicModel.tensor_step"><a class="viewcode-back" href="../../../../storm_kit.mpc.model.urdf_kinematic_model.html#storm_kit.mpc.model.urdf_kinematic_model.URDFKinematicModel.tensor_step">[docs]</a>    <span class="k">def</span> <span class="nf">tensor_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">act</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">state_seq</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">        state: [1,N]</span>
+<span class="sd">        act: [H,N]</span>
+<span class="sd">        todo:</span>
+<span class="sd">        Integration  with variable dt along trajectory</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">inp_device</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">device</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">float_dtype</span><span class="p">)</span>
+        <span class="n">act</span> <span class="o">=</span> <span class="n">act</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">float_dtype</span><span class="p">)</span>
+        <span class="n">nth_act_seq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrate_action</span><span class="p">(</span><span class="n">act</span><span class="p">)</span>
+        
+        
+        <span class="c1">#print(state.shape)</span>
+        <span class="n">state_seq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_fn</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">nth_act_seq</span><span class="p">,</span> <span class="n">state_seq</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dt_h</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_integrate_matrix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fd_matrix</span><span class="p">)</span>
+        <span class="c1">#state_seq = self.enforce_bounds(state_seq)</span>
+        <span class="c1"># timestep array</span>
+        <span class="n">state_seq</span><span class="p">[:,:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_traj_tstep</span>
+
+        
+        <span class="k">return</span> <span class="n">state_seq</span></div>
+        
+        
+    
+<div class="viewcode-block" id="URDFKinematicModel.rollout_open_loop"><a class="viewcode-back" href="../../../../storm_kit.mpc.model.urdf_kinematic_model.html#storm_kit.mpc.model.urdf_kinematic_model.URDFKinematicModel.rollout_open_loop">[docs]</a>    <span class="k">def</span> <span class="nf">rollout_open_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_state</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">act_seq</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+                          <span class="n">dt</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+        <span class="c1"># batch_size, horizon, d_act = act_seq.shape</span>
+        <span class="n">curr_dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="k">if</span> <span class="n">dt</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">dt</span>
+        <span class="n">curr_horizon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span>
+        <span class="c1"># get input device:</span>
+        <span class="n">inp_device</span> <span class="o">=</span> <span class="n">start_state</span><span class="o">.</span><span class="n">device</span>
+        <span class="n">start_state</span> <span class="o">=</span> <span class="n">start_state</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">float_dtype</span><span class="p">)</span>
+        <span class="n">act_seq</span> <span class="o">=</span> <span class="n">act_seq</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">float_dtype</span><span class="p">)</span>
+        
+        <span class="c1"># add start state to prev state buffer:</span>
+        <span class="c1">#print(start_state.shape, self.d_state)</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prev_state_buffer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prev_state_buffer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_state</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prev_state_buffer</span><span class="p">[:,:]</span> <span class="o">=</span> <span class="n">start_state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_state_buffer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prev_state_buffer</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_state_buffer</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">start_state</span>
+
+        
+        <span class="c1">#print(self.prev_state_buffer[:,-1])</span>
+        <span class="c1"># compute dt w.r.t previous data?</span>
+        <span class="n">state_seq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_seq</span>
+        <span class="n">ee_pos_seq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ee_pos_seq</span>
+        <span class="n">ee_rot_seq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ee_rot_seq</span>
+        <span class="n">curr_horizon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span>
+        <span class="n">curr_batch_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span>
+        <span class="n">num_traj_points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_traj_points</span>
+        <span class="n">link_pos_seq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">link_pos_seq</span>
+        <span class="n">link_rot_seq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">link_rot_seq</span>
+
+        
+        
+        <span class="n">curr_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prev_state_buffer</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:,:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span> <span class="o">*</span> <span class="mi">3</span><span class="p">]</span>
+ 
+        <span class="k">with</span> <span class="n">profiler</span><span class="o">.</span><span class="n">record_function</span><span class="p">(</span><span class="s2">&quot;tensor_step&quot;</span><span class="p">):</span>
+            <span class="c1"># forward step with step matrix:</span>
+            <span class="n">state_seq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor_step</span><span class="p">(</span><span class="n">curr_state</span><span class="p">,</span> <span class="n">act_seq</span><span class="p">,</span> <span class="n">state_seq</span><span class="p">,</span> <span class="n">curr_dt</span><span class="p">)</span>
+        
+        <span class="c1">#print(start_state[:,self.n_dofs*2 : self.n_dofs*3])</span>
+
+        <span class="n">shape_tup</span> <span class="o">=</span> <span class="p">(</span><span class="n">curr_batch_size</span> <span class="o">*</span> <span class="n">num_traj_points</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">profiler</span><span class="o">.</span><span class="n">record_function</span><span class="p">(</span><span class="s2">&quot;fk + jacobian&quot;</span><span class="p">):</span>
+            <span class="n">ee_pos_seq</span><span class="p">,</span> <span class="n">ee_rot_seq</span><span class="p">,</span> <span class="n">lin_jac_seq</span><span class="p">,</span> <span class="n">ang_jac_seq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot_model</span><span class="o">.</span><span class="n">compute_fk_and_jacobian</span><span class="p">(</span><span class="n">state_seq</span><span class="p">[:,:,:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">shape_tup</span><span class="p">),</span>
+                                                                                                    <span class="n">state_seq</span><span class="p">[:,:,</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">:</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">shape_tup</span><span class="p">),</span>
+                                                                                                    <span class="n">link_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ee_link_name</span><span class="p">)</span>
+
+        <span class="c1"># get link poses:</span>
+        <span class="k">for</span> <span class="n">ki</span><span class="p">,</span><span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">link_names</span><span class="p">):</span>
+            <span class="n">link_pos</span><span class="p">,</span> <span class="n">link_rot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot_model</span><span class="o">.</span><span class="n">get_link_pose</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+            <span class="n">link_pos_seq</span><span class="p">[:,:,</span><span class="n">ki</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">link_pos</span><span class="o">.</span><span class="n">view</span><span class="p">((</span><span class="n">curr_batch_size</span><span class="p">,</span> <span class="n">num_traj_points</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+            <span class="n">link_rot_seq</span><span class="p">[:,:,</span><span class="n">ki</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="n">link_rot</span><span class="o">.</span><span class="n">view</span><span class="p">((</span><span class="n">curr_batch_size</span><span class="p">,</span> <span class="n">num_traj_points</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+            
+        
+        <span class="n">ee_pos_seq</span> <span class="o">=</span> <span class="n">ee_pos_seq</span><span class="o">.</span><span class="n">view</span><span class="p">((</span><span class="n">curr_batch_size</span><span class="p">,</span> <span class="n">num_traj_points</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+        <span class="n">ee_rot_seq</span> <span class="o">=</span> <span class="n">ee_rot_seq</span><span class="o">.</span><span class="n">view</span><span class="p">((</span><span class="n">curr_batch_size</span><span class="p">,</span> <span class="n">num_traj_points</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+        <span class="n">lin_jac_seq</span> <span class="o">=</span> <span class="n">lin_jac_seq</span><span class="o">.</span><span class="n">view</span><span class="p">((</span><span class="n">curr_batch_size</span><span class="p">,</span> <span class="n">num_traj_points</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">))</span>
+        <span class="n">ang_jac_seq</span> <span class="o">=</span> <span class="n">ang_jac_seq</span><span class="o">.</span><span class="n">view</span><span class="p">((</span><span class="n">curr_batch_size</span><span class="p">,</span> <span class="n">num_traj_points</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">))</span>
+
+        <span class="n">state_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;state_seq&#39;</span><span class="p">:</span><span class="n">state_seq</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">inp_device</span><span class="p">),</span>
+                      <span class="s1">&#39;ee_pos_seq&#39;</span><span class="p">:</span> <span class="n">ee_pos_seq</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">inp_device</span><span class="p">),</span>
+                      <span class="s1">&#39;ee_rot_seq&#39;</span><span class="p">:</span> <span class="n">ee_rot_seq</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">inp_device</span><span class="p">),</span>
+                      <span class="s1">&#39;lin_jac_seq&#39;</span><span class="p">:</span> <span class="n">lin_jac_seq</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">inp_device</span><span class="p">),</span>
+                      <span class="s1">&#39;ang_jac_seq&#39;</span><span class="p">:</span> <span class="n">ang_jac_seq</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">inp_device</span><span class="p">),</span>
+                      <span class="s1">&#39;link_pos_seq&#39;</span><span class="p">:</span><span class="n">link_pos_seq</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">inp_device</span><span class="p">),</span>
+                      <span class="s1">&#39;link_rot_seq&#39;</span><span class="p">:</span><span class="n">link_rot_seq</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">inp_device</span><span class="p">),</span>
+                      <span class="s1">&#39;prev_state_seq&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">prev_state_buffer</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">inp_device</span><span class="p">)}</span>
+        <span class="k">return</span> <span class="n">state_dict</span></div>
+
+
+<div class="viewcode-block" id="URDFKinematicModel.enforce_bounds"><a class="viewcode-back" href="../../../../storm_kit.mpc.model.urdf_kinematic_model.html#storm_kit.mpc.model.urdf_kinematic_model.URDFKinematicModel.enforce_bounds">[docs]</a>    <span class="k">def</span> <span class="nf">enforce_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_batch</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Project state into bounds</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">state_batch</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">bounded_state</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">state_batch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_upper_bounds</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_lower_bounds</span><span class="p">)</span>
+        <span class="n">bounded_q</span> <span class="o">=</span> <span class="n">bounded_state</span><span class="p">[</span><span class="o">...</span><span class="p">,:,:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span>
+        <span class="n">bounded_qd</span> <span class="o">=</span> <span class="n">bounded_state</span><span class="p">[</span><span class="o">...</span><span class="p">,:,</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">:</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span>
+        <span class="n">bounded_qdd</span> <span class="o">=</span> <span class="n">bounded_state</span><span class="p">[</span><span class="o">...</span><span class="p">,:,</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">:</span><span class="mi">3</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span>
+        
+        <span class="c1"># #set velocity and acc to zero where position is at bound</span>
+        <span class="n">bounded_qd</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">bounded_q</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_upper_bounds</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">],</span> <span class="n">bounded_qd</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Z</span><span class="p">)</span>
+        <span class="n">bounded_qd</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">bounded_q</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_lower_bounds</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">],</span> <span class="n">bounded_qd</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Z</span><span class="p">)</span>
+        <span class="n">bounded_qdd</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">bounded_q</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_upper_bounds</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">],</span> <span class="n">bounded_qdd</span><span class="p">,</span> <span class="o">-</span><span class="mf">10.0</span><span class="o">*</span><span class="n">bounded_qdd</span><span class="p">)</span>
+        <span class="n">bounded_qdd</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">bounded_q</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_lower_bounds</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">],</span> <span class="n">bounded_qdd</span><span class="p">,</span> <span class="o">-</span><span class="mf">10.0</span><span class="o">*</span><span class="n">bounded_qdd</span><span class="p">)</span>
+
+        <span class="c1"># #set acc to zero where vel is at bounds </span>
+        <span class="n">bounded_qdd</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">bounded_qd</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_upper_bounds</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">:</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">],</span> <span class="n">bounded_qdd</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Z</span><span class="p">)</span>
+        <span class="n">bounded_qdd</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">bounded_qd</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_lower_bounds</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">:</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">],</span> <span class="n">bounded_qdd</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Z</span><span class="p">)</span>
+        <span class="n">state_batch</span><span class="p">[</span><span class="o">...</span><span class="p">,:,:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_q</span>
+        <span class="c1">#state_batch[...,:,self.n_dofs:self.n_dofs*2] = bounded_qd</span>
+        <span class="c1">#state_batch[...,:,self.n_dofs*2:self.n_dofs*3] = bounded_qdd</span>
+        
+        <span class="c1">#bounded_state = torch.cat((bounded_q, bounded_qd, bounded_qdd), dim=-1) </span>
+        <span class="k">return</span> <span class="n">state_batch</span></div>
+
+<div class="viewcode-block" id="URDFKinematicModel.integrate_action"><a class="viewcode-back" href="../../../../storm_kit.mpc.model.urdf_kinematic_model.html#storm_kit.mpc.model.urdf_kinematic_model.URDFKinematicModel.integrate_action">[docs]</a>    <span class="k">def</span> <span class="nf">integrate_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">act_seq</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_order</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">act_seq</span>
+
+        <span class="n">nth_act_seq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_integrate_matrix_nth</span>  <span class="o">@</span> <span class="n">act_seq</span>
+        <span class="k">return</span> <span class="n">nth_act_seq</span></div>
+
+<div class="viewcode-block" id="URDFKinematicModel.integrate_action_step"><a class="viewcode-back" href="../../../../storm_kit.mpc.model.urdf_kinematic_model.html#storm_kit.mpc.model.urdf_kinematic_model.URDFKinematicModel.integrate_action_step">[docs]</a>    <span class="k">def</span> <span class="nf">integrate_action_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">act</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_order</span><span class="p">):</span>
+            <span class="n">act</span> <span class="o">=</span> <span class="n">act</span> <span class="o">*</span> <span class="n">dt</span>
+        
+        <span class="k">return</span> <span class="n">act</span></div>
+
+    <span class="c1">#Rendering</span>
+<div class="viewcode-block" id="URDFKinematicModel.render"><a class="viewcode-back" href="../../../../storm_kit.mpc.model.urdf_kinematic_model.html#storm_kit.mpc.model.urdf_kinematic_model.URDFKinematicModel.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">state</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span>
+        <span class="n">state_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">joint</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">urdfpy_robot</span><span class="o">.</span><span class="n">actuated_joints</span><span class="p">):</span>
+            <span class="n">state_dict</span><span class="p">[</span><span class="n">joint</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">q</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">urdfpy_robot</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">cfg</span><span class="o">=</span><span class="n">state_dict</span><span class="p">,</span><span class="n">use_collision</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> </div>
+
+
+<div class="viewcode-block" id="URDFKinematicModel.render_trajectory"><a class="viewcode-back" href="../../../../storm_kit.mpc.model.urdf_kinematic_model.html#storm_kit.mpc.model.urdf_kinematic_model.URDFKinematicModel.render_trajectory">[docs]</a>    <span class="k">def</span> <span class="nf">render_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_list</span><span class="p">):</span>
+        <span class="n">state_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">state_list</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span> <span class="mi">0</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">joint</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">urdfpy_robot</span><span class="o">.</span><span class="n">actuated_joints</span><span class="p">):</span>
+            <span class="n">state_dict</span><span class="p">[</span><span class="n">joint</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">q</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()]</span>
+        <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">state_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="n">state</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dofs</span><span class="p">]</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">joint</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">urdfpy_robot</span><span class="o">.</span><span class="n">actuated_joints</span><span class="p">):</span>
+                <span class="n">state_dict</span><span class="p">[</span><span class="n">joint</span><span class="o">.</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">q</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">urdfpy_robot</span><span class="o">.</span><span class="n">animate</span><span class="p">(</span><span class="n">cfg_trajectory</span><span class="o">=</span><span class="n">state_dict</span><span class="p">,</span><span class="n">use_collision</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> </div></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

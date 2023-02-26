@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>storm_kit.mpc.control.control_utils &mdash; STORM Toolkit  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> STORM Toolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.differentiable_robot_model.html">storm_kit.differentiable_robot_model package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.geom.html">storm_kit.geom package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.gym.html">storm_kit.gym package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.mpc.html">storm_kit.mpc package</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.util_file.html">storm_kit.util_file module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">STORM Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>storm_kit.mpc.control.control_utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for storm_kit.mpc.control.control_utils</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># MIT License</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2020-2021 NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a</span>
+<span class="c1"># copy of this software and associated documentation files (the &quot;Software&quot;),</span>
+<span class="c1"># to deal in the Software without restriction, including without limitation</span>
+<span class="c1"># the rights to use, copy, modify, merge, publish, distribute, sublicense,</span>
+<span class="c1"># and/or sell copies of the Software, and to permit persons to whom the</span>
+<span class="c1"># Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c1"># all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL</span>
+<span class="c1"># THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING</span>
+<span class="c1"># FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER</span>
+<span class="c1"># DEALINGS IN THE SOFTWARE.#</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.distributions.multivariate_normal</span> <span class="kn">import</span> <span class="n">MultivariateNormal</span>
+<span class="kn">import</span> <span class="nn">ghalton</span>
+
+
+<div class="viewcode-block" id="scale_ctrl"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.scale_ctrl">[docs]</a><span class="k">def</span> <span class="nf">scale_ctrl</span><span class="p">(</span><span class="n">ctrl</span><span class="p">,</span> <span class="n">action_lows</span><span class="p">,</span> <span class="n">action_highs</span><span class="p">,</span> <span class="n">squash_fn</span><span class="o">=</span><span class="s1">&#39;clamp&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ctrl</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">ctrl</span> <span class="o">=</span> <span class="n">ctrl</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+    <span class="n">act_half_range</span> <span class="o">=</span> <span class="p">(</span><span class="n">action_highs</span> <span class="o">-</span> <span class="n">action_lows</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+    <span class="n">act_mid_range</span> <span class="o">=</span> <span class="p">(</span><span class="n">action_highs</span> <span class="o">+</span> <span class="n">action_lows</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+    <span class="k">if</span> <span class="n">squash_fn</span> <span class="o">==</span> <span class="s1">&#39;clamp&#39;</span><span class="p">:</span>
+        <span class="c1"># ctrl = torch.clamp(ctrl, action_lows[0], action_highs[0])</span>
+        <span class="n">ctrl</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">ctrl</span><span class="p">,</span> <span class="n">action_highs</span><span class="p">),</span> <span class="n">action_lows</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ctrl</span>
+    <span class="k">elif</span> <span class="n">squash_fn</span> <span class="o">==</span> <span class="s1">&#39;clamp_rescale&#39;</span><span class="p">:</span>
+        <span class="n">ctrl</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">ctrl</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">squash_fn</span> <span class="o">==</span> <span class="s1">&#39;tanh&#39;</span><span class="p">:</span>
+        <span class="n">ctrl</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">ctrl</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">squash_fn</span> <span class="o">==</span> <span class="s1">&#39;identity&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ctrl</span>
+    <span class="k">return</span> <span class="n">act_mid_range</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">ctrl</span> <span class="o">*</span> <span class="n">act_half_range</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
+
+<span class="c1">#######################</span>
+<span class="c1">## STOMP Covariance  ##</span>
+<span class="c1">#######################</span>
+
+<div class="viewcode-block" id="get_stomp_cov"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.get_stomp_cov">[docs]</a><span class="k">def</span> <span class="nf">get_stomp_cov</span><span class="p">(</span><span class="n">horizon</span><span class="p">,</span> <span class="n">d_action</span><span class="p">,</span>
+                  <span class="n">tensor_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">),</span><span class="s1">&#39;dtype&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span>
+                  <span class="n">cov_mode</span><span class="o">=</span><span class="s1">&#39;vel&#39;</span><span class="p">,</span> <span class="n">RETURN_R</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Computes the covariance matrix following STOMP motion planner</span>
+
+<span class="sd">    Coefficients from here: https://en.wikipedia.org/wiki/Finite_difference_coefficient</span>
+<span class="sd">    More info here: https://github.com/ros-industrial/stomp_ros/blob/7fe40fbe6ad446459d8d4889916c64e276dbf882/stomp_core/src/utils.cpp#L36</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">acc_fd_array</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">4</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="c1">#acc_fd_array = [1/90, -3/20, 3/2, -49/18, 3/2 , -3/20, 1/90 ]</span>
+
+    <span class="c1">#jerk_fd_array = [0, 1 / 12.0, -17 / 12.0, 46 / 12.0, -46 / 12.0, 17 / 12.0, -1 / 12.0]</span>
+    <span class="n">jerk_fd_array</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span> <span class="o">/</span> <span class="mf">8.0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">13</span><span class="o">/</span><span class="mi">8</span><span class="p">,</span> <span class="mi">0</span> <span class="p">,</span> <span class="o">-</span><span class="mi">13</span><span class="o">/</span><span class="mi">8</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mi">8</span><span class="p">]</span>
+
+    <span class="c1">#snap_fd_array = [-1/6, 2.0, -13/2, 28/3, -13/2, 2, -1/6]</span>
+    <span class="n">snap_fd_array</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="c1">#vel_fd_array = [0, 1.0/12.0 , -2.0/3.0 , 0        , 2.0/3.0  , -1.0/12.0 , 0       ]</span>
+    <span class="n">vel_fd_array</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span> <span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span>       <span class="p">,</span> <span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>       <span class="p">]</span>
+    
+    <span class="n">fd_array</span> <span class="o">=</span> <span class="n">acc_fd_array</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">d_action</span> <span class="o">*</span> <span class="n">horizon</span><span class="p">,</span> <span class="n">d_action</span> <span class="o">*</span> <span class="n">horizon</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">tensor_args</span><span class="p">[</span><span class="s1">&#39;device&#39;</span><span class="p">],</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+
+    <span class="k">if</span><span class="p">(</span><span class="n">cov_mode</span> <span class="o">==</span> <span class="s1">&#39;vel&#39;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d_action</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">horizon</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">):</span>
+                    <span class="c1">#print(j)</span>
+                    <span class="n">index</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">j</span>
+                    <span class="k">if</span><span class="p">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
+                        <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+                        <span class="k">continue</span>
+                    <span class="k">if</span><span class="p">(</span><span class="n">index</span> <span class="o">&gt;=</span> <span class="n">horizon</span><span class="p">):</span>
+                        <span class="n">index</span> <span class="o">=</span> <span class="n">horizon</span> <span class="o">-</span> <span class="mi">1</span>
+                        <span class="k">continue</span>
+                    <span class="n">A</span><span class="p">[</span><span class="n">k</span> <span class="o">*</span> <span class="n">horizon</span> <span class="o">+</span> <span class="n">i</span><span class="p">,</span><span class="n">k</span> <span class="o">*</span> <span class="n">horizon</span> <span class="o">+</span> <span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">fd_array</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span>
+    <span class="k">elif</span><span class="p">(</span><span class="n">cov_mode</span> <span class="o">==</span> <span class="s1">&#39;acc&#39;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d_action</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">horizon</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">):</span>
+                    <span class="c1">#print(j)</span>
+                    <span class="n">index</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">j</span>
+                    <span class="k">if</span><span class="p">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
+                        <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+                        <span class="k">continue</span>
+                    <span class="k">if</span><span class="p">(</span><span class="n">index</span> <span class="o">&gt;=</span> <span class="n">horizon</span><span class="p">):</span>
+                        <span class="n">index</span> <span class="o">=</span> <span class="n">horizon</span> <span class="o">-</span> <span class="mi">1</span>
+                        <span class="k">continue</span>
+                    <span class="k">if</span><span class="p">(</span><span class="n">index</span> <span class="o">&gt;=</span> <span class="n">horizon</span><span class="o">/</span><span class="mi">2</span><span class="p">):</span>
+                        <span class="c1">#print(k * horizon + index - horizon//2)</span>
+                        <span class="n">A</span><span class="p">[</span><span class="n">k</span> <span class="o">*</span> <span class="n">horizon</span> <span class="o">+</span> <span class="n">i</span><span class="p">,</span><span class="n">k</span> <span class="o">*</span> <span class="n">horizon</span> <span class="o">-</span> <span class="n">index</span> <span class="o">-</span> <span class="n">horizon</span><span class="o">//</span><span class="mi">2</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">fd_array</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span> <span class="c1">#* float((horizon-index) / horizon)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">A</span><span class="p">[</span><span class="n">k</span> <span class="o">*</span> <span class="n">horizon</span> <span class="o">+</span> <span class="n">i</span><span class="p">,</span><span class="n">k</span> <span class="o">*</span> <span class="n">horizon</span> <span class="o">+</span> <span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">fd_array</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span> <span class="c1">#* float(index/horizon) </span>
+    <span class="c1">#plt.imshow(A)</span>
+    <span class="c1">#plt.show()</span>
+
+    <span class="n">R</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">A</span><span class="p">)</span>
+    <span class="c1">#print(R[:horizon, :horizon])</span>
+    <span class="c1">#plt.imshow(R)</span>
+    <span class="c1">#plt.show()</span>
+    <span class="c1">#print(R)</span>
+    <span class="c1">#print(torch.det(R))</span>
+    
+    <span class="n">cov</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">inverse</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+    <span class="n">cov</span> <span class="o">=</span> <span class="n">cov</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">cov</span><span class="p">))</span>
+    <span class="c1">#plt.imshow(cov)</span>
+    <span class="c1">#plt.show()</span>
+
+    <span class="c1"># also compute the cholesky decomposition:</span>
+    <span class="n">scale_tril</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">d_action</span> <span class="o">*</span> <span class="n">horizon</span><span class="p">,</span> <span class="n">d_action</span> <span class="o">*</span> <span class="n">horizon</span><span class="p">),</span> <span class="o">**</span><span class="n">tensor_args</span><span class="p">)</span>
+    <span class="n">scale_tril</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="n">cov</span><span class="p">)</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    k = 0</span>
+<span class="sd">    act_cov_matrix = cov[k * horizon:k * horizon + horizon, k * horizon:k * horizon + horizon]</span>
+<span class="sd">    print(act_cov_matrix.shape)</span>
+<span class="sd">    print(torch.det(act_cov_matrix))</span>
+<span class="sd">    local_cholesky = matrix_cholesky(act_cov_matrix)</span>
+<span class="sd">    for k in range(d_action):</span>
+<span class="sd">        </span>
+<span class="sd">        scale_tril[k * horizon:k * horizon + horizon,k * horizon:k * horizon + horizon] = local_cholesky</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">cov</span> <span class="o">=</span> <span class="n">cov</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="o">**</span><span class="n">tensor_args</span><span class="p">)</span>
+    <span class="n">scale_tril</span> <span class="o">=</span> <span class="n">scale_tril</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="o">**</span><span class="n">tensor_args</span><span class="p">)</span> <span class="c1">#* 0.1</span>
+    <span class="n">scale_tril</span> <span class="o">=</span> <span class="n">scale_tril</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">scale_tril</span><span class="p">)</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">RETURN_R</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">cov</span><span class="p">,</span> <span class="n">scale_tril</span><span class="p">,</span> <span class="n">R</span>
+    <span class="k">return</span> <span class="n">cov</span><span class="p">,</span> <span class="n">scale_tril</span></div>
+    
+
+
+<span class="c1">#######################</span>
+<span class="c1">## Gaussian Sampling ##</span>
+<span class="c1">#######################</span>
+
+
+<div class="viewcode-block" id="generate_noise"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.generate_noise">[docs]</a><span class="k">def</span> <span class="nf">generate_noise</span><span class="p">(</span><span class="n">cov</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">base_seed</span><span class="p">,</span> <span class="n">filter_coeffs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate correlated Gaussian samples using autoregressive process</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="n">base_seed</span><span class="p">)</span>
+    <span class="n">beta_0</span><span class="p">,</span> <span class="n">beta_1</span><span class="p">,</span> <span class="n">beta_2</span> <span class="o">=</span> <span class="n">filter_coeffs</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">cov</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">MultivariateNormal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">covariance_matrix</span><span class="o">=</span><span class="n">cov</span><span class="p">)</span>
+    <span class="n">eps</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">sample_shape</span><span class="o">=</span><span class="n">shape</span><span class="p">)</span>
+    <span class="c1"># eps = np.random.multivariate_normal(mean=np.zeros((N,)), cov = cov, size=shape)</span>
+    <span class="k">if</span> <span class="n">filter_coeffs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">eps</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">eps</span><span class="p">[:,</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">beta_0</span><span class="o">*</span><span class="n">eps</span><span class="p">[:,</span><span class="n">i</span><span class="p">,:]</span> <span class="o">+</span> <span class="n">beta_1</span><span class="o">*</span><span class="n">eps</span><span class="p">[:,</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span> <span class="o">+</span> <span class="n">beta_2</span><span class="o">*</span><span class="n">eps</span><span class="p">[:,</span><span class="n">i</span><span class="o">-</span><span class="mi">2</span><span class="p">,:]</span>
+    <span class="k">return</span> <span class="n">eps</span> </div>
+
+<div class="viewcode-block" id="generate_noise_np"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.generate_noise_np">[docs]</a><span class="k">def</span> <span class="nf">generate_noise_np</span><span class="p">(</span><span class="n">cov</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">base_seed</span><span class="p">,</span> <span class="n">filter_coeffs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate correlated noisy samples using autoregressive process</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">base_seed</span><span class="p">)</span>
+    <span class="n">beta_0</span><span class="p">,</span> <span class="n">beta_1</span><span class="p">,</span> <span class="n">beta_2</span> <span class="o">=</span> <span class="n">filter_coeffs</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">cov</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">eps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,)),</span> <span class="n">cov</span> <span class="o">=</span> <span class="n">cov</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">filter_coeffs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">eps</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">eps</span><span class="p">[:,</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">beta_0</span><span class="o">*</span><span class="n">eps</span><span class="p">[:,</span><span class="n">i</span><span class="p">,:]</span> <span class="o">+</span> <span class="n">beta_1</span><span class="o">*</span><span class="n">eps</span><span class="p">[:,</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span> <span class="o">+</span> <span class="n">beta_2</span><span class="o">*</span><span class="n">eps</span><span class="p">[:,</span><span class="n">i</span><span class="o">-</span><span class="mi">2</span><span class="p">,:]</span>
+    <span class="k">return</span> <span class="n">eps</span> </div>
+
+<span class="c1">###########################</span>
+<span class="c1">## Quasi-Random Sampling ##</span>
+<span class="c1">###########################</span>
+
+<div class="viewcode-block" id="generate_prime_numbers"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.generate_prime_numbers">[docs]</a><span class="k">def</span> <span class="nf">generate_prime_numbers</span><span class="p">(</span><span class="n">num</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">is_prime</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="p">((</span><span class="n">n</span> <span class="o">//</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="n">primes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">num</span> <span class="c1">#torch.zeros(num, device=device)</span>
+    <span class="n">primes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">curr_num</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">curr_num</span> <span class="o">+=</span> <span class="mi">2</span>
+            <span class="k">if</span> <span class="n">is_prime</span><span class="p">(</span><span class="n">curr_num</span><span class="p">):</span>
+                <span class="n">primes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">curr_num</span>
+                <span class="k">break</span>
+            
+    <span class="k">return</span> <span class="n">primes</span></div>
+
+<div class="viewcode-block" id="generate_van_der_corput_sample"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.generate_van_der_corput_sample">[docs]</a><span class="k">def</span> <span class="nf">generate_van_der_corput_sample</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">base</span><span class="p">):</span>
+    <span class="n">f</span><span class="p">,</span> <span class="n">r</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">idx</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">f</span> <span class="o">/=</span> <span class="n">base</span><span class="o">*</span><span class="mf">1.0</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="n">f</span> <span class="o">*</span> <span class="p">(</span><span class="n">idx</span> <span class="o">%</span> <span class="n">base</span><span class="p">)</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">//</span> <span class="n">base</span>
+    <span class="k">return</span> <span class="n">r</span></div>
+
+<div class="viewcode-block" id="generate_van_der_corput_samples_batch"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.generate_van_der_corput_samples_batch">[docs]</a><span class="k">def</span> <span class="nf">generate_van_der_corput_samples_batch</span><span class="p">(</span><span class="n">idx_batch</span><span class="p">,</span> <span class="n">base</span><span class="p">):</span>
+    <span class="n">inp_device</span> <span class="o">=</span> <span class="n">idx_batch</span><span class="o">.</span><span class="n">device</span>
+    <span class="n">batch_size</span> <span class="o">=</span> <span class="n">idx_batch</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="c1">#torch.ones(batch_size, device=inp_device)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">inp_device</span><span class="p">)</span>
+    <span class="k">while</span> <span class="n">torch</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">idx_batch</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="n">f</span> <span class="o">/=</span> <span class="n">base</span><span class="o">*</span><span class="mf">1.0</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="n">f</span> <span class="o">*</span> <span class="p">(</span><span class="n">idx_batch</span> <span class="o">%</span> <span class="n">base</span><span class="p">)</span> <span class="c1">#* (idx_batch &gt; 0)</span>
+        <span class="n">idx_batch</span> <span class="o">=</span> <span class="n">idx_batch</span> <span class="o">//</span> <span class="n">base</span>
+    <span class="k">return</span> <span class="n">r</span></div>
+
+
+<span class="c1"># def generate_van_der_corput_samples_batch_2(idx_batch, bases):</span>
+<span class="c1">#     inp_device = idx_batch.device</span>
+<span class="c1">#     batch_size = idx_batch.shape[0]</span>
+<span class="c1">#     f = torch.ones(batch_size, device=inp_device)</span>
+<span class="c1">#     r = torch.zeros(batch_size, device=inp_device)</span>
+    
+<span class="c1">#     while torch.any(idx_batch &gt; 0):</span>
+<span class="c1">#         f /= bases*1.0</span>
+<span class="c1">#         r += f * (idx_batch % base) #* (idx_batch &gt; 0)</span>
+<span class="c1">#         idx_batch = idx_batch // base</span>
+    
+<span class="c1">#     return r</span>
+
+<div class="viewcode-block" id="generate_halton_samples"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.generate_halton_samples">[docs]</a><span class="k">def</span> <span class="nf">generate_halton_samples</span><span class="p">(</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">ndims</span><span class="p">,</span> <span class="n">bases</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">use_ghalton</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">seed_val</span><span class="o">=</span><span class="mi">123</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">),</span> <span class="n">float_dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">use_ghalton</span><span class="p">:</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">ndims</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float_dtype</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">bases</span><span class="p">:</span>
+            <span class="n">bases</span> <span class="o">=</span> <span class="n">generate_prime_numbers</span><span class="p">(</span><span class="n">ndims</span><span class="p">)</span>
+        <span class="n">idx_batch</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">num_samples</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndims</span><span class="p">):</span>
+            <span class="n">samples</span><span class="p">[:,</span> <span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">generate_van_der_corput_samples_batch</span><span class="p">(</span><span class="n">idx_batch</span><span class="p">,</span> <span class="n">bases</span><span class="p">[</span><span class="n">dim</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        
+        <span class="k">if</span> <span class="n">ndims</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">:</span>
+            <span class="n">perms</span> <span class="o">=</span> <span class="n">ghalton</span><span class="o">.</span><span class="n">EA_PERMS</span><span class="p">[:</span><span class="n">ndims</span><span class="p">]</span>
+            <span class="n">sequencer</span> <span class="o">=</span> <span class="n">ghalton</span><span class="o">.</span><span class="n">GeneralizedHalton</span><span class="p">(</span><span class="n">perms</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sequencer</span> <span class="o">=</span> <span class="n">ghalton</span><span class="o">.</span><span class="n">GeneralizedHalton</span><span class="p">(</span><span class="n">ndims</span><span class="p">,</span> <span class="n">seed_val</span><span class="p">)</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">sequencer</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">num_samples</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float_dtype</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">samples</span></div>
+
+
+<div class="viewcode-block" id="generate_gaussian_halton_samples"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.generate_gaussian_halton_samples">[docs]</a><span class="k">def</span> <span class="nf">generate_gaussian_halton_samples</span><span class="p">(</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">ndims</span><span class="p">,</span> <span class="n">bases</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">use_ghalton</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">seed_val</span><span class="o">=</span><span class="mi">123</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">),</span> <span class="n">float_dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+    <span class="n">uniform_halton_samples</span> <span class="o">=</span> <span class="n">generate_halton_samples</span><span class="p">(</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">ndims</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">use_ghalton</span><span class="p">,</span> <span class="n">seed_val</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">float_dtype</span><span class="p">)</span>
+
+    <span class="n">gaussian_halton_samples</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">2.0</span><span class="p">],</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">float_dtype</span><span class="p">))</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">erfinv</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">uniform_halton_samples</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">gaussian_halton_samples</span></div>
+
+
+<div class="viewcode-block" id="generate_gaussian_sobol_samples"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.generate_gaussian_sobol_samples">[docs]</a><span class="k">def</span> <span class="nf">generate_gaussian_sobol_samples</span><span class="p">(</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">ndims</span><span class="p">,</span> <span class="n">seed_val</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">),</span> <span class="n">float_dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+    <span class="n">soboleng</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quasirandom</span><span class="o">.</span><span class="n">SobolEngine</span><span class="p">(</span><span class="n">dimension</span><span class="o">=</span><span class="n">ndims</span><span class="p">,</span> <span class="n">scramble</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed_val</span><span class="p">)</span>
+    <span class="n">uniform_sobol_samples</span> <span class="o">=</span> <span class="n">soboleng</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">num_samples</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="n">gaussian_sobol_samples</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">2.0</span><span class="p">],</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">float_dtype</span><span class="p">))</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">erfinv</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">uniform_sobol_samples</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">gaussian_sobol_samples</span></div>
+    
+<span class="c1">########################</span>
+<span class="c1">## Gaussian Utilities ##</span>
+<span class="c1">########################</span>
+
+
+<div class="viewcode-block" id="gaussian_logprob"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.gaussian_logprob">[docs]</a><span class="k">def</span> <span class="nf">gaussian_logprob</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">cov</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">cov_type</span><span class="o">=</span><span class="s2">&quot;full&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate gaussian log prob for given input batch x</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mean (np.ndarray): [N x num_samples] batch of means</span>
+<span class="sd">    cov (np.ndarray): [N x N] covariance matrix</span>
+<span class="sd">    x  (np.ndarray): [N x num_samples] batch of sample values</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    log_prob (np.ndarray): [num_sampls] log probability of each sample</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">cov</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">cov_type</span> <span class="o">==</span> <span class="s2">&quot;diagonal&quot;</span><span class="p">:</span>
+        <span class="n">cov_diag</span> <span class="o">=</span> <span class="n">cov</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()</span>
+        <span class="n">cov_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">cov_diag</span><span class="p">)</span>
+        <span class="n">cov_logdet</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">cov_diag</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cov_logdet</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">cov</span><span class="p">))</span>
+        <span class="n">cov_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">cov</span><span class="p">)</span>
+    <span class="n">diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">mahalanobis_dist</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">diff</span> <span class="o">@</span> <span class="n">cov_inv</span><span class="p">)</span> <span class="o">*</span> <span class="n">diff</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">const1</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">N</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>    
+    <span class="n">const2</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="n">cov_logdet</span>
+    <span class="n">log_prob</span> <span class="o">=</span> <span class="n">mahalanobis_dist</span> <span class="o">+</span> <span class="n">const1</span> <span class="o">+</span> <span class="n">const2</span>
+    <span class="k">return</span> <span class="n">log_prob</span></div>
+
+<div class="viewcode-block" id="gaussian_logprobgrad"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.gaussian_logprobgrad">[docs]</a><span class="k">def</span> <span class="nf">gaussian_logprobgrad</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">cov</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">cov_type</span><span class="o">=</span><span class="s2">&quot;full&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">cov_type</span> <span class="o">==</span> <span class="s2">&quot;diagonal&quot;</span><span class="p">:</span>
+        <span class="n">cov_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">cov</span><span class="o">.</span><span class="n">diagonal</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cov_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">cov</span><span class="p">)</span>
+    <span class="n">diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">grad</span> <span class="o">=</span> <span class="n">diff</span> <span class="o">@</span> <span class="n">cov_inv</span>
+    <span class="k">return</span> <span class="n">grad</span></div>
+
+<div class="viewcode-block" id="gaussian_entropy"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.gaussian_entropy">[docs]</a><span class="k">def</span> <span class="nf">gaussian_entropy</span><span class="p">(</span><span class="n">cov</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">L</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span> <span class="c1">#, cov_type=&quot;full&quot;):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Entropy of multivariate gaussian given either covariance</span>
+<span class="sd">    or cholesky decomposition of covariance</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">cov</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">inp_device</span> <span class="o">=</span> <span class="n">cov</span><span class="o">.</span><span class="n">device</span>
+        <span class="n">cov_logdet</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">cov</span><span class="p">))</span>
+        <span class="c1"># print(np.linalg.det(cov.cpu().numpy()))</span>
+        <span class="c1"># print(torch.det(cov))</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">cov</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">inp_device</span> <span class="o">=</span> <span class="n">L</span><span class="o">.</span><span class="n">device</span>
+        <span class="n">cov_logdet</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">diagonal</span><span class="p">(</span><span class="n">L</span><span class="p">)))</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">L</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># if cov_type == &quot;diagonal&quot;:</span>
+        <span class="c1"># cov_logdet =  np.sum(np.log(cov.diagonal())) </span>
+    <span class="c1"># else:</span>
+    <span class="c1"># cov_logdet = np.log(np.linalg.det(cov))</span>
+
+    <span class="n">term1</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">cov_logdet</span>
+    <span class="c1"># pi = torch.tensor([math.pi], device=inp_device)</span>
+    <span class="c1"># pre-calculate 1.0 + torch.log(2.0*pi) = 2.837877066</span>
+    <span class="n">term2</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">N</span> <span class="o">*</span> <span class="mf">2.837877066</span>
+
+    <span class="n">ent</span> <span class="o">=</span> <span class="n">term1</span> <span class="o">+</span> <span class="n">term2</span>
+    <span class="k">return</span> <span class="n">ent</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">inp_device</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="gaussian_kl"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.gaussian_kl">[docs]</a><span class="k">def</span> <span class="nf">gaussian_kl</span><span class="p">(</span><span class="n">mean0</span><span class="p">,</span> <span class="n">cov0</span><span class="p">,</span> <span class="n">mean1</span><span class="p">,</span> <span class="n">cov1</span><span class="p">,</span> <span class="n">cov_type</span><span class="o">=</span><span class="s2">&quot;full&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    KL-divergence between Gaussians given mean and covariance</span>
+<span class="sd">    KL(p||q) = E_{p}[log(p) - log(q)]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">cov0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">cov_type</span> <span class="o">==</span> <span class="s2">&quot;diagonal&quot;</span><span class="p">:</span>
+        <span class="n">cov1_diag</span> <span class="o">=</span> <span class="n">cov1</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()</span>
+        <span class="n">cov1_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">cov1_diag</span><span class="p">)</span>
+        <span class="n">cov0_logdet</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">cov0</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()))</span>
+        <span class="n">cov1_logdet</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">cov1_diag</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cov1_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">cov1</span><span class="p">)</span>
+        <span class="n">cov0_logdet</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">cov0</span><span class="p">))</span>
+        <span class="n">cov1_logdet</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">cov1</span><span class="p">))</span>
+
+    <span class="n">term1</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">cov1_inv</span> <span class="o">@</span> <span class="n">cov0</span><span class="p">)</span>
+    <span class="n">diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">mean1</span> <span class="o">-</span> <span class="n">mean0</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">mahalanobis_dist</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">diff</span> <span class="o">@</span> <span class="n">cov1_inv</span><span class="p">)</span> <span class="o">*</span> <span class="n">diff</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">term3</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="o">*</span><span class="n">N</span> <span class="o">+</span> <span class="n">cov1_logdet</span> <span class="o">-</span> <span class="n">cov0_logdet</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">term1</span> <span class="o">+</span> <span class="n">mahalanobis_dist</span> <span class="o">+</span> <span class="n">term3</span></div>
+
+
+
+<div class="viewcode-block" id="cost_to_go"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.cost_to_go">[docs]</a><span class="k">def</span> <span class="nf">cost_to_go</span><span class="p">(</span><span class="n">cost_seq</span><span class="p">,</span> <span class="n">gamma_seq</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate (discounted) cost to go for given cost sequence</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># if torch.any(gamma_seq == 0):</span>
+    <span class="c1">#     return cost_seq</span>
+    <span class="n">cost_seq</span> <span class="o">=</span> <span class="n">gamma_seq</span> <span class="o">*</span> <span class="n">cost_seq</span>  <span class="c1"># discounted cost sequence</span>
+    <span class="c1"># cost_seq = torch.cumsum(cost_seq[:, ::-1], axis=-1)[:, ::-1]  # cost to go (but scaled by [1 , gamma, gamma*2 and so on])</span>
+    <span class="n">cost_seq</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">fliplr</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">fliplr</span><span class="p">(</span><span class="n">cost_seq</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>  <span class="c1"># cost to go (but scaled by [1 , gamma, gamma*2 and so on])</span>
+    <span class="n">cost_seq</span> <span class="o">/=</span> <span class="n">gamma_seq</span>  <span class="c1"># un-scale it to get true discounted cost to go</span>
+    <span class="k">return</span> <span class="n">cost_seq</span></div>
+
+<div class="viewcode-block" id="cost_to_go_np"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.cost_to_go_np">[docs]</a><span class="k">def</span> <span class="nf">cost_to_go_np</span><span class="p">(</span><span class="n">cost_seq</span><span class="p">,</span> <span class="n">gamma_seq</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate (discounted) cost to go for given cost sequence</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># if np.any(gamma_seq == 0):</span>
+    <span class="c1">#     return cost_seq</span>
+    <span class="n">cost_seq</span> <span class="o">=</span> <span class="n">gamma_seq</span> <span class="o">*</span> <span class="n">cost_seq</span>  <span class="c1"># discounted reward sequence</span>
+    <span class="n">cost_seq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">cost_seq</span><span class="p">[:,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)[:,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># cost to go (but scaled by [1 , gamma, gamma*2 and so on])</span>
+    <span class="n">cost_seq</span> <span class="o">/=</span> <span class="n">gamma_seq</span>  <span class="c1"># un-scale it to get true discounted cost to go</span>
+    <span class="k">return</span> <span class="n">cost_seq</span></div>
+
+
+<span class="c1">############</span>
+<span class="c1">##Cholesky##</span>
+<span class="c1">############</span>
+<div class="viewcode-block" id="matrix_cholesky"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.matrix_cholesky">[docs]</a><span class="k">def</span> <span class="nf">matrix_cholesky</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>    
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">j</span><span class="p">):</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">+</span> <span class="n">L</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">L</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">]</span>            
+            
+            <span class="n">L</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">s</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="n">j</span><span class="p">)</span> <span class="k">else</span> \
+                      <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">L</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">s</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">L</span></div>
+
+<span class="c1"># Batched Cholesky decomp</span>
+<div class="viewcode-block" id="batch_cholesky"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.batch_cholesky">[docs]</a><span class="k">def</span> <span class="nf">batch_cholesky</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">j</span><span class="p">):</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">+</span> <span class="n">L</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">L</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">]</span>
+
+            <span class="n">L</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">s</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="n">j</span><span class="p">)</span> <span class="k">else</span> \
+                      <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">L</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">s</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">L</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>storm_kit.mpc.control package &mdash; STORM Toolkit  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="storm_kit.mpc.control.control_base module" href="storm_kit.mpc.control.control_base.html" />
+    <link rel="prev" title="storm_kit.mpc package" href="storm_kit.mpc.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> STORM Toolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.differentiable_robot_model.html">storm_kit.differentiable_robot_model package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.geom.html">storm_kit.geom package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.gym.html">storm_kit.gym package</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="storm_kit.mpc.html">storm_kit.mpc package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="storm_kit.mpc.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">storm_kit.mpc.control package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.html">storm_kit.mpc.cost package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.model.html">storm_kit.mpc.model package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.rollout.html">storm_kit.mpc.rollout package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.task.html">storm_kit.mpc.task package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.utils.html">storm_kit.mpc.utils package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.util_file.html">storm_kit.util_file module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">STORM Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="storm_kit.mpc.html">storm_kit.mpc package</a> &raquo;</li>
+      <li>storm_kit.mpc.control package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/storm_kit.mpc.control.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-storm_kit.mpc.control">
+<span id="storm-kit-mpc-control-package"></span><h1>storm_kit.mpc.control package<a class="headerlink" href="#module-storm_kit.mpc.control" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.mpc.control.control_base.html">storm_kit.mpc.control.control_base module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.control_base.html#storm_kit.mpc.control.control_base.Controller"><code class="docutils literal notranslate"><span class="pre">Controller</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.control_base.html#storm_kit.mpc.control.control_base.Controller._abc_impl"><code class="docutils literal notranslate"><span class="pre">Controller._abc_impl</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.control_base.html#storm_kit.mpc.control.control_base.Controller._calc_val"><code class="docutils literal notranslate"><span class="pre">Controller._calc_val()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.control_base.html#storm_kit.mpc.control.control_base.Controller._get_action_seq"><code class="docutils literal notranslate"><span class="pre">Controller._get_action_seq()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.control_base.html#storm_kit.mpc.control.control_base.Controller._shift"><code class="docutils literal notranslate"><span class="pre">Controller._shift()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.control_base.html#storm_kit.mpc.control.control_base.Controller._update_distribution"><code class="docutils literal notranslate"><span class="pre">Controller._update_distribution()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.control_base.html#storm_kit.mpc.control.control_base.Controller.check_convergence"><code class="docutils literal notranslate"><span class="pre">Controller.check_convergence()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.control_base.html#storm_kit.mpc.control.control_base.Controller.generate_rollouts"><code class="docutils literal notranslate"><span class="pre">Controller.generate_rollouts()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.control_base.html#storm_kit.mpc.control.control_base.Controller.get_optimal_value"><code class="docutils literal notranslate"><span class="pre">Controller.get_optimal_value()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.control_base.html#storm_kit.mpc.control.control_base.Controller.optimize"><code class="docutils literal notranslate"><span class="pre">Controller.optimize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.control_base.html#storm_kit.mpc.control.control_base.Controller.reset"><code class="docutils literal notranslate"><span class="pre">Controller.reset()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.control_base.html#storm_kit.mpc.control.control_base.Controller.reset_distribution"><code class="docutils literal notranslate"><span class="pre">Controller.reset_distribution()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.control_base.html#storm_kit.mpc.control.control_base.Controller.rollout_fn"><code class="docutils literal notranslate"><span class="pre">Controller.rollout_fn</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.control_base.html#storm_kit.mpc.control.control_base.Controller.sample_actions"><code class="docutils literal notranslate"><span class="pre">Controller.sample_actions()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html">storm_kit.mpc.control.control_utils module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.batch_cholesky"><code class="docutils literal notranslate"><span class="pre">batch_cholesky()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.cost_to_go"><code class="docutils literal notranslate"><span class="pre">cost_to_go()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.cost_to_go_np"><code class="docutils literal notranslate"><span class="pre">cost_to_go_np()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.gaussian_entropy"><code class="docutils literal notranslate"><span class="pre">gaussian_entropy()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.gaussian_kl"><code class="docutils literal notranslate"><span class="pre">gaussian_kl()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.gaussian_logprob"><code class="docutils literal notranslate"><span class="pre">gaussian_logprob()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.gaussian_logprobgrad"><code class="docutils literal notranslate"><span class="pre">gaussian_logprobgrad()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.generate_gaussian_halton_samples"><code class="docutils literal notranslate"><span class="pre">generate_gaussian_halton_samples()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.generate_gaussian_sobol_samples"><code class="docutils literal notranslate"><span class="pre">generate_gaussian_sobol_samples()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.generate_halton_samples"><code class="docutils literal notranslate"><span class="pre">generate_halton_samples()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.generate_noise"><code class="docutils literal notranslate"><span class="pre">generate_noise()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.generate_noise_np"><code class="docutils literal notranslate"><span class="pre">generate_noise_np()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.generate_prime_numbers"><code class="docutils literal notranslate"><span class="pre">generate_prime_numbers()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.generate_van_der_corput_sample"><code class="docutils literal notranslate"><span class="pre">generate_van_der_corput_sample()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.generate_van_der_corput_samples_batch"><code class="docutils literal notranslate"><span class="pre">generate_van_der_corput_samples_batch()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.get_stomp_cov"><code class="docutils literal notranslate"><span class="pre">get_stomp_cov()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.matrix_cholesky"><code class="docutils literal notranslate"><span class="pre">matrix_cholesky()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.scale_ctrl"><code class="docutils literal notranslate"><span class="pre">scale_ctrl()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.mpc.control.mppi.html">storm_kit.mpc.control.mppi module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.mppi.html#storm_kit.mpc.control.mppi.MPPI"><code class="docutils literal notranslate"><span class="pre">MPPI</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.mppi.html#storm_kit.mpc.control.mppi.MPPI._abc_impl"><code class="docutils literal notranslate"><span class="pre">MPPI._abc_impl</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.mppi.html#storm_kit.mpc.control.mppi.MPPI._calc_val"><code class="docutils literal notranslate"><span class="pre">MPPI._calc_val()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.mppi.html#storm_kit.mpc.control.mppi.MPPI._control_costs"><code class="docutils literal notranslate"><span class="pre">MPPI._control_costs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.mppi.html#storm_kit.mpc.control.mppi.MPPI._exp_util"><code class="docutils literal notranslate"><span class="pre">MPPI._exp_util()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.mppi.html#storm_kit.mpc.control.mppi.MPPI._shift"><code class="docutils literal notranslate"><span class="pre">MPPI._shift()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.mppi.html#storm_kit.mpc.control.mppi.MPPI._update_distribution"><code class="docutils literal notranslate"><span class="pre">MPPI._update_distribution()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.mpc.control.olgaussian_mpc.html">storm_kit.mpc.control.olgaussian_mpc module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC"><code class="docutils literal notranslate"><span class="pre">OLGaussianMPC</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC._abc_impl"><code class="docutils literal notranslate"><span class="pre">OLGaussianMPC._abc_impl</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC._calc_val"><code class="docutils literal notranslate"><span class="pre">OLGaussianMPC._calc_val()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC._get_action_seq"><code class="docutils literal notranslate"><span class="pre">OLGaussianMPC._get_action_seq()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC._shift"><code class="docutils literal notranslate"><span class="pre">OLGaussianMPC._shift()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC.entropy"><code class="docutils literal notranslate"><span class="pre">OLGaussianMPC.entropy</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC.full_cov"><code class="docutils literal notranslate"><span class="pre">OLGaussianMPC.full_cov</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC.full_inv_cov"><code class="docutils literal notranslate"><span class="pre">OLGaussianMPC.full_inv_cov</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC.full_scale_tril"><code class="docutils literal notranslate"><span class="pre">OLGaussianMPC.full_scale_tril</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC.generate_noise"><code class="docutils literal notranslate"><span class="pre">OLGaussianMPC.generate_noise()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC.generate_rollouts"><code class="docutils literal notranslate"><span class="pre">OLGaussianMPC.generate_rollouts()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC.reset_covariance"><code class="docutils literal notranslate"><span class="pre">OLGaussianMPC.reset_covariance()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC.reset_distribution"><code class="docutils literal notranslate"><span class="pre">OLGaussianMPC.reset_distribution()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC.reset_mean"><code class="docutils literal notranslate"><span class="pre">OLGaussianMPC.reset_mean()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC.sample_actions"><code class="docutils literal notranslate"><span class="pre">OLGaussianMPC.sample_actions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC.squashed_mean"><code class="docutils literal notranslate"><span class="pre">OLGaussianMPC.squashed_mean</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html">storm_kit.mpc.control.sample_libs module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.HaltonSampleLib"><code class="docutils literal notranslate"><span class="pre">HaltonSampleLib</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.HaltonSampleLib.get_samples"><code class="docutils literal notranslate"><span class="pre">HaltonSampleLib.get_samples()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.HaltonStompSampleLib"><code class="docutils literal notranslate"><span class="pre">HaltonStompSampleLib</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.HaltonStompSampleLib.get_samples"><code class="docutils literal notranslate"><span class="pre">HaltonStompSampleLib.get_samples()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.KnotSampleLib"><code class="docutils literal notranslate"><span class="pre">KnotSampleLib</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.KnotSampleLib.get_samples"><code class="docutils literal notranslate"><span class="pre">KnotSampleLib.get_samples()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.MultipleSampleLib"><code class="docutils literal notranslate"><span class="pre">MultipleSampleLib</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.MultipleSampleLib.get_samples"><code class="docutils literal notranslate"><span class="pre">MultipleSampleLib.get_samples()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.RandomSampleLib"><code class="docutils literal notranslate"><span class="pre">RandomSampleLib</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.RandomSampleLib.get_samples"><code class="docutils literal notranslate"><span class="pre">RandomSampleLib.get_samples()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.SampleLib"><code class="docutils literal notranslate"><span class="pre">SampleLib</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.SampleLib.filter_samples"><code class="docutils literal notranslate"><span class="pre">SampleLib.filter_samples()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.SampleLib.filter_smooth"><code class="docutils literal notranslate"><span class="pre">SampleLib.filter_smooth()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.SampleLib.get_samples"><code class="docutils literal notranslate"><span class="pre">SampleLib.get_samples()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.SineSampleLib"><code class="docutils literal notranslate"><span class="pre">SineSampleLib</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.SineSampleLib.generate_sine_wave"><code class="docutils literal notranslate"><span class="pre">SineSampleLib.generate_sine_wave()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.SineSampleLib.get_samples"><code class="docutils literal notranslate"><span class="pre">SineSampleLib.get_samples()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.StompSampleLib"><code class="docutils literal notranslate"><span class="pre">StompSampleLib</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.StompSampleLib.get_samples"><code class="docutils literal notranslate"><span class="pre">StompSampleLib.get_samples()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.bspline"><code class="docutils literal notranslate"><span class="pre">bspline()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="storm_kit.mpc.html" class="btn btn-neutral float-left" title="storm_kit.mpc package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="storm_kit.mpc.control.control_base.html" class="btn btn-neutral float-right" title="storm_kit.mpc.control.control_base module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

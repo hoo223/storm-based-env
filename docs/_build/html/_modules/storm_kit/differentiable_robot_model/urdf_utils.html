@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>storm_kit.differentiable_robot_model.urdf_utils &mdash; STORM Toolkit  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> STORM Toolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../storm_kit.differentiable_robot_model.html">storm_kit.differentiable_robot_model package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../storm_kit.geom.html">storm_kit.geom package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../storm_kit.gym.html">storm_kit.gym package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../storm_kit.mpc.html">storm_kit.mpc package</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../storm_kit.util_file.html">storm_kit.util_file module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">STORM Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>storm_kit.differentiable_robot_model.urdf_utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for storm_kit.differentiable_robot_model.urdf_utils</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># MIT License</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2020-2021 NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a</span>
+<span class="c1"># copy of this software and associated documentation files (the &quot;Software&quot;),</span>
+<span class="c1"># to deal in the Software without restriction, including without limitation</span>
+<span class="c1"># the rights to use, copy, modify, merge, publish, distribute, sublicense,</span>
+<span class="c1"># and/or sell copies of the Software, and to permit persons to whom the</span>
+<span class="c1"># Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c1"># all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL</span>
+<span class="c1"># THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING</span>
+<span class="c1"># FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER</span>
+<span class="c1"># DEALINGS IN THE SOFTWARE.</span>
+<span class="c1">#</span>
+<span class="c1"># **********************************************************************</span>
+<span class="c1"># The first version was licensed as &quot;Original Source License&quot;(see below).</span>
+<span class="c1"># Several enhancements and bug fixes were done at NVIDIA CORPORATION</span>
+<span class="c1"># since obtaining the first version. </span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1"># Original Source License:</span>
+<span class="c1">#</span>
+<span class="c1"># MIT License</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) Facebook, Inc. and its affiliates.</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c1"># in the Software without restriction, including without limitation the rights</span>
+<span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c1"># furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in all</span>
+<span class="c1"># copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span class="c1"># SOFTWARE.#</span>
+
+<span class="c1"># Copyright (c) Facebook, Inc. and its affiliates.</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">urdf_parser_py.urdf</span> <span class="kn">import</span> <span class="n">URDF</span>
+
+
+<div class="viewcode-block" id="URDFRobotModel"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.urdf_utils.html#storm_kit.differentiable_robot_model.urdf_utils.URDFRobotModel">[docs]</a><span class="k">class</span> <span class="nc">URDFRobotModel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">urdf_path</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">}):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span> <span class="o">=</span> <span class="n">URDF</span><span class="o">.</span><span class="n">from_xml_file</span><span class="p">(</span><span class="n">urdf_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">urdf_path</span> <span class="o">=</span> <span class="n">urdf_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_device</span> <span class="o">=</span> <span class="n">tensor_args</span><span class="p">[</span><span class="s1">&#39;device&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span> <span class="o">=</span> <span class="n">tensor_args</span>
+
+<div class="viewcode-block" id="URDFRobotModel.find_joint_of_body"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.urdf_utils.html#storm_kit.differentiable_robot_model.urdf_utils.URDFRobotModel.find_joint_of_body">[docs]</a>    <span class="k">def</span> <span class="nf">find_joint_of_body</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body_name</span><span class="p">):</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">joint</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">joints</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">joint</span><span class="o">.</span><span class="n">child</span> <span class="o">==</span> <span class="n">body_name</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">i</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span></div>
+<div class="viewcode-block" id="URDFRobotModel.find_link_idx"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.urdf_utils.html#storm_kit.differentiable_robot_model.urdf_utils.URDFRobotModel.find_link_idx">[docs]</a>    <span class="k">def</span> <span class="nf">find_link_idx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">link_name</span><span class="p">):</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">link</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">links</span><span class="p">):</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">link</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">link_name</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">i</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span></div>
+
+<div class="viewcode-block" id="URDFRobotModel.get_name_of_parent_body"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.urdf_utils.html#storm_kit.differentiable_robot_model.urdf_utils.URDFRobotModel.get_name_of_parent_body">[docs]</a>    <span class="k">def</span> <span class="nf">get_name_of_parent_body</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">link_name</span><span class="p">):</span>
+        <span class="n">jid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_joint_of_body</span><span class="p">(</span><span class="n">link_name</span><span class="p">)</span>
+        <span class="n">joint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">joints</span><span class="p">[</span><span class="n">jid</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">joint</span><span class="o">.</span><span class="n">parent</span></div>
+
+<div class="viewcode-block" id="URDFRobotModel.get_link_collision_mesh"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.urdf_utils.html#storm_kit.differentiable_robot_model.urdf_utils.URDFRobotModel.get_link_collision_mesh">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_collision_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">link_name</span><span class="p">):</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_link_idx</span><span class="p">(</span><span class="n">link_name</span><span class="p">)</span>
+        <span class="n">link</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">links</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="n">mesh_fname</span> <span class="o">=</span> <span class="n">link</span><span class="o">.</span><span class="n">collision</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">filename</span>
+        <span class="n">mesh_origin</span> <span class="o">=</span> <span class="n">link</span><span class="o">.</span><span class="n">collision</span><span class="o">.</span><span class="n">origin</span>
+        <span class="n">origin_pose</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">mesh_origin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">origin_pose</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">mesh_origin</span><span class="o">.</span><span class="n">position</span>
+            <span class="n">origin_pose</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="n">mesh_origin</span><span class="o">.</span><span class="n">rotation</span>
+            
+        <span class="c1"># join to urdf path</span>
+        <span class="n">mesh_fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">urdf_path</span><span class="p">),</span> <span class="n">mesh_fname</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mesh_fname</span><span class="p">,</span> <span class="n">origin_pose</span></div>
+<div class="viewcode-block" id="URDFRobotModel.get_body_parameters_from_urdf"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.urdf_utils.html#storm_kit.differentiable_robot_model.urdf_utils.URDFRobotModel.get_body_parameters_from_urdf">[docs]</a>    <span class="k">def</span> <span class="nf">get_body_parameters_from_urdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">link</span><span class="p">):</span>
+        <span class="n">body_params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">body_params</span><span class="p">[</span><span class="s1">&#39;joint_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="n">body_params</span><span class="p">[</span><span class="s1">&#39;link_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">link</span><span class="o">.</span><span class="n">name</span>
+
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">rot_angles</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+            <span class="n">trans</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+            <span class="n">joint_name</span> <span class="o">=</span> <span class="s2">&quot;base_joint&quot;</span>
+            <span class="n">joint_type</span> <span class="o">=</span> <span class="s2">&quot;fixed&quot;</span>
+            <span class="n">joint_limits</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">joint_damping</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">joint_axis</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">link_name</span> <span class="o">=</span> <span class="n">link</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">jid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_joint_of_body</span><span class="p">(</span><span class="n">link_name</span><span class="p">)</span>
+            <span class="n">joint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">joints</span><span class="p">[</span><span class="n">jid</span><span class="p">]</span>
+            <span class="n">joint_name</span> <span class="o">=</span> <span class="n">joint</span><span class="o">.</span><span class="n">name</span>
+            <span class="c1"># find joint that is the &quot;child&quot; of this body according to urdf</span>
+
+            <span class="n">rpy</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">joint</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">rotation</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+            <span class="n">rot_angles</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">rpy</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rpy</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">rpy</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+            <span class="n">trans</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">joint</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">position</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+            <span class="n">joint_type</span> <span class="o">=</span> <span class="n">joint</span><span class="o">.</span><span class="n">type</span>
+            <span class="n">joint_limits</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">joint_damping</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+            <span class="n">joint_axis</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">joint_type</span> <span class="o">!=</span> <span class="s1">&#39;fixed&#39;</span><span class="p">:</span>
+                <span class="n">joint_limits</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;effort&#39;</span><span class="p">:</span> <span class="n">joint</span><span class="o">.</span><span class="n">limit</span><span class="o">.</span><span class="n">effort</span><span class="p">,</span>
+                                <span class="s1">&#39;lower&#39;</span><span class="p">:</span> <span class="n">joint</span><span class="o">.</span><span class="n">limit</span><span class="o">.</span><span class="n">lower</span><span class="p">,</span>
+                                <span class="s1">&#39;upper&#39;</span><span class="p">:</span> <span class="n">joint</span><span class="o">.</span><span class="n">limit</span><span class="o">.</span><span class="n">upper</span><span class="p">,</span>
+                                <span class="s1">&#39;velocity&#39;</span><span class="p">:</span> <span class="n">joint</span><span class="o">.</span><span class="n">limit</span><span class="o">.</span><span class="n">velocity</span><span class="p">}</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">joint_damping</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">joint</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">damping</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                    <span class="n">joint_damping</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+                <span class="n">joint_axis</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">joint</span><span class="o">.</span><span class="n">axis</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+        <span class="n">body_params</span><span class="p">[</span><span class="s1">&#39;rot_angles&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rot_angles</span>
+        <span class="n">body_params</span><span class="p">[</span><span class="s1">&#39;trans&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trans</span>
+        <span class="n">body_params</span><span class="p">[</span><span class="s1">&#39;joint_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">joint_name</span>
+        <span class="n">body_params</span><span class="p">[</span><span class="s1">&#39;joint_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">joint_type</span>
+        <span class="n">body_params</span><span class="p">[</span><span class="s1">&#39;joint_limits&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">joint_limits</span>
+        <span class="n">body_params</span><span class="p">[</span><span class="s1">&#39;joint_damping&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">joint_damping</span>
+        <span class="n">body_params</span><span class="p">[</span><span class="s1">&#39;joint_axis&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">joint_axis</span>
+        <span class="c1">#body_params[&#39;collision_mesh&#39;] = link.collision.geometry.mesh.filename</span>
+        <span class="k">if</span> <span class="n">link</span><span class="o">.</span><span class="n">inertial</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mass</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">link</span><span class="o">.</span><span class="n">inertial</span><span class="o">.</span><span class="n">mass</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+            <span class="n">com</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">link</span><span class="o">.</span><span class="n">inertial</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">position</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
+            <span class="n">inert_mat</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+            <span class="n">inert_mat</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">link</span><span class="o">.</span><span class="n">inertial</span><span class="o">.</span><span class="n">inertia</span><span class="o">.</span><span class="n">ixx</span>
+            <span class="n">inert_mat</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">link</span><span class="o">.</span><span class="n">inertial</span><span class="o">.</span><span class="n">inertia</span><span class="o">.</span><span class="n">ixy</span>
+            <span class="n">inert_mat</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">link</span><span class="o">.</span><span class="n">inertial</span><span class="o">.</span><span class="n">inertia</span><span class="o">.</span><span class="n">ixz</span>
+            <span class="n">inert_mat</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">link</span><span class="o">.</span><span class="n">inertial</span><span class="o">.</span><span class="n">inertia</span><span class="o">.</span><span class="n">ixy</span>
+            <span class="n">inert_mat</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">link</span><span class="o">.</span><span class="n">inertial</span><span class="o">.</span><span class="n">inertia</span><span class="o">.</span><span class="n">iyy</span>
+            <span class="n">inert_mat</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">link</span><span class="o">.</span><span class="n">inertial</span><span class="o">.</span><span class="n">inertia</span><span class="o">.</span><span class="n">iyz</span>
+            <span class="n">inert_mat</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">link</span><span class="o">.</span><span class="n">inertial</span><span class="o">.</span><span class="n">inertia</span><span class="o">.</span><span class="n">ixz</span>
+            <span class="n">inert_mat</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">link</span><span class="o">.</span><span class="n">inertial</span><span class="o">.</span><span class="n">inertia</span><span class="o">.</span><span class="n">iyz</span>
+            <span class="n">inert_mat</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">link</span><span class="o">.</span><span class="n">inertial</span><span class="o">.</span><span class="n">inertia</span><span class="o">.</span><span class="n">izz</span>
+
+            <span class="n">inert_mat</span> <span class="o">=</span> <span class="n">inert_mat</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">body_params</span><span class="p">[</span><span class="s1">&#39;mass&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mass</span>
+            <span class="n">body_params</span><span class="p">[</span><span class="s1">&#39;com&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">com</span>
+            <span class="n">body_params</span><span class="p">[</span><span class="s1">&#39;inertia_mat&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">inert_mat</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">body_params</span><span class="p">[</span><span class="s1">&#39;mass&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">body_params</span><span class="p">[</span><span class="s1">&#39;com&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">body_params</span><span class="p">[</span><span class="s1">&#39;inertia_mat&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;no dynamics information for link: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">link</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">body_params</span></div></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

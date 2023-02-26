@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>storm_kit.differentiable_robot_model.coordinate_transform &mdash; STORM Toolkit  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> STORM Toolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../storm_kit.differentiable_robot_model.html">storm_kit.differentiable_robot_model package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../storm_kit.geom.html">storm_kit.geom package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../storm_kit.gym.html">storm_kit.gym package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../storm_kit.mpc.html">storm_kit.mpc package</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../storm_kit.util_file.html">storm_kit.util_file module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">STORM Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>storm_kit.differentiable_robot_model.coordinate_transform</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for storm_kit.differentiable_robot_model.coordinate_transform</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># MIT License</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2020-2021 NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a</span>
+<span class="c1"># copy of this software and associated documentation files (the &quot;Software&quot;),</span>
+<span class="c1"># to deal in the Software without restriction, including without limitation</span>
+<span class="c1"># the rights to use, copy, modify, merge, publish, distribute, sublicense,</span>
+<span class="c1"># and/or sell copies of the Software, and to permit persons to whom the</span>
+<span class="c1"># Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c1"># all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL</span>
+<span class="c1"># THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING</span>
+<span class="c1"># FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER</span>
+<span class="c1"># DEALINGS IN THE SOFTWARE.</span>
+<span class="c1">#</span>
+<span class="c1"># **********************************************************************</span>
+<span class="c1"># The first version was licensed as &quot;Original Source License&quot;(see below).</span>
+<span class="c1"># Several enhancements and bug fixes were done at NVIDIA CORPORATION</span>
+<span class="c1"># since obtaining the first version. </span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1"># Original Source License:</span>
+<span class="c1">#</span>
+<span class="c1"># MIT License</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) Facebook, Inc. and its affiliates.</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c1"># in the Software without restriction, including without limitation the rights</span>
+<span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c1"># furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in all</span>
+<span class="c1"># copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span class="c1"># SOFTWARE.#</span>
+
+<span class="c1"># Copyright (c) Facebook, Inc. and its affiliates.</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="c1">#import utils</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">vector3_to_skew_symm_matrix</span>
+
+<div class="viewcode-block" id="_copysign"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform._copysign">[docs]</a><span class="k">def</span> <span class="nf">_copysign</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a tensor where each element has the absolute value taken from the,</span>
+<span class="sd">    corresponding element of a, with sign taken from the corresponding</span>
+<span class="sd">    element of b. This is like the standard copysign floating-point operation,</span>
+<span class="sd">    but is not careful about negative 0 and NaN.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        a: source tensor.</span>
+<span class="sd">        b: tensor whose signs will be used, of the same shape as a.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tensor of the same shape as a with the signs of b.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">signs_differ</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">!=</span> <span class="p">(</span><span class="n">b</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">signs_differ</span><span class="p">,</span> <span class="o">-</span><span class="n">a</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="_angle_from_tan"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform._angle_from_tan">[docs]</a><span class="k">def</span> <span class="nf">_angle_from_tan</span><span class="p">(</span>
+    <span class="n">axis</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">other_axis</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">horizontal</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">tait_bryan</span><span class="p">:</span> <span class="nb">bool</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extract the first or third Euler angle from the two members of</span>
+<span class="sd">    the matrix which are positive constant times its sine and cosine.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        axis: Axis label &quot;X&quot; or &quot;Y or &quot;Z&quot; for the angle we are finding.</span>
+<span class="sd">        other_axis: Axis label &quot;X&quot; or &quot;Y or &quot;Z&quot; for the middle axis in the</span>
+<span class="sd">            convention.</span>
+<span class="sd">        data: Rotation matrices as tensor of shape (..., 3, 3).</span>
+<span class="sd">        horizontal: Whether we are looking for the angle for the third axis,</span>
+<span class="sd">            which means the relevant entries are in the same row of the</span>
+<span class="sd">            rotation matrix. If not, they are in the same column.</span>
+<span class="sd">        tait_bryan: Whether the first and third axes in the convention differ.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Euler Angles in radians for each matrix in data as a tensor</span>
+<span class="sd">        of shape (...).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;X&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;Y&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="s2">&quot;Z&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)}[</span><span class="n">axis</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">horizontal</span><span class="p">:</span>
+        <span class="n">i2</span><span class="p">,</span> <span class="n">i1</span> <span class="o">=</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span>
+    <span class="n">even</span> <span class="o">=</span> <span class="p">(</span><span class="n">axis</span> <span class="o">+</span> <span class="n">other_axis</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;XY&quot;</span><span class="p">,</span> <span class="s2">&quot;YZ&quot;</span><span class="p">,</span> <span class="s2">&quot;ZX&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">horizontal</span> <span class="o">==</span> <span class="n">even</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i1</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i2</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">tait_bryan</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="o">-</span><span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i2</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i2</span><span class="p">],</span> <span class="o">-</span><span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i1</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="_index_from_letter"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform._index_from_letter">[docs]</a><span class="k">def</span> <span class="nf">_index_from_letter</span><span class="p">(</span><span class="n">letter</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">letter</span> <span class="o">==</span> <span class="s2">&quot;X&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">letter</span> <span class="o">==</span> <span class="s2">&quot;Y&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">letter</span> <span class="o">==</span> <span class="s2">&quot;Z&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">2</span></div>
+
+
+<span class="c1"># def matrix_to_euler_angles(matrix, convention: str):</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     Convert rotations given as rotation matrices to Euler angles in radians.</span>
+
+<span class="c1">#     Args:</span>
+<span class="c1">#         matrix: Rotation matrices as tensor of shape (..., 3, 3).</span>
+<span class="c1">#         convention: Convention string of three uppercase letters.</span>
+
+<span class="c1">#     Returns:</span>
+<span class="c1">#         Euler angles in radians as tensor of shape (..., 3).</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     if len(convention) != 3:</span>
+<span class="c1">#         raise ValueError(&quot;Convention must have 3 letters.&quot;)</span>
+<span class="c1">#     if convention[1] in (convention[0], convention[2]):</span>
+<span class="c1">#         raise ValueError(f&quot;Invalid convention {convention}.&quot;)</span>
+<span class="c1">#     for letter in convention:</span>
+<span class="c1">#         if letter not in (&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;):</span>
+<span class="c1">#             raise ValueError(f&quot;Invalid letter {letter} in convention string.&quot;)</span>
+<span class="c1">#     if matrix.size(-1) != 3 or matrix.size(-2) != 3:</span>
+<span class="c1">#         raise ValueError(f&quot;Invalid rotation matrix  shape f{matrix.shape}.&quot;)</span>
+<span class="c1">#     i0 = _index_from_letter(convention[0])</span>
+<span class="c1">#     i2 = _index_from_letter(convention[2])</span>
+<span class="c1">#     tait_bryan = i0 != i2</span>
+<span class="c1">#     if tait_bryan:</span>
+<span class="c1">#         central_angle = torch.asin(</span>
+<span class="c1">#             matrix[..., i0, i2] * (-1.0 if i0 - i2 in [-1, 2] else 1.0)</span>
+<span class="c1">#         )</span>
+<span class="c1">#     else:</span>
+<span class="c1">#         central_angle = torch.acos(matrix[..., i0, i0])</span>
+
+<span class="c1">#     o = (</span>
+<span class="c1">#         _angle_from_tan(</span>
+<span class="c1">#             convention[0], convention[1], matrix[..., i2], False, tait_bryan</span>
+<span class="c1">#         ),</span>
+<span class="c1">#         central_angle,</span>
+<span class="c1">#         _angle_from_tan(</span>
+<span class="c1">#             convention[2], convention[1], matrix[..., i0, :], True, tait_bryan</span>
+<span class="c1">#         ),</span>
+<span class="c1">#     )</span>
+<span class="c1">#     return torch.stack(o, -1)</span>
+
+<div class="viewcode-block" id="matrix_to_euler_angles"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.matrix_to_euler_angles">[docs]</a><span class="k">def</span> <span class="nf">matrix_to_euler_angles</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">cy_thresh</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
+    <span class="c1"># if cy_thresh is None:</span>
+    <span class="c1">#     try:</span>
+    <span class="c1">#         cy_thresh = np.finfo(M.dtype).eps * 4</span>
+    <span class="c1">#     except ValueError:</span>
+    <span class="c1">#         cy_thresh = _FLOAT_EPS_4</span>
+    <span class="c1"># r11, r12, r13, r21, r22, r23, r31, r32, r33 = M.flat</span>
+    <span class="n">inp_device</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">device</span>
+    <span class="c1">#if(len(R.shape) == 4):</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="n">inp_device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">R</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="c1">#print(Z.shape)</span>
+    <span class="c1">#else:</span>
+    <span class="c1">#    Z = torch.zeros(R.shape[0], device=inp_device, dtype=R.dtype)</span>
+    <span class="n">r11</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">r12</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">r13</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">r21</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">r22</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">r23</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">r31</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">r32</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">r33</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
+
+
+    <span class="c1"># cy: sqrt((cos(y)*cos(z))**2 + (cos(x)*cos(y))**2)</span>
+    <span class="n">cy</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">r33</span><span class="o">*</span><span class="n">r33</span> <span class="o">+</span> <span class="n">r23</span><span class="o">*</span><span class="n">r23</span><span class="p">)</span>
+
+    <span class="n">cond</span> <span class="o">=</span> <span class="n">cy</span> <span class="o">&gt;</span> <span class="n">cy_thresh</span>
+
+    <span class="n">z</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">cond</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="o">-</span><span class="n">r12</span><span class="p">,</span>  <span class="n">r11</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">r21</span><span class="p">,</span>  <span class="n">r22</span><span class="p">))</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">r13</span><span class="p">,</span>  <span class="n">cy</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">cond</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="o">-</span><span class="n">r23</span><span class="p">,</span> <span class="n">r33</span><span class="p">),</span> <span class="n">Z</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> 
+
+    <span class="c1"># if cy &gt; cy_thresh: # cos(y) not close to zero, standard form</span>
+    <span class="c1">#     z = torch.atan2(-r12,  r11) # atan2(cos(y)*sin(z), cos(y)*cos(z))</span>
+    <span class="c1">#     y = torch.atan2(r13,  cy) # atan2(sin(y), cy)</span>
+    <span class="c1">#     x = torch.atan2(-r23, r33) # atan2(cos(y)*sin(x), cos(x)*cos(y))</span>
+    <span class="c1"># else: # cos(y) (close to) zero, so x -&gt; 0.0 (see above)</span>
+    <span class="c1">#     # so r21 -&gt; sin(z), r22 -&gt; cos(z) and</span>
+    <span class="c1">#     z = torch.atan2(r21,  r22)</span>
+    <span class="c1">#     y = torch.atan2(r13,  cy) # atan2(sin(y), cy)</span>
+    <span class="c1">#     x = 0.0</span>
+    
+    <span class="c1"># return z, y, x</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="matrix_to_quaternion"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.matrix_to_quaternion">[docs]</a><span class="k">def</span> <span class="nf">matrix_to_quaternion</span><span class="p">(</span><span class="n">matrix</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert rotations given as rotation matrices to quaternions.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        matrix: Rotation matrices as tensor of shape (..., 3, 3).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        quaternions with real part first, as tensor of shape (..., 4). [qw, qx,qy,qz]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">matrix</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span> <span class="ow">or</span> <span class="n">matrix</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid rotation matrix  shape f</span><span class="si">{</span><span class="n">matrix</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+    <span class="n">zero</span> <span class="o">=</span> <span class="n">matrix</span><span class="o">.</span><span class="n">new_zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,))</span>
+    <span class="n">m00</span> <span class="o">=</span> <span class="n">matrix</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">m11</span> <span class="o">=</span> <span class="n">matrix</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">m22</span> <span class="o">=</span> <span class="n">matrix</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">o0</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">zero</span><span class="p">,</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">m00</span> <span class="o">+</span> <span class="n">m11</span> <span class="o">+</span> <span class="n">m22</span><span class="p">))</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">zero</span><span class="p">,</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">m00</span> <span class="o">-</span> <span class="n">m11</span> <span class="o">-</span> <span class="n">m22</span><span class="p">))</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">zero</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">m00</span> <span class="o">+</span> <span class="n">m11</span> <span class="o">-</span> <span class="n">m22</span><span class="p">))</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">zero</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">m00</span> <span class="o">-</span> <span class="n">m11</span> <span class="o">+</span> <span class="n">m22</span><span class="p">))</span>
+    <span class="n">o1</span> <span class="o">=</span> <span class="n">_copysign</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">matrix</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">matrix</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+    <span class="n">o2</span> <span class="o">=</span> <span class="n">_copysign</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">matrix</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">matrix</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="n">o3</span> <span class="o">=</span> <span class="n">_copysign</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">matrix</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">matrix</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">((</span><span class="n">o0</span><span class="p">,</span> <span class="n">o1</span><span class="p">,</span> <span class="n">o2</span><span class="p">,</span> <span class="n">o3</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="quaternion_to_matrix"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.quaternion_to_matrix">[docs]</a><span class="k">def</span> <span class="nf">quaternion_to_matrix</span><span class="p">(</span><span class="n">quaternions</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert rotations given as quaternions to rotation matrices.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        quaternions: quaternions with real part first,</span>
+<span class="sd">            as tensor of shape (..., 4).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Rotation matrices as tensor of shape (..., 3, 3).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">r</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">unbind</span><span class="p">(</span><span class="n">quaternions</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">two_s</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">quaternions</span> <span class="o">*</span> <span class="n">quaternions</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">o</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+        <span class="p">(</span>
+            <span class="mi">1</span> <span class="o">-</span> <span class="n">two_s</span> <span class="o">*</span> <span class="p">(</span><span class="n">j</span> <span class="o">*</span> <span class="n">j</span> <span class="o">+</span> <span class="n">k</span> <span class="o">*</span> <span class="n">k</span><span class="p">),</span>
+            <span class="n">two_s</span> <span class="o">*</span> <span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">j</span> <span class="o">-</span> <span class="n">k</span> <span class="o">*</span> <span class="n">r</span><span class="p">),</span>
+            <span class="n">two_s</span> <span class="o">*</span> <span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">k</span> <span class="o">+</span> <span class="n">j</span> <span class="o">*</span> <span class="n">r</span><span class="p">),</span>
+            <span class="n">two_s</span> <span class="o">*</span> <span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">j</span> <span class="o">+</span> <span class="n">k</span> <span class="o">*</span> <span class="n">r</span><span class="p">),</span>
+            <span class="mi">1</span> <span class="o">-</span> <span class="n">two_s</span> <span class="o">*</span> <span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="n">k</span> <span class="o">*</span> <span class="n">k</span><span class="p">),</span>
+            <span class="n">two_s</span> <span class="o">*</span> <span class="p">(</span><span class="n">j</span> <span class="o">*</span> <span class="n">k</span> <span class="o">-</span> <span class="n">i</span> <span class="o">*</span> <span class="n">r</span><span class="p">),</span>
+            <span class="n">two_s</span> <span class="o">*</span> <span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">k</span> <span class="o">-</span> <span class="n">j</span> <span class="o">*</span> <span class="n">r</span><span class="p">),</span>
+            <span class="n">two_s</span> <span class="o">*</span> <span class="p">(</span><span class="n">j</span> <span class="o">*</span> <span class="n">k</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="n">r</span><span class="p">),</span>
+            <span class="mi">1</span> <span class="o">-</span> <span class="n">two_s</span> <span class="o">*</span> <span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="n">j</span> <span class="o">*</span> <span class="n">j</span><span class="p">),</span>
+        <span class="p">),</span>
+        <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">o</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">quaternions</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="rotation_matrix_to_quaternion"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.rotation_matrix_to_quaternion">[docs]</a><span class="k">def</span> <span class="nf">rotation_matrix_to_quaternion</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert 3x4 rotation matrix to 4d quaternion vector</span>
+
+<span class="sd">    This algorithm is based on algorithm described in</span>
+<span class="sd">    https://github.com/KieranWynn/pyquaternion/blob/master/pyquaternion/quaternion.py#L201</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        rotation_matrix (Tensor): the rotation matrix to convert.</span>
+
+<span class="sd">    Return:</span>
+<span class="sd">        Tensor: the rotation in quaternion</span>
+
+<span class="sd">    Shape:</span>
+<span class="sd">        - Input: :math:`(N, 3, 4)`</span>
+<span class="sd">        - Output: :math:`(N, 4)`</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; input = torch.rand(4, 3, 4)  # Nx3x4</span>
+<span class="sd">        &gt;&gt;&gt; output = tgm.rotation_matrix_to_quaternion(input)  # Nx4</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">is_tensor</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input type is not a torch.Tensor. Got </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="nb">type</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">)))</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Input size must be a three dimensional tensor. Got </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">rotation_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">rotation_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Input size must be a N x 3 x 4  tensor. Got </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">rotation_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+    <span class="n">rmat_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">mask_d2</span> <span class="o">=</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">eps</span>
+
+    <span class="n">mask_d0_d1</span> <span class="o">=</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">mask_d0_nd1</span> <span class="o">=</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">t0</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">q0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                      <span class="n">t0</span><span class="p">,</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                      <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">t0_rep</span> <span class="o">=</span> <span class="n">t0</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">t</span><span class="p">()</span>
+
+    <span class="n">t1</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">q1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                      <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                      <span class="n">t1</span><span class="p">,</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">t1_rep</span> <span class="o">=</span> <span class="n">t1</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">t</span><span class="p">()</span>
+
+    <span class="n">t2</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">q2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                      <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                      <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">t2</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">t2_rep</span> <span class="o">=</span> <span class="n">t2</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">t</span><span class="p">()</span>
+
+    <span class="n">t3</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">q3</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">t3</span><span class="p">,</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                      <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                      <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">rmat_t</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">t3_rep</span> <span class="o">=</span> <span class="n">t3</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">t</span><span class="p">()</span>
+
+    <span class="n">mask_c0</span> <span class="o">=</span> <span class="n">mask_d2</span> <span class="o">*</span> <span class="n">mask_d0_d1</span>
+    <span class="n">mask_c1</span> <span class="o">=</span> <span class="n">mask_d2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">mask_d0_d1</span><span class="p">)</span>
+    <span class="n">mask_c2</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">mask_d2</span><span class="p">)</span> <span class="o">*</span> <span class="n">mask_d0_nd1</span>
+    <span class="n">mask_c3</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">mask_d2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">mask_d0_nd1</span><span class="p">)</span>
+    <span class="n">mask_c0</span> <span class="o">=</span> <span class="n">mask_c0</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">type_as</span><span class="p">(</span><span class="n">q0</span><span class="p">)</span>
+    <span class="n">mask_c1</span> <span class="o">=</span> <span class="n">mask_c1</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">type_as</span><span class="p">(</span><span class="n">q1</span><span class="p">)</span>
+    <span class="n">mask_c2</span> <span class="o">=</span> <span class="n">mask_c2</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">type_as</span><span class="p">(</span><span class="n">q2</span><span class="p">)</span>
+    <span class="n">mask_c3</span> <span class="o">=</span> <span class="n">mask_c3</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">type_as</span><span class="p">(</span><span class="n">q3</span><span class="p">)</span>
+
+    <span class="n">q</span> <span class="o">=</span> <span class="n">q0</span> <span class="o">*</span> <span class="n">mask_c0</span> <span class="o">+</span> <span class="n">q1</span> <span class="o">*</span> <span class="n">mask_c1</span> <span class="o">+</span> <span class="n">q2</span> <span class="o">*</span> <span class="n">mask_c2</span> <span class="o">+</span> <span class="n">q3</span> <span class="o">*</span> <span class="n">mask_c3</span>
+    <span class="n">q</span> <span class="o">/=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">t0_rep</span> <span class="o">*</span> <span class="n">mask_c0</span> <span class="o">+</span> <span class="n">t1_rep</span> <span class="o">*</span> <span class="n">mask_c1</span> <span class="o">+</span>  <span class="c1"># noqa</span>
+                    <span class="n">t2_rep</span> <span class="o">*</span> <span class="n">mask_c2</span> <span class="o">+</span> <span class="n">t3_rep</span> <span class="o">*</span> <span class="n">mask_c3</span><span class="p">)</span>  <span class="c1"># noqa</span>
+    <span class="n">q</span> <span class="o">*=</span> <span class="mf">0.5</span>
+    <span class="k">return</span> <span class="n">q</span></div>
+
+<div class="viewcode-block" id="x_rot"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.x_rot">[docs]</a><span class="k">def</span> <span class="nf">x_rot</span><span class="p">(</span><span class="n">angle</span><span class="p">):</span>
+    <span class="c1">#  if len(angle.shape) == 0:</span>
+    <span class="c1"># angle = angle.unsqueeze(0)</span>
+    <span class="c1"># print(&quot;x_rot&quot;, angle.shape)</span>
+    <span class="c1"># angle = utils.convert_into_at_least_2d_pytorch_tensor(angle).squeeze(1)</span>
+    <span class="n">batch_size</span> <span class="o">=</span> <span class="n">angle</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">angle</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">angle</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">angle</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">angle</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">R</span></div>
+
+
+<div class="viewcode-block" id="y_rot"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.y_rot">[docs]</a><span class="k">def</span> <span class="nf">y_rot</span><span class="p">(</span><span class="n">angle</span><span class="p">):</span>
+    <span class="c1">#  if len(angle.shape) == 0:</span>
+    <span class="c1"># angle = angle.unsqueeze(0)</span>
+
+    <span class="c1"># print(&quot;y_rot&quot;, angle.shape)</span>
+    <span class="c1"># print(angle.shape)</span>
+    <span class="c1"># angle = utils.convert_into_at_least_2d_pytorch_tensor(angle).squeeze(1)</span>
+    <span class="n">batch_size</span> <span class="o">=</span> <span class="n">angle</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">angle</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">angle</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">angle</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">angle</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">R</span></div>
+
+
+<div class="viewcode-block" id="z_rot"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.z_rot">[docs]</a><span class="k">def</span> <span class="nf">z_rot</span><span class="p">(</span><span class="n">angle</span><span class="p">):</span>
+    <span class="c1">#  if len(angle.shape) == 0:</span>
+    <span class="c1"># angle = angle.unsqueeze(0)</span>
+    <span class="c1"># print(&quot;z_rot&quot;, angle.shape)</span>
+    <span class="c1"># angle = utils.convert_into_at_least_2d_pytorch_tensor(angle).squeeze(1)</span>
+    <span class="c1"># print(&quot;z_rot2&quot;, angle.shape)</span>
+    <span class="c1"># angle = angle.squeeze(0)</span>
+    <span class="n">batch_size</span> <span class="o">=</span> <span class="n">angle</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">angle</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">angle</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">angle</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">angle</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">R</span></div>
+
+<div class="viewcode-block" id="rpy_angles_to_matrix"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.rpy_angles_to_matrix">[docs]</a><span class="k">def</span> <span class="nf">rpy_angles_to_matrix</span><span class="p">(</span><span class="n">euler_angles</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert rotations given as RPY euler angles in radians to rotation matrices.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        euler_angles: Euler angles in radians as tensor of shape (..., 3).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Rotation matrices as tensor of shape (..., 3, 3).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">roll</span> <span class="o">=</span> <span class="n">euler_angles</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">pitch</span> <span class="o">=</span> <span class="n">euler_angles</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">yaw</span> <span class="o">=</span> <span class="n">euler_angles</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">matrices</span> <span class="o">=</span> <span class="p">(</span><span class="n">z_rot</span><span class="p">(</span><span class="n">yaw</span><span class="p">)</span> <span class="o">@</span> <span class="n">y_rot</span><span class="p">(</span><span class="n">pitch</span><span class="p">))</span> <span class="o">@</span> <span class="n">x_rot</span><span class="p">(</span><span class="n">roll</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">matrices</span></div>
+
+
+<div class="viewcode-block" id="CoordinateTransform"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform">[docs]</a><span class="k">class</span> <span class="nc">CoordinateTransform</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rot</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">trans</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span> <span class="n">pose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span> <span class="o">=</span> <span class="n">tensor_args</span>
+        
+        <span class="k">if</span> <span class="n">rot</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rot</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">**</span><span class="n">tensor_args</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1">#.to(device)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rot</span> <span class="o">=</span> <span class="n">rot</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="o">**</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="c1">#if len(self._rot.shape) == 2:</span>
+        <span class="c1">#    self._rot = self._rot.unsqueeze(0)</span>
+
+        <span class="k">if</span> <span class="n">trans</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_trans</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="o">**</span><span class="n">tensor_args</span><span class="p">)</span> <span class="c1">#.to(device)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_trans</span> <span class="o">=</span> <span class="n">trans</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="o">**</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trans</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_trans</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trans</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="n">pose</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_pose</span><span class="p">(</span><span class="n">pose</span><span class="p">)</span>
+<div class="viewcode-block" id="CoordinateTransform.set_pose"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.set_pose">[docs]</a>    <span class="k">def</span> <span class="nf">set_pose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pose</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">        pose: x, y, z, qw, qx, qy, qz</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_trans</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">pose</span><span class="p">[:</span><span class="mi">3</span><span class="p">],</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rot</span> <span class="o">=</span> <span class="n">quaternion_to_matrix</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">pose</span><span class="p">[</span><span class="mi">3</span><span class="p">:])</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span></div>
+        
+<div class="viewcode-block" id="CoordinateTransform.set_translation"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.set_translation">[docs]</a>    <span class="k">def</span> <span class="nf">set_translation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_trans</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="c1">#if len(self._trans.shape) == 1:</span>
+        <span class="c1">#    self._trans = self._trans.unsqueeze(0)</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="CoordinateTransform.set_rotation"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.set_rotation">[docs]</a>    <span class="k">def</span> <span class="nf">set_rotation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rot</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rot</span> <span class="o">=</span> <span class="n">rot</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="c1">#if len(self._rot.shape) == 2:</span>
+        <span class="c1">#    self._rot = self._rot.unsqueeze(0)</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="CoordinateTransform.rotation"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.rotation">[docs]</a>    <span class="k">def</span> <span class="nf">rotation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rot</span></div>
+
+<div class="viewcode-block" id="CoordinateTransform.translation"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.translation">[docs]</a>    <span class="k">def</span> <span class="nf">translation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trans</span></div>
+
+<div class="viewcode-block" id="CoordinateTransform.inverse"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.inverse">[docs]</a>    <span class="k">def</span> <span class="nf">inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rot_transpose</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rot</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">CoordinateTransform</span><span class="p">(</span><span class="n">rot_transpose</span><span class="p">,</span> <span class="o">-</span><span class="p">(</span><span class="n">rot_transpose</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trans</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CoordinateTransform.multiply_transform"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.multiply_transform">[docs]</a>    <span class="k">def</span> <span class="nf">multiply_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coordinate_transform</span><span class="p">):</span>
+        <span class="n">new_rot</span><span class="p">,</span> <span class="n">new_trans</span> <span class="o">=</span> <span class="n">multiply_transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trans</span><span class="p">,</span> <span class="n">coordinate_transform</span><span class="o">.</span><span class="n">rotation</span><span class="p">(),</span> <span class="n">coordinate_transform</span><span class="o">.</span><span class="n">translation</span><span class="p">())</span>
+        <span class="c1">#new_rot = self._rot @ coordinate_transform.rotation()</span>
+        <span class="c1">#new_trans = (self._rot @ coordinate_transform.translation().unsqueeze(-1)).squeeze(-1) + self._trans</span>
+        <span class="k">return</span> <span class="n">CoordinateTransform</span><span class="p">(</span><span class="n">new_rot</span><span class="p">,</span> <span class="n">new_trans</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CoordinateTransform.multiply_inv_transform"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.multiply_inv_transform">[docs]</a>    <span class="k">def</span> <span class="nf">multiply_inv_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coordinate_transform</span><span class="p">):</span>
+        <span class="n">new_rot</span><span class="p">,</span> <span class="n">new_trans</span> <span class="o">=</span> <span class="n">multiply_inv_transform</span><span class="p">(</span><span class="n">coordinate_transform</span><span class="o">.</span><span class="n">rotation</span><span class="p">(),</span> <span class="n">coordinate_transform</span><span class="o">.</span><span class="n">translation</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trans</span><span class="p">)</span>
+        <span class="c1">#new_rot = self._rot @ coordinate_transform.rotation()</span>
+        <span class="c1">#new_trans = (self._rot @ coordinate_transform.translation().unsqueeze(-1)).squeeze(-1) + self._trans</span>
+        <span class="k">return</span> <span class="n">CoordinateTransform</span><span class="p">(</span><span class="n">new_rot</span><span class="p">,</span> <span class="n">new_trans</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="CoordinateTransform.trans_cross_rot"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.trans_cross_rot">[docs]</a>    <span class="k">def</span> <span class="nf">trans_cross_rot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">vector3_to_skew_symm_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trans</span><span class="p">)</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rot</span></div>
+
+<div class="viewcode-block" id="CoordinateTransform.get_transform_matrix"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.get_transform_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">mat</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="n">mat</span><span class="p">[:</span><span class="mi">3</span><span class="p">,:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rot</span>
+        <span class="n">mat</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trans</span>
+        <span class="k">return</span> <span class="n">mat</span></div>
+<div class="viewcode-block" id="CoordinateTransform.get_quaternion"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.get_quaternion">[docs]</a>    <span class="k">def</span> <span class="nf">get_quaternion</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rot</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">M</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rot</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">M</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rot</span>
+        <span class="n">M</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trans</span>
+        <span class="n">M</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rot</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;bii-&gt;b&#39;</span><span class="p">,</span> <span class="n">M</span><span class="p">)</span> <span class="c1">#torch.trace(M)</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+            <span class="n">tn</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">tn</span> <span class="o">&gt;</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">]:</span>
+                <span class="n">q</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">tn</span>
+                <span class="n">q</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="n">q</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+                <span class="n">q</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span>
+                <span class="k">if</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]:</span>
+                    <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span>
+                <span class="k">if</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]:</span>
+                    <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span>
+                <span class="n">tn</span> <span class="o">=</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">k</span><span class="p">])</span> <span class="o">+</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+                <span class="n">q</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">tn</span>
+                <span class="n">q</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span>
+                <span class="n">q</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span>
+                <span class="n">q</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span>
+                <span class="c1">#q = q[[3, 0, 1, 2]]</span>
+            <span class="n">q</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*=</span> <span class="mf">0.5</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">tn</span> <span class="o">*</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">q</span></div>
+
+<div class="viewcode-block" id="CoordinateTransform.transform_point"><a class="viewcode-back" href="../../../storm_kit.differentiable_robot_model.coordinate_transform.html#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.transform_point">[docs]</a>    <span class="k">def</span> <span class="nf">transform_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point</span><span class="p">):</span>
+        <span class="c1">#if(len(point.shape) == 1):</span>
+        <span class="c1">#    point = point.unsqueeze(-1)</span>
+        <span class="c1">#new_point = transform_point(point, self._rot, self._trans)</span>
+        <span class="c1">#new_point = point @ self._rot.transpose(-1,-2) + self._trans</span>
+        <span class="n">new_point</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rot</span> <span class="o">@</span> <span class="p">(</span><span class="n">point</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trans</span>
+        <span class="k">return</span> <span class="n">new_point</span></div></div>
+
+
+
+<span class="nd">@torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span>   
+<span class="k">def</span> <span class="nf">multiply_transform</span><span class="p">(</span><span class="n">w_rot_l</span><span class="p">,</span> <span class="n">w_trans_l</span><span class="p">,</span> <span class="n">l_rot_c</span><span class="p">,</span> <span class="n">l_trans_c</span><span class="p">):</span>
+    <span class="c1"># type: (Tensor, Tensor, Tensor, Tensor) -&gt; Tuple[Tensor, Tensor]</span>
+    <span class="c1">#print(l_rot_c.shape, w_rot_l.shape)</span>
+    <span class="n">w_rot_c</span> <span class="o">=</span> <span class="n">w_rot_l</span> <span class="o">@</span> <span class="n">l_rot_c</span>
+    
+    <span class="n">w_trans_c</span> <span class="o">=</span> <span class="p">(</span><span class="n">w_rot_l</span> <span class="o">@</span> <span class="n">l_trans_c</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">w_trans_l</span>
+    
+    <span class="c1">#w_trans_c = (l_trans_c @ w_rot_l.transpose(-1,-2)) + w_trans_l</span>
+    <span class="c1">#print(w_trans_c - w_trans_l, l_trans_c)</span>
+    <span class="k">return</span> <span class="n">w_rot_c</span><span class="p">,</span> <span class="n">w_trans_c</span>
+
+<span class="nd">@torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span>   
+<span class="k">def</span> <span class="nf">multiply_inv_transform</span><span class="p">(</span><span class="n">l_rot_w</span><span class="p">,</span> <span class="n">l_trans_w</span><span class="p">,</span> <span class="n">l_rot_c</span><span class="p">,</span> <span class="n">l_trans_c</span><span class="p">):</span>
+    <span class="c1"># type: (Tensor, Tensor, Tensor, Tensor) -&gt; Tuple[Tensor, Tensor]</span>
+    <span class="n">w_rot_l</span> <span class="o">=</span> <span class="n">l_rot_w</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">w_rot_c</span> <span class="o">=</span> <span class="n">w_rot_l</span> <span class="o">@</span> <span class="n">l_rot_c</span>
+
+
+    <span class="n">w_trans_l</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">w_rot_l</span> <span class="o">@</span> <span class="n">l_trans_w</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">w_trans_c</span> <span class="o">=</span> <span class="p">(</span><span class="n">w_rot_l</span> <span class="o">@</span> <span class="n">l_trans_c</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">w_trans_l</span>
+    
+    <span class="c1">#w_trans_c = (l_trans_c @ w_rot_l.transpose(-1,-2)) + w_trans_l</span>
+    <span class="c1">#print(w_trans_c - w_trans_l, l_trans_c)</span>
+    <span class="k">return</span> <span class="n">w_rot_c</span><span class="p">,</span> <span class="n">w_trans_c</span>
+
+
+<span class="nd">@torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span>
+<span class="k">def</span> <span class="nf">transform_point</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">rot</span><span class="p">,</span> <span class="n">trans</span><span class="p">):</span>
+    <span class="c1"># type: (Tensor, Tensor, Tensor) -&gt; Tensor</span>
+
+    <span class="c1">#new_point = (rot @ (point).unsqueeze(-1)).squeeze(-1) + trans</span>
+    <span class="n">new_point</span> <span class="o">=</span> <span class="p">(</span><span class="n">point</span> <span class="o">@</span> <span class="n">rot</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">2</span><span class="p">))</span> <span class="o">+</span> <span class="n">trans</span>
+    <span class="k">return</span> <span class="n">new_point</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>storm_kit.geom.sdf.world module &mdash; STORM Toolkit  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="storm_kit.geom.geom_types module" href="storm_kit.geom.geom_types.html" />
+    <link rel="prev" title="storm_kit.geom.sdf.robot_world module" href="storm_kit.geom.sdf.robot_world.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> STORM Toolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.differentiable_robot_model.html">storm_kit.differentiable_robot_model package</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="storm_kit.geom.html">storm_kit.geom package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="storm_kit.geom.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.geom.nn_model.html">storm_kit.geom.nn_model package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="storm_kit.geom.sdf.html">storm_kit.geom.sdf package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="storm_kit.geom.sdf.html#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.geom.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.gym.html">storm_kit.gym package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.mpc.html">storm_kit.mpc package</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.util_file.html">storm_kit.util_file module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">STORM Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="storm_kit.geom.html">storm_kit.geom package</a> &raquo;</li>
+          <li><a href="storm_kit.geom.sdf.html">storm_kit.geom.sdf package</a> &raquo;</li>
+      <li>storm_kit.geom.sdf.world module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/storm_kit.geom.sdf.world.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-storm_kit.geom.sdf.world">
+<span id="storm-kit-geom-sdf-world-module"></span><h1>storm_kit.geom.sdf.world module<a class="headerlink" href="#module-storm_kit.geom.sdf.world" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldCollision">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">WorldCollision</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tensor_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'device':</span> <span class="pre">'cpu',</span> <span class="pre">'dtype':</span> <span class="pre">torch.float32}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldCollision"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldCollision" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldCollision.load_collision_model">
+<span class="sig-name descname"><span class="pre">load_collision_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldCollision.load_collision_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldCollision.load_collision_model" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldGridCollision">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">WorldGridCollision</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tensor_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'device':</span> <span class="pre">'cpu',</span> <span class="pre">'dtype':</span> <span class="pre">torch.float32}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldGridCollision"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldGridCollision" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#storm_kit.geom.sdf.world.WorldCollision" title="storm_kit.geom.sdf.world.WorldCollision"><code class="xref py py-class docutils literal notranslate"><span class="pre">WorldCollision</span></code></a></p>
+<p>This template class can be used to build a sdf grid using a signed distance function for fast lookup.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldGridCollision._compute_sdfgrid">
+<span class="sig-name descname"><span class="pre">_compute_sdfgrid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldGridCollision._compute_sdfgrid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldGridCollision._compute_sdfgrid" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldGridCollision.build_transform_matrices">
+<span class="sig-name descname"><span class="pre">build_transform_matrices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pitch</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldGridCollision.build_transform_matrices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldGridCollision.build_transform_matrices" title="Permalink to this definition"></a></dt>
+<dd><p>Args:
+bounds: [[min_x, min_y, min_z], [max_x, max_y, max_z]]
+pitch: float</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldGridCollision.check_pts_sdf">
+<span class="sig-name descname"><span class="pre">check_pts_sdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldGridCollision.check_pts_sdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldGridCollision.check_pts_sdf" title="Permalink to this definition"></a></dt>
+<dd><p>finds the signed distance for the points from the stored grid
+Args:
+pts: [n,3]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldGridCollision.get_signed_distance">
+<span class="sig-name descname"><span class="pre">get_signed_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldGridCollision.get_signed_distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldGridCollision.get_signed_distance" title="Permalink to this definition"></a></dt>
+<dd><p>This needs to be implemented</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>pts</strong> (<em>tensor</em>) – [b,3]</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>NotImplementedError</strong> – Raises error as this function needs to be implemented in a child class</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>distance [b,1]</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldGridCollision.update_world_sdf">
+<span class="sig-name descname"><span class="pre">update_world_sdf</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldGridCollision.update_world_sdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldGridCollision.update_world_sdf" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldGridCollision.view_sdf_grid">
+<span class="sig-name descname"><span class="pre">view_sdf_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sdf_grid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldGridCollision.view_sdf_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldGridCollision.view_sdf_grid" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldGridCollision.voxel_inds">
+<span class="sig-name descname"><span class="pre">voxel_inds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldGridCollision.voxel_inds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldGridCollision.voxel_inds" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldImageCollision">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">WorldImageCollision</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tensor_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'device':</span> <span class="pre">'cpu',</span> <span class="pre">'dtype':</span> <span class="pre">torch.float32}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldImageCollision"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldImageCollision" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#storm_kit.geom.sdf.world.WorldCollision" title="storm_kit.geom.sdf.world.WorldCollision"><code class="xref py py-class docutils literal notranslate"><span class="pre">WorldCollision</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldImageCollision.get_pt_value">
+<span class="sig-name descname"><span class="pre">get_pt_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldImageCollision.get_pt_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldImageCollision.get_pt_value" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldImageCollision.update_world">
+<span class="sig-name descname"><span class="pre">update_world</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldImageCollision.update_world"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldImageCollision.update_world" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldImageCollision.voxel_inds">
+<span class="sig-name descname"><span class="pre">voxel_inds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldImageCollision.voxel_inds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldImageCollision.voxel_inds" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldPointCloudCollision">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">WorldPointCloudCollision</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.02</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tensor_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'device':</span> <span class="pre">'cpu',</span> <span class="pre">'dtype':</span> <span class="pre">torch.float32}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldPointCloudCollision"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldPointCloudCollision" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#storm_kit.geom.sdf.world.WorldGridCollision" title="storm_kit.geom.sdf.world.WorldGridCollision"><code class="xref py py-class docutils literal notranslate"><span class="pre">WorldGridCollision</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldPointCloudCollision._update_trimesh_projection">
+<span class="sig-name descname"><span class="pre">_update_trimesh_projection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldPointCloudCollision._update_trimesh_projection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldPointCloudCollision._update_trimesh_projection" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldPointCloudCollision.get_scene_mesh_from_voxelgrid">
+<span class="sig-name descname"><span class="pre">get_scene_mesh_from_voxelgrid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldPointCloudCollision.get_scene_mesh_from_voxelgrid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldPointCloudCollision.get_scene_mesh_from_voxelgrid" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldPointCloudCollision.get_scene_pts_from_voxelgrid">
+<span class="sig-name descname"><span class="pre">get_scene_pts_from_voxelgrid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldPointCloudCollision.get_scene_pts_from_voxelgrid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldPointCloudCollision.get_scene_pts_from_voxelgrid" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldPointCloudCollision.get_signed_distance">
+<span class="sig-name descname"><span class="pre">get_signed_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldPointCloudCollision.get_signed_distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldPointCloudCollision.get_signed_distance" title="Permalink to this definition"></a></dt>
+<dd><p>This needs to be implemented</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>pts</strong> (<em>tensor</em>) – [b,3]</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>NotImplementedError</strong> – Raises error as this function needs to be implemented in a child class</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>distance [b,1]</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldPointCloudCollision.update_camera_transform">
+<span class="sig-name descname"><span class="pre">update_camera_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">w_c_trans</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_R_c</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldPointCloudCollision.update_camera_transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldPointCloudCollision.update_camera_transform" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldPointCloudCollision.update_world_pc">
+<span class="sig-name descname"><span class="pre">update_world_pc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pointcloud</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seg_labels</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldPointCloudCollision.update_world_pc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldPointCloudCollision.update_world_pc" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldPointCloudCollision.update_world_sdf">
+<span class="sig-name descname"><span class="pre">update_world_sdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scene_pc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldPointCloudCollision.update_world_sdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldPointCloudCollision.update_world_sdf" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldPointCloudCollision.update_world_voxel">
+<span class="sig-name descname"><span class="pre">update_world_voxel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scene_pc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldPointCloudCollision.update_world_voxel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldPointCloudCollision.update_world_voxel" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldPrimitiveCollision">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">WorldPrimitiveCollision</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">world_collision_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tensor_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'device':</span> <span class="pre">'cpu',</span> <span class="pre">'dtype':</span> <span class="pre">torch.float32}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldPrimitiveCollision"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldPrimitiveCollision" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#storm_kit.geom.sdf.world.WorldGridCollision" title="storm_kit.geom.sdf.world.WorldGridCollision"><code class="xref py py-class docutils literal notranslate"><span class="pre">WorldGridCollision</span></code></a></p>
+<p>This class holds a batched collision model</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldPrimitiveCollision.get_cube_objs">
+<span class="sig-name descname"><span class="pre">get_cube_objs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldPrimitiveCollision.get_cube_objs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldPrimitiveCollision.get_cube_objs" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldPrimitiveCollision.get_pt_distance">
+<span class="sig-name descname"><span class="pre">get_pt_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">w_pts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldPrimitiveCollision.get_pt_distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldPrimitiveCollision.get_pt_distance" title="Permalink to this definition"></a></dt>
+<dd><p>Args:
+w_pts: b, n, 3</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldPrimitiveCollision.get_signed_distance">
+<span class="sig-name descname"><span class="pre">get_signed_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">w_pts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldPrimitiveCollision.get_signed_distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldPrimitiveCollision.get_signed_distance" title="Permalink to this definition"></a></dt>
+<dd><p>This needs to be implemented</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>pts</strong> (<em>tensor</em>) – [b,3]</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>NotImplementedError</strong> – Raises error as this function needs to be implemented in a child class</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>distance [b,1]</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldPrimitiveCollision.get_sphere_distance">
+<span class="sig-name descname"><span class="pre">get_sphere_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">w_sphere</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldPrimitiveCollision.get_sphere_distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldPrimitiveCollision.get_sphere_distance" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the signed distance via analytic function
+Args:
+tensor_sphere: b, n, 4</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldPrimitiveCollision.get_sphere_objs">
+<span class="sig-name descname"><span class="pre">get_sphere_objs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldPrimitiveCollision.get_sphere_objs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldPrimitiveCollision.get_sphere_objs" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldPrimitiveCollision.load_collision_model">
+<span class="sig-name descname"><span class="pre">load_collision_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">world_collision_params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldPrimitiveCollision.load_collision_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldPrimitiveCollision.load_collision_model" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldPrimitiveCollision.update_obj_poses">
+<span class="sig-name descname"><span class="pre">update_obj_poses</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">objs_pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">objs_rot</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldPrimitiveCollision.update_obj_poses"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldPrimitiveCollision.update_obj_poses" title="Permalink to this definition"></a></dt>
+<dd><p>Update collision object poses
+:param link_pos: [batch, n_links , 3]
+:param link_rot: [batch, n_links , 3 , 3]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.geom.sdf.world.WorldPrimitiveCollision.update_reference_frame">
+<span class="sig-name descname"><span class="pre">update_reference_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r_pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_rot</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/geom/sdf/world.html#WorldPrimitiveCollision.update_reference_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.geom.sdf.world.WorldPrimitiveCollision.update_reference_frame" title="Permalink to this definition"></a></dt>
+<dd><p>Update world collision poses
+:param link_pos: [batch, n_links , 3]
+:param link_rot: [batch, n_links , 3 , 3]</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="storm_kit.geom.sdf.robot_world.html" class="btn btn-neutral float-left" title="storm_kit.geom.sdf.robot_world module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="storm_kit.geom.geom_types.html" class="btn btn-neutral float-right" title="storm_kit.geom.geom_types module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

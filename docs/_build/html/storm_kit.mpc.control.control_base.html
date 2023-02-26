@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>storm_kit.mpc.control.control_base module &mdash; STORM Toolkit  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="storm_kit.mpc.control.control_utils module" href="storm_kit.mpc.control.control_utils.html" />
+    <link rel="prev" title="storm_kit.mpc.control package" href="storm_kit.mpc.control.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> STORM Toolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.differentiable_robot_model.html">storm_kit.differentiable_robot_model package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.geom.html">storm_kit.geom package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.gym.html">storm_kit.gym package</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="storm_kit.mpc.html">storm_kit.mpc package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="storm_kit.mpc.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="storm_kit.mpc.control.html">storm_kit.mpc.control package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="storm_kit.mpc.control.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.html">storm_kit.mpc.cost package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.model.html">storm_kit.mpc.model package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.rollout.html">storm_kit.mpc.rollout package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.task.html">storm_kit.mpc.task package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.utils.html">storm_kit.mpc.utils package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.util_file.html">storm_kit.util_file module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">STORM Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="storm_kit.mpc.html">storm_kit.mpc package</a> &raquo;</li>
+          <li><a href="storm_kit.mpc.control.html">storm_kit.mpc.control package</a> &raquo;</li>
+      <li>storm_kit.mpc.control.control_base module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/storm_kit.mpc.control.control_base.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-storm_kit.mpc.control.control_base">
+<span id="storm-kit-mpc-control-control-base-module"></span><h1>storm_kit.mpc.control.control_base module<a class="headerlink" href="#module-storm_kit.mpc.control.control_base" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="storm_kit.mpc.control.control_base.Controller">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Controller</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d_action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action_lows</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action_highs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">horizon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rollout_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hotstart</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tensor_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'device':</span> <span class="pre">device(type='cpu'),</span> <span class="pre">'dtype':</span> <span class="pre">torch.float32}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/mpc/control/control_base.html#Controller"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.mpc.control.control_base.Controller" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Base class for sampling based controllers.</p>
+<p>Defines an abstract base class for
+sampling based MPC algorithms.</p>
+<p>Implements the optimize method that is called to
+generate an action sequence for a given state and
+is common across sampling based controllers</p>
+<p>Attributes:</p>
+<dl class="simple">
+<dt>d_action<span class="classifier">int</span></dt><dd><p>size of action space</p>
+</dd>
+<dt>action_lows<span class="classifier">torch.Tensor</span></dt><dd><p>lower limits for each action dim</p>
+</dd>
+<dt>action_highs<span class="classifier">torch.Tensor</span></dt><dd><p>upper limits for each action dim</p>
+</dd>
+<dt>horizon<span class="classifier">int</span></dt><dd><p>horizon of rollouts</p>
+</dd>
+<dt>gamma<span class="classifier">float</span></dt><dd><p>discount factor</p>
+</dd>
+<dt>n_iters<span class="classifier">int</span></dt><dd><p>number of optimization iterations per MPC call</p>
+</dd>
+<dt>rollout_fn<span class="classifier">function handle</span></dt><dd><p>rollout policy (or actions) in simulator
+and return states and costs for updating MPC
+distribution</p>
+</dd>
+<dt>sample_mode<span class="classifier">{‘mean’, ‘sample’}</span></dt><dd><p>how to choose action to be executed
+‘mean’ plays the first mean action and
+‘sample’ samples from the distribution</p>
+</dd>
+<dt>hotstart<span class="classifier">bool</span></dt><dd><p>If true, the solution from previous step
+is used to warm start current step</p>
+</dd>
+<dt>seed<span class="classifier">int</span></dt><dd><p>seed value</p>
+</dd>
+<dt>device: torch.device</dt><dd><p>controller can run on both cpu and gpu</p>
+</dd>
+<dt>float_dtype: torch.dtype</dt><dd><p>floating point precision for calculations</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="storm_kit.mpc.control.control_base.Controller._abc_impl">
+<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#storm_kit.mpc.control.control_base.Controller._abc_impl" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.mpc.control.control_base.Controller._calc_val">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_calc_val</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cost_seq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">act_seq</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/mpc/control/control_base.html#Controller._calc_val"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.mpc.control.control_base.Controller._calc_val" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate value of state given
+rollouts from a policy</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.mpc.control.control_base.Controller._get_action_seq">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_get_action_seq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/mpc/control/control_base.html#Controller._get_action_seq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.mpc.control.control_base.Controller._get_action_seq" title="Permalink to this definition"></a></dt>
+<dd><p>Get action sequence to execute on the system based
+on current control distribution</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>mode</strong> – {‘mean’, ‘sample’}
+how to choose action to be executed
+‘mean’ plays mean action and
+‘sample’ samples from the distribution</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.mpc.control.control_base.Controller._shift">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_shift</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/mpc/control/control_base.html#Controller._shift"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.mpc.control.control_base.Controller._shift" title="Permalink to this definition"></a></dt>
+<dd><p>Shift the current control distribution
+to hotstart the next timestep</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.mpc.control.control_base.Controller._update_distribution">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_update_distribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trajectories</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/mpc/control/control_base.html#Controller._update_distribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.mpc.control.control_base.Controller._update_distribution" title="Permalink to this definition"></a></dt>
+<dd><p>Update current control distribution using
+rollout trajectories</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>trajectories</strong> – <p>dict
+Rollout trajectories. Contains the following fields
+observations : torch.tensor</p>
+<blockquote>
+<div><p>observations along rollouts</p>
+</div></blockquote>
+<dl class="simple">
+<dt>actions<span class="classifier">torch.tensor</span></dt><dd><p>actions sampled from control distribution along rollouts</p>
+</dd>
+<dt>costs<span class="classifier">torch.tensor</span></dt><dd><p>step costs along rollouts</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.mpc.control.control_base.Controller.check_convergence">
+<span class="sig-name descname"><span class="pre">check_convergence</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/mpc/control/control_base.html#Controller.check_convergence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.mpc.control.control_base.Controller.check_convergence" title="Permalink to this definition"></a></dt>
+<dd><p>Checks if controller has converged
+Returns False by default</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.mpc.control.control_base.Controller.generate_rollouts">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_rollouts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/mpc/control/control_base.html#Controller.generate_rollouts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.mpc.control.control_base.Controller.generate_rollouts" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.mpc.control.control_base.Controller.get_optimal_value">
+<span class="sig-name descname"><span class="pre">get_optimal_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/mpc/control/control_base.html#Controller.get_optimal_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.mpc.control.control_base.Controller.get_optimal_value" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate optimal value of a state, i.e
+value under optimal policy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>state</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.13)"><em>torch.Tensor</em></a>) – state to calculate optimal value estimate for</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>value</strong> – optimal value estimate of the state</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.mpc.control.control_base.Controller.optimize">
+<span class="sig-name descname"><span class="pre">optimize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc_val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/mpc/control/control_base.html#Controller.optimize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.mpc.control.control_base.Controller.optimize" title="Permalink to this definition"></a></dt>
+<dd><p>Optimize for best action at current state</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>state</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.13)"><em>torch.Tensor</em></a>) – state to calculate optimal action from</p></li>
+<li><p><strong>calc_val</strong> (<em>bool</em>) – If true, calculate the optimal value estimate
+of the state along with action</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>action</strong> (<em>torch.Tensor</em>) – next action to execute</p></li>
+<li><p><strong>value</strong> (<em>float</em>) – optimal value estimate (default: 0.)</p></li>
+<li><p><strong>info</strong> (<em>dict</em>) – dictionary with side-information</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.mpc.control.control_base.Controller.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/mpc/control/control_base.html#Controller.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.mpc.control.control_base.Controller.reset" title="Permalink to this definition"></a></dt>
+<dd><p>Reset the controller</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.mpc.control.control_base.Controller.reset_distribution">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reset_distribution</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/mpc/control/control_base.html#Controller.reset_distribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.mpc.control.control_base.Controller.reset_distribution" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="storm_kit.mpc.control.control_base.Controller.rollout_fn">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rollout_fn</span></span><a class="headerlink" href="#storm_kit.mpc.control.control_base.Controller.rollout_fn" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.mpc.control.control_base.Controller.sample_actions">
+<span class="sig-name descname"><span class="pre">sample_actions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/mpc/control/control_base.html#Controller.sample_actions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.mpc.control.control_base.Controller.sample_actions" title="Permalink to this definition"></a></dt>
+<dd><p>Sample actions from current control distribution</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="storm_kit.mpc.control.html" class="btn btn-neutral float-left" title="storm_kit.mpc.control package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="storm_kit.mpc.control.control_utils.html" class="btn btn-neutral float-right" title="storm_kit.mpc.control.control_utils module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>storm_kit.mpc package &mdash; STORM Toolkit  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="storm_kit.mpc.control package" href="storm_kit.mpc.control.html" />
+    <link rel="prev" title="storm_kit.gym.sim_robot module" href="storm_kit.gym.sim_robot.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> STORM Toolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.differentiable_robot_model.html">storm_kit.differentiable_robot_model package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.geom.html">storm_kit.geom package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.gym.html">storm_kit.gym package</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">storm_kit.mpc package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.html">storm_kit.mpc.control package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.html">storm_kit.mpc.cost package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.model.html">storm_kit.mpc.model package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.rollout.html">storm_kit.mpc.rollout package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.task.html">storm_kit.mpc.task package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.utils.html">storm_kit.mpc.utils package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.util_file.html">storm_kit.util_file module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">STORM Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>storm_kit.mpc package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/storm_kit.mpc.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-storm_kit.mpc">
+<span id="storm-kit-mpc-package"></span><h1>storm_kit.mpc package<a class="headerlink" href="#module-storm_kit.mpc" title="Permalink to this heading"></a></h1>
+<p>Different components of our model predictive control framework is described below.</p>
+<img alt="_images/mpc_framework.png" src="_images/mpc_framework.png" />
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.mpc.control.html">storm_kit.mpc.control package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.control.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.control_base.html">storm_kit.mpc.control.control_base module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.control_base.html#storm_kit.mpc.control.control_base.Controller"><code class="docutils literal notranslate"><span class="pre">Controller</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html">storm_kit.mpc.control.control_utils module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.batch_cholesky"><code class="docutils literal notranslate"><span class="pre">batch_cholesky()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.cost_to_go"><code class="docutils literal notranslate"><span class="pre">cost_to_go()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.cost_to_go_np"><code class="docutils literal notranslate"><span class="pre">cost_to_go_np()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.gaussian_entropy"><code class="docutils literal notranslate"><span class="pre">gaussian_entropy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.gaussian_kl"><code class="docutils literal notranslate"><span class="pre">gaussian_kl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.gaussian_logprob"><code class="docutils literal notranslate"><span class="pre">gaussian_logprob()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.gaussian_logprobgrad"><code class="docutils literal notranslate"><span class="pre">gaussian_logprobgrad()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.generate_gaussian_halton_samples"><code class="docutils literal notranslate"><span class="pre">generate_gaussian_halton_samples()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.generate_gaussian_sobol_samples"><code class="docutils literal notranslate"><span class="pre">generate_gaussian_sobol_samples()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.generate_halton_samples"><code class="docutils literal notranslate"><span class="pre">generate_halton_samples()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.generate_noise"><code class="docutils literal notranslate"><span class="pre">generate_noise()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.generate_noise_np"><code class="docutils literal notranslate"><span class="pre">generate_noise_np()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.generate_prime_numbers"><code class="docutils literal notranslate"><span class="pre">generate_prime_numbers()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.generate_van_der_corput_sample"><code class="docutils literal notranslate"><span class="pre">generate_van_der_corput_sample()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.generate_van_der_corput_samples_batch"><code class="docutils literal notranslate"><span class="pre">generate_van_der_corput_samples_batch()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.get_stomp_cov"><code class="docutils literal notranslate"><span class="pre">get_stomp_cov()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.matrix_cholesky"><code class="docutils literal notranslate"><span class="pre">matrix_cholesky()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.control_utils.html#storm_kit.mpc.control.control_utils.scale_ctrl"><code class="docutils literal notranslate"><span class="pre">scale_ctrl()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.mppi.html">storm_kit.mpc.control.mppi module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.mppi.html#storm_kit.mpc.control.mppi.MPPI"><code class="docutils literal notranslate"><span class="pre">MPPI</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.olgaussian_mpc.html">storm_kit.mpc.control.olgaussian_mpc module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC"><code class="docutils literal notranslate"><span class="pre">OLGaussianMPC</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html">storm_kit.mpc.control.sample_libs module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.HaltonSampleLib"><code class="docutils literal notranslate"><span class="pre">HaltonSampleLib</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.HaltonStompSampleLib"><code class="docutils literal notranslate"><span class="pre">HaltonStompSampleLib</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.KnotSampleLib"><code class="docutils literal notranslate"><span class="pre">KnotSampleLib</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.MultipleSampleLib"><code class="docutils literal notranslate"><span class="pre">MultipleSampleLib</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.RandomSampleLib"><code class="docutils literal notranslate"><span class="pre">RandomSampleLib</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.SampleLib"><code class="docutils literal notranslate"><span class="pre">SampleLib</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.SineSampleLib"><code class="docutils literal notranslate"><span class="pre">SineSampleLib</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.StompSampleLib"><code class="docutils literal notranslate"><span class="pre">StompSampleLib</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.control.sample_libs.html#storm_kit.mpc.control.sample_libs.bspline"><code class="docutils literal notranslate"><span class="pre">bspline()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.mpc.cost.html">storm_kit.mpc.cost package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.DistCost"><code class="docutils literal notranslate"><span class="pre">DistCost</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.DistCost._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">DistCost._is_full_backward_hook</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.DistCost.forward"><code class="docutils literal notranslate"><span class="pre">DistCost.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.DistCost.training"><code class="docutils literal notranslate"><span class="pre">DistCost.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.FiniteDifferenceCost"><code class="docutils literal notranslate"><span class="pre">FiniteDifferenceCost</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.FiniteDifferenceCost._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">FiniteDifferenceCost._is_full_backward_hook</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.FiniteDifferenceCost.forward"><code class="docutils literal notranslate"><span class="pre">FiniteDifferenceCost.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.FiniteDifferenceCost.training"><code class="docutils literal notranslate"><span class="pre">FiniteDifferenceCost.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.JacobianCost"><code class="docutils literal notranslate"><span class="pre">JacobianCost</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.JacobianCost._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">JacobianCost._is_full_backward_hook</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.JacobianCost.forward"><code class="docutils literal notranslate"><span class="pre">JacobianCost.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.JacobianCost.get_relative_transform"><code class="docutils literal notranslate"><span class="pre">JacobianCost.get_relative_transform()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.JacobianCost.training"><code class="docutils literal notranslate"><span class="pre">JacobianCost.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.PoseCost"><code class="docutils literal notranslate"><span class="pre">PoseCost</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.PoseCost._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">PoseCost._is_full_backward_hook</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.PoseCost.forward"><code class="docutils literal notranslate"><span class="pre">PoseCost.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.PoseCost.training"><code class="docutils literal notranslate"><span class="pre">PoseCost.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.ProjectedDistCost"><code class="docutils literal notranslate"><span class="pre">ProjectedDistCost</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.ProjectedDistCost._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">ProjectedDistCost._is_full_backward_hook</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.ProjectedDistCost.forward"><code class="docutils literal notranslate"><span class="pre">ProjectedDistCost.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.ProjectedDistCost.get_pinv_null_disp"><code class="docutils literal notranslate"><span class="pre">ProjectedDistCost.get_pinv_null_disp()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.ProjectedDistCost.get_transpose_null_disp"><code class="docutils literal notranslate"><span class="pre">ProjectedDistCost.get_transpose_null_disp()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.ProjectedDistCost.training"><code class="docutils literal notranslate"><span class="pre">ProjectedDistCost.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.ZeroCost"><code class="docutils literal notranslate"><span class="pre">ZeroCost</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.ZeroCost._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">ZeroCost._is_full_backward_hook</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.ZeroCost.forward"><code class="docutils literal notranslate"><span class="pre">ZeroCost.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.ZeroCost.training"><code class="docutils literal notranslate"><span class="pre">ZeroCost.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.get_inv_null_cost"><code class="docutils literal notranslate"><span class="pre">get_inv_null_cost()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.cost.html#storm_kit.mpc.cost.get_transpose_null_cost"><code class="docutils literal notranslate"><span class="pre">get_transpose_null_cost()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.cost.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.bound_cost.html">storm_kit.mpc.cost.bound_cost module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.cost.bound_cost.html#storm_kit.mpc.cost.bound_cost.BoundCost"><code class="docutils literal notranslate"><span class="pre">BoundCost</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.capsule_collision_cost.html">storm_kit.mpc.cost.capsule_collision_cost module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.cost.capsule_collision_cost.html#storm_kit.mpc.cost.capsule_collision_cost.CapsuleCollisionCost"><code class="docutils literal notranslate"><span class="pre">CapsuleCollisionCost</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.circle_collision_cost.html">storm_kit.mpc.cost.circle_collision_cost module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.cost.circle_collision_cost.html#storm_kit.mpc.cost.circle_collision_cost.CircleCollisionCost"><code class="docutils literal notranslate"><span class="pre">CircleCollisionCost</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.collision_cost.html">storm_kit.mpc.cost.collision_cost module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.cost.collision_cost.html#storm_kit.mpc.cost.collision_cost.CollisionCost"><code class="docutils literal notranslate"><span class="pre">CollisionCost</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.cost_base.html">storm_kit.mpc.cost.cost_base module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.dist_cost.html">storm_kit.mpc.cost.dist_cost module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.cost.dist_cost.html#storm_kit.mpc.cost.dist_cost.DistCost"><code class="docutils literal notranslate"><span class="pre">DistCost</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.ee_vel_cost.html">storm_kit.mpc.cost.ee_vel_cost module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.cost.ee_vel_cost.html#storm_kit.mpc.cost.ee_vel_cost.EEVelCost"><code class="docutils literal notranslate"><span class="pre">EEVelCost</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.finite_difference_cost.html">storm_kit.mpc.cost.finite_difference_cost module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.cost.finite_difference_cost.html#storm_kit.mpc.cost.finite_difference_cost.FiniteDifferenceCost"><code class="docutils literal notranslate"><span class="pre">FiniteDifferenceCost</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.gaussian_projection.html">storm_kit.mpc.cost.gaussian_projection module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.cost.gaussian_projection.html#storm_kit.mpc.cost.gaussian_projection.GaussianProjection"><code class="docutils literal notranslate"><span class="pre">GaussianProjection</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.image_collision_cost.html">storm_kit.mpc.cost.image_collision_cost module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.cost.image_collision_cost.html#storm_kit.mpc.cost.image_collision_cost.ImageCollisionCost"><code class="docutils literal notranslate"><span class="pre">ImageCollisionCost</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.jacobian_cost.html">storm_kit.mpc.cost.jacobian_cost module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.cost.jacobian_cost.html#storm_kit.mpc.cost.jacobian_cost.JacobianCost"><code class="docutils literal notranslate"><span class="pre">JacobianCost</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.manipulability_cost.html">storm_kit.mpc.cost.manipulability_cost module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.cost.manipulability_cost.html#storm_kit.mpc.cost.manipulability_cost.ManipulabilityCost"><code class="docutils literal notranslate"><span class="pre">ManipulabilityCost</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.null_costs.html">storm_kit.mpc.cost.null_costs module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.cost.null_costs.html#storm_kit.mpc.cost.null_costs.get_inv_null_cost"><code class="docutils literal notranslate"><span class="pre">get_inv_null_cost()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.cost.null_costs.html#storm_kit.mpc.cost.null_costs.get_transpose_null_cost"><code class="docutils literal notranslate"><span class="pre">get_transpose_null_cost()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.pose_cost.html">storm_kit.mpc.cost.pose_cost module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.cost.pose_cost.html#storm_kit.mpc.cost.pose_cost.PoseCost"><code class="docutils literal notranslate"><span class="pre">PoseCost</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.primitive_collision_cost.html">storm_kit.mpc.cost.primitive_collision_cost module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.cost.primitive_collision_cost.html#storm_kit.mpc.cost.primitive_collision_cost.PrimitiveCollisionCost"><code class="docutils literal notranslate"><span class="pre">PrimitiveCollisionCost</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.projected_dist_cost.html">storm_kit.mpc.cost.projected_dist_cost module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.cost.projected_dist_cost.html#storm_kit.mpc.cost.projected_dist_cost.ProjectedDistCost"><code class="docutils literal notranslate"><span class="pre">ProjectedDistCost</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.robot_self_collision_cost.html">storm_kit.mpc.cost.robot_self_collision_cost module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.cost.robot_self_collision_cost.html#storm_kit.mpc.cost.robot_self_collision_cost.RobotSelfCollisionCost"><code class="docutils literal notranslate"><span class="pre">RobotSelfCollisionCost</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.stop_cost.html">storm_kit.mpc.cost.stop_cost module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.cost.stop_cost.html#storm_kit.mpc.cost.stop_cost.StopCost"><code class="docutils literal notranslate"><span class="pre">StopCost</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.voxel_collision_cost.html">storm_kit.mpc.cost.voxel_collision_cost module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.cost.voxel_collision_cost.html#storm_kit.mpc.cost.voxel_collision_cost.VoxelCollisionCost"><code class="docutils literal notranslate"><span class="pre">VoxelCollisionCost</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.cost.zero_cost.html">storm_kit.mpc.cost.zero_cost module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.cost.zero_cost.html#storm_kit.mpc.cost.zero_cost.ZeroCost"><code class="docutils literal notranslate"><span class="pre">ZeroCost</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.mpc.model.html">storm_kit.mpc.model package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.model.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.model.integration_utils.html">storm_kit.mpc.model.integration_utils module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.model.integration_utils.html#storm_kit.mpc.model.integration_utils.build_fd_matrix"><code class="docutils literal notranslate"><span class="pre">build_fd_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.model.integration_utils.html#storm_kit.mpc.model.integration_utils.build_int_matrix"><code class="docutils literal notranslate"><span class="pre">build_int_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.model.integration_utils.html#storm_kit.mpc.model.integration_utils.tensor_linspace"><code class="docutils literal notranslate"><span class="pre">tensor_linspace()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.model.integration_utils.html#storm_kit.mpc.model.integration_utils.tensor_step_acc"><code class="docutils literal notranslate"><span class="pre">tensor_step_acc()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.model.integration_utils.html#storm_kit.mpc.model.integration_utils.tensor_step_jerk"><code class="docutils literal notranslate"><span class="pre">tensor_step_jerk()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.model.integration_utils.html#storm_kit.mpc.model.integration_utils.tensor_step_pos"><code class="docutils literal notranslate"><span class="pre">tensor_step_pos()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.model.integration_utils.html#storm_kit.mpc.model.integration_utils.tensor_step_vel"><code class="docutils literal notranslate"><span class="pre">tensor_step_vel()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.model.model_base.html">storm_kit.mpc.model.model_base module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.model.model_base.html#storm_kit.mpc.model.model_base.DynamicsModelBase"><code class="docutils literal notranslate"><span class="pre">DynamicsModelBase</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.model.simple_model.html">storm_kit.mpc.model.simple_model module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.model.simple_model.html#storm_kit.mpc.model.simple_model.HolonomicModel"><code class="docutils literal notranslate"><span class="pre">HolonomicModel</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.model.urdf_kinematic_model.html">storm_kit.mpc.model.urdf_kinematic_model module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.model.urdf_kinematic_model.html#storm_kit.mpc.model.urdf_kinematic_model.URDFKinematicModel"><code class="docutils literal notranslate"><span class="pre">URDFKinematicModel</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.model.urdf_kinematic_model_baseline.html">storm_kit.mpc.model.urdf_kinematic_model_baseline module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.model.urdf_kinematic_model_baseline.html#storm_kit.mpc.model.urdf_kinematic_model_baseline.URDFKinematicModelBaseline"><code class="docutils literal notranslate"><span class="pre">URDFKinematicModelBaseline</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.mpc.rollout.html">storm_kit.mpc.rollout package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.rollout.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.rollout.arm_base.html">storm_kit.mpc.rollout.arm_base module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.rollout.arm_base.html#storm_kit.mpc.rollout.arm_base.ArmBase"><code class="docutils literal notranslate"><span class="pre">ArmBase</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.rollout.arm_reacher.html">storm_kit.mpc.rollout.arm_reacher module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.rollout.arm_reacher.html#storm_kit.mpc.rollout.arm_reacher.ArmReacher"><code class="docutils literal notranslate"><span class="pre">ArmReacher</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.rollout.rollout_base.html">storm_kit.mpc.rollout.rollout_base module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.rollout.rollout_base.html#storm_kit.mpc.rollout.rollout_base.RolloutBase"><code class="docutils literal notranslate"><span class="pre">RolloutBase</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.rollout.simple_reacher.html">storm_kit.mpc.rollout.simple_reacher module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.rollout.simple_reacher.html#storm_kit.mpc.rollout.simple_reacher.SimpleReacher"><code class="docutils literal notranslate"><span class="pre">SimpleReacher</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.mpc.task.html">storm_kit.mpc.task package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.task.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.task.arm_task.html">storm_kit.mpc.task.arm_task module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.task.arm_task.html#storm_kit.mpc.task.arm_task.ArmTask"><code class="docutils literal notranslate"><span class="pre">ArmTask</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.task.reacher_task.html">storm_kit.mpc.task.reacher_task module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.task.reacher_task.html#storm_kit.mpc.task.reacher_task.ReacherTask"><code class="docutils literal notranslate"><span class="pre">ReacherTask</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.task.simple_task.html">storm_kit.mpc.task.simple_task module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.task.simple_task.html#storm_kit.mpc.task.simple_task.SimpleTask"><code class="docutils literal notranslate"><span class="pre">SimpleTask</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.task.task_base.html">storm_kit.mpc.task.task_base module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.task.task_base.html#storm_kit.mpc.task.task_base.BaseTask"><code class="docutils literal notranslate"><span class="pre">BaseTask</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.mpc.utils.html">storm_kit.mpc.utils package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storm_kit.mpc.utils.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.utils.helpers.html">storm_kit.mpc.utils.helpers module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.utils.helpers.html#storm_kit.mpc.utils.helpers.default_to_regular"><code class="docutils literal notranslate"><span class="pre">default_to_regular()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.utils.mpc_process_wrapper.html">storm_kit.mpc.utils.mpc_process_wrapper module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.utils.mpc_process_wrapper.html#storm_kit.mpc.utils.mpc_process_wrapper.ControlProcess"><code class="docutils literal notranslate"><span class="pre">ControlProcess</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.utils.mpc_process_wrapper.html#storm_kit.mpc.utils.mpc_process_wrapper.optimize_process"><code class="docutils literal notranslate"><span class="pre">optimize_process()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.utils.state_filter.html">storm_kit.mpc.utils.state_filter module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.utils.state_filter.html#storm_kit.mpc.utils.state_filter.AlphaBetaFilter"><code class="docutils literal notranslate"><span class="pre">AlphaBetaFilter</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.utils.state_filter.html#storm_kit.mpc.utils.state_filter.JointStateFilter"><code class="docutils literal notranslate"><span class="pre">JointStateFilter</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.utils.state_filter.html#storm_kit.mpc.utils.state_filter.RobotStateFilter"><code class="docutils literal notranslate"><span class="pre">RobotStateFilter</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.utils.torch_utils.html">storm_kit.mpc.utils.torch_utils module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.utils.torch_utils.html#storm_kit.mpc.utils.torch_utils.find_first_idx"><code class="docutils literal notranslate"><span class="pre">find_first_idx()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.utils.torch_utils.html#storm_kit.mpc.utils.torch_utils.find_last_idx"><code class="docutils literal notranslate"><span class="pre">find_last_idx()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.mpc.utils.zmq_robot_interface.html">storm_kit.mpc.utils.zmq_robot_interface module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.utils.zmq_robot_interface.html#storm_kit.mpc.utils.zmq_robot_interface.RobotInterface"><code class="docutils literal notranslate"><span class="pre">RobotInterface</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.utils.zmq_robot_interface.html#storm_kit.mpc.utils.zmq_robot_interface.SimComms"><code class="docutils literal notranslate"><span class="pre">SimComms</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.utils.zmq_robot_interface.html#storm_kit.mpc.utils.zmq_robot_interface.recv_array"><code class="docutils literal notranslate"><span class="pre">recv_array()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="storm_kit.mpc.utils.zmq_robot_interface.html#storm_kit.mpc.utils.zmq_robot_interface.send_array"><code class="docutils literal notranslate"><span class="pre">send_array()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="storm_kit.gym.sim_robot.html" class="btn btn-neutral float-left" title="storm_kit.gym.sim_robot module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="storm_kit.mpc.control.html" class="btn btn-neutral float-right" title="storm_kit.mpc.control package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>storm_kit.mpc.control.mppi &mdash; STORM Toolkit  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> STORM Toolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.differentiable_robot_model.html">storm_kit.differentiable_robot_model package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.geom.html">storm_kit.geom package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.gym.html">storm_kit.gym package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.mpc.html">storm_kit.mpc package</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.util_file.html">storm_kit.util_file module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">STORM Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>storm_kit.mpc.control.mppi</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for storm_kit.mpc.control.mppi</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1">#</span>
+<span class="c1"># MIT License</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2020-2021 NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a</span>
+<span class="c1"># copy of this software and associated documentation files (the &quot;Software&quot;),</span>
+<span class="c1"># to deal in the Software without restriction, including without limitation</span>
+<span class="c1"># the rights to use, copy, modify, merge, publish, distribute, sublicense,</span>
+<span class="c1"># and/or sell copies of the Software, and to permit persons to whom the</span>
+<span class="c1"># Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c1"># all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL</span>
+<span class="c1"># THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING</span>
+<span class="c1"># FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER</span>
+<span class="c1"># DEALINGS IN THE SOFTWARE.#</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.special</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.distributions.multivariate_normal</span> <span class="kn">import</span> <span class="n">MultivariateNormal</span>
+<span class="kn">from</span> <span class="nn">torch.nn.functional</span> <span class="kn">import</span> <span class="n">normalize</span> <span class="k">as</span> <span class="n">f_norm</span>
+
+<span class="kn">from</span> <span class="nn">.control_utils</span> <span class="kn">import</span> <span class="n">cost_to_go</span><span class="p">,</span> <span class="n">matrix_cholesky</span><span class="p">,</span> <span class="n">batch_cholesky</span>
+<span class="kn">from</span> <span class="nn">.olgaussian_mpc</span> <span class="kn">import</span> <span class="n">OLGaussianMPC</span>
+
+<div class="viewcode-block" id="MPPI"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.mppi.html#storm_kit.mpc.control.mppi.MPPI">[docs]</a><span class="k">class</span> <span class="nc">MPPI</span><span class="p">(</span><span class="n">OLGaussianMPC</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    .. inheritance-diagram:: MPPI</span>
+<span class="sd">       :parts: 1</span>
+
+<span class="sd">    Class that implements Model Predictive Path Integral Controller</span>
+<span class="sd">    </span>
+<span class="sd">    Implementation is based on </span>
+<span class="sd">    Williams et. al, Information Theoretic MPC for Model-Based Reinforcement Learning</span>
+<span class="sd">    with additional functions for updating the covariance matrix</span>
+<span class="sd">    and calculating the soft-value function.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">d_action</span><span class="p">,</span>
+                 <span class="n">horizon</span><span class="p">,</span>
+                 <span class="n">init_cov</span><span class="p">,</span>
+                 <span class="n">init_mean</span><span class="p">,</span>
+                 <span class="n">base_action</span><span class="p">,</span>
+                 <span class="n">beta</span><span class="p">,</span>
+                 <span class="n">num_particles</span><span class="p">,</span>
+                 <span class="n">step_size_mean</span><span class="p">,</span>
+                 <span class="n">step_size_cov</span><span class="p">,</span>
+                 <span class="n">alpha</span><span class="p">,</span>
+                 <span class="n">gamma</span><span class="p">,</span>
+                 <span class="n">kappa</span><span class="p">,</span>
+                 <span class="n">n_iters</span><span class="p">,</span>
+                 <span class="n">action_lows</span><span class="p">,</span>
+                 <span class="n">action_highs</span><span class="p">,</span>
+                 <span class="n">null_act_frac</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
+                 <span class="n">rollout_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">sample_mode</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span>
+                 <span class="n">hotstart</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">squash_fn</span><span class="o">=</span><span class="s1">&#39;clamp&#39;</span><span class="p">,</span>
+                 <span class="n">update_cov</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">cov_type</span><span class="o">=</span><span class="s1">&#39;sigma_I&#39;</span><span class="p">,</span>
+                 <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                 <span class="n">sample_params</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;halton&#39;</span><span class="p">,</span> <span class="s1">&#39;fixed_samples&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;seed&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;filter_coeffs&#39;</span><span class="p">:</span><span class="kc">None</span><span class="p">},</span>
+                 <span class="n">tensor_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">),</span> <span class="s1">&#39;dtype&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span>
+                 <span class="n">visual_traj</span><span class="o">=</span><span class="s1">&#39;state_seq&#39;</span><span class="p">):</span>
+        
+        <span class="nb">super</span><span class="p">(</span><span class="n">MPPI</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">d_action</span><span class="p">,</span>
+                                   <span class="n">action_lows</span><span class="p">,</span> 
+                                   <span class="n">action_highs</span><span class="p">,</span>
+                                   <span class="n">horizon</span><span class="p">,</span>
+                                   <span class="n">init_cov</span><span class="p">,</span>
+                                   <span class="n">init_mean</span><span class="p">,</span>
+                                   <span class="n">base_action</span><span class="p">,</span>
+                                   <span class="n">num_particles</span><span class="p">,</span>
+                                   <span class="n">gamma</span><span class="p">,</span>
+                                   <span class="n">n_iters</span><span class="p">,</span>
+                                   <span class="n">step_size_mean</span><span class="p">,</span>
+                                   <span class="n">step_size_cov</span><span class="p">,</span> 
+                                   <span class="n">null_act_frac</span><span class="p">,</span>
+                                   <span class="n">rollout_fn</span><span class="p">,</span>
+                                   <span class="n">sample_mode</span><span class="p">,</span>
+                                   <span class="n">hotstart</span><span class="p">,</span>
+                                   <span class="n">squash_fn</span><span class="p">,</span>
+                                   <span class="n">cov_type</span><span class="p">,</span>
+                                   <span class="n">seed</span><span class="p">,</span>
+                                   <span class="n">sample_params</span><span class="o">=</span><span class="n">sample_params</span><span class="p">,</span>
+                                   <span class="n">tensor_args</span><span class="o">=</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="n">beta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>  <span class="c1"># 0 means control cost is on, 1 means off</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_cov</span> <span class="o">=</span> <span class="n">update_cov</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kappa</span> <span class="o">=</span> <span class="n">kappa</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">visual_traj</span> <span class="o">=</span> <span class="n">visual_traj</span>
+
+<div class="viewcode-block" id="MPPI._update_distribution"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.mppi.html#storm_kit.mpc.control.mppi.MPPI._update_distribution">[docs]</a>    <span class="k">def</span> <span class="nf">_update_distribution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trajectories</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           Update moments in the direction using sampled</span>
+<span class="sd">           trajectories</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">costs</span> <span class="o">=</span> <span class="n">trajectories</span><span class="p">[</span><span class="s2">&quot;costs&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="n">vis_seq</span> <span class="o">=</span> <span class="n">trajectories</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">visual_traj</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="n">trajectories</span><span class="p">[</span><span class="s2">&quot;actions&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exp_util</span><span class="p">(</span><span class="n">costs</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span> <span class="c1"># self.total_costs</span>
+        
+        <span class="c1">#Update best action</span>
+        <span class="n">best_idx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best_idx</span> <span class="o">=</span> <span class="n">best_idx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best_traj</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">index_select</span><span class="p">(</span><span class="n">actions</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">best_idx</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">top_values</span><span class="p">,</span> <span class="n">top_idx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">topk</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">total_costs</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">largest</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="c1"># cost 비교</span>
+        <span class="c1">#print(&#39;[mppi.py] top_values : &#39;, top_values)</span>
+        <span class="c1">#print(ee_pos_seq.shape, top_idx)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_values</span> <span class="o">=</span> <span class="n">top_values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_idx</span> <span class="o">=</span> <span class="n">top_idx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_trajs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">index_select</span><span class="p">(</span><span class="n">vis_seq</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">top_idx</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># (input, dim, index)</span>
+        <span class="c1">#print(self.top_traj.shape)</span>
+        <span class="c1">#print(self.best_traj.shape, best_idx, w.shape)</span>
+        <span class="c1">#self.best_trajs = torch.index_select(</span>
+
+        <span class="n">weighted_seq</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">actions</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="n">sum_seq</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">weighted_seq</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">new_mean</span> <span class="o">=</span> <span class="n">sum_seq</span>
+        <span class="c1">#print(self.stomp_matrix.shape, self.full_scale_tril.shape)</span>
+        <span class="c1">#cov = self.stomp_matrix #torch.matmul(self.full_scale_tril, self.stomp_matrix)</span>
+        <span class="c1">#m_matrix = (1.0 / self.horizon) * cov # f_norm(cov,dim=0)</span>
+        <span class="c1">#sum_seq = sum_seq.transpose(0,1)</span>
+        
+        <span class="c1">#new_mean = torch.matmul(m_matrix,sum_seq.reshape(self.horizon * self.d_action,1)).view(self.d_action, self.horizon).transpose(0,1)</span>
+        
+        
+        <span class="c1"># plot mean:</span>
+        <span class="c1"># = new_mean.cpu().numpy()</span>
+        <span class="c1">#b = sum_seq.cpu().numpy()#.T</span>
+        <span class="c1">#print(w, top_idx)</span>
+        <span class="c1">#new_mean = sum_seq.T</span>
+        <span class="c1">#matplotlib.use(&#39;tkagg&#39;)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean_action</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_size_mean</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_action</span> <span class="o">+</span>\
+            <span class="bp">self</span><span class="o">.</span><span class="n">step_size_mean</span> <span class="o">*</span> <span class="n">new_mean</span>
+        <span class="c1">#c = self.mean_action.cpu().numpy()</span>
+        <span class="c1">#plt.plot(a[:,0])</span>
+        <span class="c1">#plt.plot(b[:,0])</span>
+        <span class="c1">#plt.plot(actions[top_idx[0],:,0].cpu().numpy())</span>
+        <span class="c1">#plt.show()</span>
+
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">actions</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_action</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1">#Update Covariance</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_cov</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;sigma_I&#39;</span><span class="p">:</span>
+                <span class="c1">#weighted_delta = w * (delta ** 2).T</span>
+                <span class="c1">#cov_update = torch.mean(torch.sum(weighted_delta.T, dim=0))</span>
+                <span class="c1">#print(cov_update.shape, self.cov_action)</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Need to implement covariance update of form sigma*I&#39;</span><span class="p">)</span>
+            
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;diag_AxA&#39;</span><span class="p">:</span>
+                <span class="c1">#Diagonal covariance of size AxA</span>
+                <span class="n">weighted_delta</span> <span class="o">=</span> <span class="n">w</span> <span class="o">*</span> <span class="p">(</span><span class="n">delta</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+                <span class="c1"># cov_update = torch.diag(torch.mean(torch.sum(weighted_delta.T, dim=0), dim=0))</span>
+                <span class="n">cov_update</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">weighted_delta</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;diag_HxH&#39;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;full_AxA&#39;</span><span class="p">:</span>
+                <span class="c1">#Full Covariance of size AxA</span>
+                <span class="n">weighted_delta</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">delta</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+                <span class="n">weighted_delta</span> <span class="o">=</span> <span class="n">weighted_delta</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">horizon</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_particles</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_action</span><span class="p">))</span>
+                <span class="n">cov_update</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">weighted_delta</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">weighted_delta</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;full_HAxHA&#39;</span><span class="p">:</span><span class="c1"># and self.sample_type != &#39;stomp&#39;:</span>
+                <span class="n">weighted_delta</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="o">*</span> <span class="n">delta</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">delta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">delta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">delta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">T</span> <span class="c1">#.unsqueeze(-1)</span>
+                <span class="n">cov_update</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">weighted_delta</span><span class="p">,</span> <span class="n">weighted_delta</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+                
+                <span class="c1"># weighted_cov = w * (torch.matmul(delta_new, delta_new.transpose(-2,-1))).T</span>
+                <span class="c1"># weighted_cov = w * cov.T</span>
+                <span class="c1"># cov_update = torch.sum(weighted_cov.T,dim=0)</span>
+                <span class="c1">#</span>
+            <span class="c1">#elif self.sample_type == &#39;stomp&#39;:</span>
+            <span class="c1">#    weighted_delta = w * (delta ** 2).T</span>
+            <span class="c1">#    cov_update = torch.mean(torch.sum(weighted_delta.T, dim=0), dim=0)</span>
+            <span class="c1">#    self.cov_action = (1.0 - self.step_size_cov) * self.cov_action +\</span>
+            <span class="c1">#        self.step_size_cov * cov_update</span>
+            <span class="c1">#    #self.scale_tril = torch.sqrt(self.cov_action)</span>
+            <span class="c1">#    return</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unidentified covariance type in update_distribution&#39;</span><span class="p">)</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_size_cov</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span> <span class="o">+</span>\
+                <span class="bp">self</span><span class="o">.</span><span class="n">step_size_cov</span> <span class="o">*</span> <span class="n">cov_update</span></div>
+            <span class="c1">#if(cov_update == &#39;diag_AxA&#39;):</span>
+            <span class="c1">#    self.scale_tril = torch.sqrt(self.cov_action)</span>
+            <span class="c1"># self.scale_tril = torch.cholesky(self.cov_action)</span>
+
+        
+<div class="viewcode-block" id="MPPI._shift"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.mppi.html#storm_kit.mpc.control.mppi.MPPI._shift">[docs]</a>    <span class="k">def</span> <span class="nf">_shift</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shift_steps</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Predict good parameters for the next time step by</span>
+<span class="sd">            shifting the mean forward one step and growing the covariance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">shift_steps</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_shift</span><span class="p">(</span><span class="n">shift_steps</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_cov</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;sigma_I&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kappa</span> <span class="c1">#* self.init_cov_action</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scale_tril</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span><span class="p">)</span>
+                <span class="c1"># self.inv_cov_action = 1.0 / self.cov_action</span>
+
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;diag_AxA&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kappa</span> <span class="c1">#* self.init_cov_action</span>
+                <span class="c1">#self.cov_action[self.cov_action &lt; 0.0005] = 0.0005</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scale_tril</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span><span class="p">)</span>
+                <span class="c1"># self.inv_cov_action = 1.0 / self.cov_action</span>
+                
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;full_AxA&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kappa</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">I</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scale_tril</span> <span class="o">=</span> <span class="n">matrix_cholesky</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span><span class="p">)</span> <span class="c1"># torch.cholesky(self.cov_action) #</span>
+                <span class="c1"># self.scale_tril = torch.cholesky(self.cov_action)</span>
+                <span class="c1"># self.inv_cov_action = torch.cholesky_inverse(self.scale_tril)</span>
+            
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;full_HAxHA&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kappa</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">I</span>
+
+                <span class="c1">#shift covariance up and to the left</span>
+                <span class="c1"># self.cov_action = torch.roll(self.cov_action, shifts=(-self.d_action, -self.d_action), dims=(0,1))</span>
+                <span class="c1"># self.cov_action = torch.roll(self.cov_action, shifts=(-self.d_action, -self.d_action), dims=(0,1))</span>
+                <span class="c1"># #set bottom A rows and right A columns to zeros</span>
+                <span class="c1"># self.cov_action[-self.d_action:,:].zero_()</span>
+                <span class="c1"># self.cov_action[:,-self.d_action:].zero_()</span>
+                <span class="c1"># #set bottom right AxA block to init_cov value</span>
+                <span class="c1"># self.cov_action[-self.d_action:, -self.d_action:] = self.init_cov*self.I2 </span>
+
+                <span class="n">shift_dim</span> <span class="o">=</span> <span class="n">shift_steps</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_action</span>
+                <span class="n">I2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">shift_dim</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span><span class="p">,</span> <span class="n">shifts</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="n">shift_dim</span><span class="p">,</span> <span class="o">-</span><span class="n">shift_dim</span><span class="p">),</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+                <span class="c1">#set bottom A rows and right A columns to zeros</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span><span class="p">[</span><span class="o">-</span><span class="n">shift_dim</span><span class="p">:,:]</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span><span class="p">[:,</span><span class="o">-</span><span class="n">shift_dim</span><span class="p">:]</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
+                <span class="c1">#set bottom right AxA block to init_cov value</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span><span class="p">[</span><span class="o">-</span><span class="n">shift_dim</span><span class="p">:,</span> <span class="o">-</span><span class="n">shift_dim</span><span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_cov</span><span class="o">*</span><span class="n">I2</span> 
+                <span class="c1">#update cholesky decomp</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scale_tril</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span><span class="p">)</span></div>
+                <span class="c1"># self.inv_cov_action = torch.cholesky_inverse(self.scale_tril)</span>
+
+
+<div class="viewcode-block" id="MPPI._exp_util"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.mppi.html#storm_kit.mpc.control.mppi.MPPI._exp_util">[docs]</a>    <span class="k">def</span> <span class="nf">_exp_util</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">costs</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Calculate weights using exponential utility</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">traj_costs</span> <span class="o">=</span> <span class="n">cost_to_go</span><span class="p">(</span><span class="n">costs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_seq</span><span class="p">)</span>
+        <span class="c1"># if not self.time_based_weights: traj_costs = traj_costs[:,0]</span>
+        <span class="n">traj_costs</span> <span class="o">=</span> <span class="n">traj_costs</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1">#control_costs = self._control_costs(actions)</span>
+
+        <span class="n">total_costs</span> <span class="o">=</span> <span class="n">traj_costs</span> <span class="c1">#+ self.beta * control_costs</span>
+        
+        
+        <span class="c1"># #calculate soft-max</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">softmax</span><span class="p">((</span><span class="o">-</span><span class="mf">1.0</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">)</span> <span class="o">*</span> <span class="n">total_costs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_costs</span> <span class="o">=</span> <span class="n">total_costs</span>
+        <span class="k">return</span> <span class="n">w</span></div>
+
+<div class="viewcode-block" id="MPPI._control_costs"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.mppi.html#storm_kit.mpc.control.mppi.MPPI._control_costs">[docs]</a>    <span class="k">def</span> <span class="nf">_control_costs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># if not self.time_based_weights:</span>
+            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">actions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># u_normalized = self.mean_action.dot(np.linalg.inv(self.cov_action))[np.newaxis,:,:]</span>
+            <span class="c1"># control_costs = 0.5 * u_normalized * (self.mean_action[np.newaxis,:,:] + 2.0 * delta)</span>
+            <span class="c1"># control_costs = np.sum(control_costs, axis=-1)</span>
+            <span class="c1"># control_costs = cost_to_go(control_costs, self.gamma_seq)</span>
+            <span class="c1"># # if not self.time_based_weights: control_costs = control_costs[:,0]</span>
+            <span class="c1"># control_costs = control_costs[:,0]</span>
+            <span class="n">delta</span> <span class="o">=</span> <span class="n">actions</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_action</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">u_normalized</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_action</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">full_inv_cov</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">control_costs</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">u_normalized</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_action</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">delta</span><span class="p">)</span>
+            <span class="n">control_costs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">control_costs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">control_costs</span> <span class="o">=</span> <span class="n">cost_to_go</span><span class="p">(</span><span class="n">control_costs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_seq</span><span class="p">)</span>
+            <span class="n">control_costs</span> <span class="o">=</span> <span class="n">control_costs</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">control_costs</span></div>
+    
+<div class="viewcode-block" id="MPPI._calc_val"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.mppi.html#storm_kit.mpc.control.mppi.MPPI._calc_val">[docs]</a>    <span class="k">def</span> <span class="nf">_calc_val</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trajectories</span><span class="p">):</span>
+        <span class="n">costs</span> <span class="o">=</span> <span class="n">trajectories</span><span class="p">[</span><span class="s2">&quot;costs&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="n">trajectories</span><span class="p">[</span><span class="s2">&quot;actions&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">actions</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_action</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="n">traj_costs</span> <span class="o">=</span> <span class="n">cost_to_go</span><span class="p">(</span><span class="n">costs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_seq</span><span class="p">)[:,</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">control_costs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control_costs</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span>
+        <span class="n">total_costs</span> <span class="o">=</span> <span class="n">traj_costs</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">*</span> <span class="n">control_costs</span>
+        <span class="c1"># calculate log-sum-exp</span>
+        <span class="c1"># c = (-1.0/self.beta) * total_costs.copy()</span>
+        <span class="c1"># cmax = np.max(c)</span>
+        <span class="c1"># c -= cmax</span>
+        <span class="c1"># c = np.exp(c)</span>
+        <span class="c1"># val1 = cmax + np.log(np.sum(c)) - np.log(c.shape[0])</span>
+        <span class="c1"># val1 = -self.beta * val1</span>
+
+        <span class="c1"># val = -self.beta * scipy.special.logsumexp((-1.0/self.beta) * total_costs, b=(1.0/total_costs.shape[0]))</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">logsumexp</span><span class="p">((</span><span class="o">-</span><span class="mf">1.0</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">)</span> <span class="o">*</span> <span class="n">total_costs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">val</span></div></div>
+        
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

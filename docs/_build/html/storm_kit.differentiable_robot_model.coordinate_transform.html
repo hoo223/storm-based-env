@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>storm_kit.differentiable_robot_model.coordinate_transform module &mdash; STORM Toolkit  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="storm_kit.differentiable_robot_model.differentiable_rigid_body module" href="storm_kit.differentiable_robot_model.differentiable_rigid_body.html" />
+    <link rel="prev" title="storm_kit.differentiable_robot_model package" href="storm_kit.differentiable_robot_model.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> STORM Toolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="storm_kit.differentiable_robot_model.html">storm_kit.differentiable_robot_model package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="storm_kit.differentiable_robot_model.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">storm_kit.differentiable_robot_model.coordinate_transform module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform"><code class="docutils literal notranslate"><span class="pre">CoordinateTransform</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#storm_kit.differentiable_robot_model.coordinate_transform._angle_from_tan"><code class="docutils literal notranslate"><span class="pre">_angle_from_tan()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#storm_kit.differentiable_robot_model.coordinate_transform._copysign"><code class="docutils literal notranslate"><span class="pre">_copysign()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#storm_kit.differentiable_robot_model.coordinate_transform._index_from_letter"><code class="docutils literal notranslate"><span class="pre">_index_from_letter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#storm_kit.differentiable_robot_model.coordinate_transform.matrix_to_euler_angles"><code class="docutils literal notranslate"><span class="pre">matrix_to_euler_angles()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#storm_kit.differentiable_robot_model.coordinate_transform.matrix_to_quaternion"><code class="docutils literal notranslate"><span class="pre">matrix_to_quaternion()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#storm_kit.differentiable_robot_model.coordinate_transform.quaternion_to_matrix"><code class="docutils literal notranslate"><span class="pre">quaternion_to_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#storm_kit.differentiable_robot_model.coordinate_transform.rotation_matrix_to_quaternion"><code class="docutils literal notranslate"><span class="pre">rotation_matrix_to_quaternion()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#storm_kit.differentiable_robot_model.coordinate_transform.rpy_angles_to_matrix"><code class="docutils literal notranslate"><span class="pre">rpy_angles_to_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#storm_kit.differentiable_robot_model.coordinate_transform.x_rot"><code class="docutils literal notranslate"><span class="pre">x_rot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#storm_kit.differentiable_robot_model.coordinate_transform.y_rot"><code class="docutils literal notranslate"><span class="pre">y_rot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#storm_kit.differentiable_robot_model.coordinate_transform.z_rot"><code class="docutils literal notranslate"><span class="pre">z_rot()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_rigid_body.html">storm_kit.differentiable_robot_model.differentiable_rigid_body module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.differentiable_robot_model.html">storm_kit.differentiable_robot_model.differentiable_robot_model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.urdf_utils.html">storm_kit.differentiable_robot_model.urdf_utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storm_kit.differentiable_robot_model.utils.html">storm_kit.differentiable_robot_model.utils module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.geom.html">storm_kit.geom package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.gym.html">storm_kit.gym package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.mpc.html">storm_kit.mpc package</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="storm_kit.util_file.html">storm_kit.util_file module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">STORM Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="storm_kit.differentiable_robot_model.html">storm_kit.differentiable_robot_model package</a> &raquo;</li>
+      <li>storm_kit.differentiable_robot_model.coordinate_transform module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/storm_kit.differentiable_robot_model.coordinate_transform.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-storm_kit.differentiable_robot_model.coordinate_transform">
+<span id="storm-kit-differentiable-robot-model-coordinate-transform-module"></span><h1>storm_kit.differentiable_robot_model.coordinate_transform module<a class="headerlink" href="#module-storm_kit.differentiable_robot_model.coordinate_transform" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CoordinateTransform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trans</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tensor_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'device':</span> <span class="pre">'cpu',</span> <span class="pre">'dtype':</span> <span class="pre">torch.float32}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/differentiable_robot_model/coordinate_transform.html#CoordinateTransform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.get_quaternion">
+<span class="sig-name descname"><span class="pre">get_quaternion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/differentiable_robot_model/coordinate_transform.html#CoordinateTransform.get_quaternion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.get_quaternion" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.get_transform_matrix">
+<span class="sig-name descname"><span class="pre">get_transform_matrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/differentiable_robot_model/coordinate_transform.html#CoordinateTransform.get_transform_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.get_transform_matrix" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.inverse">
+<span class="sig-name descname"><span class="pre">inverse</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/differentiable_robot_model/coordinate_transform.html#CoordinateTransform.inverse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.inverse" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.multiply_inv_transform">
+<span class="sig-name descname"><span class="pre">multiply_inv_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinate_transform</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/differentiable_robot_model/coordinate_transform.html#CoordinateTransform.multiply_inv_transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.multiply_inv_transform" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.multiply_transform">
+<span class="sig-name descname"><span class="pre">multiply_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinate_transform</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/differentiable_robot_model/coordinate_transform.html#CoordinateTransform.multiply_transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.multiply_transform" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.rotation">
+<span class="sig-name descname"><span class="pre">rotation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/differentiable_robot_model/coordinate_transform.html#CoordinateTransform.rotation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.rotation" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.set_pose">
+<span class="sig-name descname"><span class="pre">set_pose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pose</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/differentiable_robot_model/coordinate_transform.html#CoordinateTransform.set_pose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.set_pose" title="Permalink to this definition"></a></dt>
+<dd><p>Args:
+pose: x, y, z, qw, qx, qy, qz</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.set_rotation">
+<span class="sig-name descname"><span class="pre">set_rotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rot</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/differentiable_robot_model/coordinate_transform.html#CoordinateTransform.set_rotation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.set_rotation" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.set_translation">
+<span class="sig-name descname"><span class="pre">set_translation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/differentiable_robot_model/coordinate_transform.html#CoordinateTransform.set_translation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.set_translation" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.trans_cross_rot">
+<span class="sig-name descname"><span class="pre">trans_cross_rot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/differentiable_robot_model/coordinate_transform.html#CoordinateTransform.trans_cross_rot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.trans_cross_rot" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.transform_point">
+<span class="sig-name descname"><span class="pre">transform_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/differentiable_robot_model/coordinate_transform.html#CoordinateTransform.transform_point"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.transform_point" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.translation">
+<span class="sig-name descname"><span class="pre">translation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/differentiable_robot_model/coordinate_transform.html#CoordinateTransform.translation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.differentiable_robot_model.coordinate_transform.CoordinateTransform.translation" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="storm_kit.differentiable_robot_model.coordinate_transform._angle_from_tan">
+<span class="sig-name descname"><span class="pre">_angle_from_tan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">other_axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">horizontal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tait_bryan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/differentiable_robot_model/coordinate_transform.html#_angle_from_tan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.differentiable_robot_model.coordinate_transform._angle_from_tan" title="Permalink to this definition"></a></dt>
+<dd><p>Extract the first or third Euler angle from the two members of
+the matrix which are positive constant times its sine and cosine.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>axis</strong> – Axis label “X” or “Y or “Z” for the angle we are finding.</p></li>
+<li><p><strong>other_axis</strong> – Axis label “X” or “Y or “Z” for the middle axis in the
+convention.</p></li>
+<li><p><strong>data</strong> – Rotation matrices as tensor of shape (…, 3, 3).</p></li>
+<li><p><strong>horizontal</strong> – Whether we are looking for the angle for the third axis,
+which means the relevant entries are in the same row of the
+rotation matrix. If not, they are in the same column.</p></li>
+<li><p><strong>tait_bryan</strong> – Whether the first and third axes in the convention differ.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Euler Angles in radians for each matrix in data as a tensor
+of shape (…).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="storm_kit.differentiable_robot_model.coordinate_transform._copysign">
+<span class="sig-name descname"><span class="pre">_copysign</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/differentiable_robot_model/coordinate_transform.html#_copysign"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.differentiable_robot_model.coordinate_transform._copysign" title="Permalink to this definition"></a></dt>
+<dd><p>Return a tensor where each element has the absolute value taken from the,
+corresponding element of a, with sign taken from the corresponding
+element of b. This is like the standard copysign floating-point operation,
+but is not careful about negative 0 and NaN.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> – source tensor.</p></li>
+<li><p><strong>b</strong> – tensor whose signs will be used, of the same shape as a.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Tensor of the same shape as a with the signs of b.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="storm_kit.differentiable_robot_model.coordinate_transform._index_from_letter">
+<span class="sig-name descname"><span class="pre">_index_from_letter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">letter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/differentiable_robot_model/coordinate_transform.html#_index_from_letter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.differentiable_robot_model.coordinate_transform._index_from_letter" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="storm_kit.differentiable_robot_model.coordinate_transform.matrix_to_euler_angles">
+<span class="sig-name descname"><span class="pre">matrix_to_euler_angles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cy_thresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/differentiable_robot_model/coordinate_transform.html#matrix_to_euler_angles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.differentiable_robot_model.coordinate_transform.matrix_to_euler_angles" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="storm_kit.differentiable_robot_model.coordinate_transform.matrix_to_quaternion">
+<span class="sig-name descname"><span class="pre">matrix_to_quaternion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/differentiable_robot_model/coordinate_transform.html#matrix_to_quaternion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.differentiable_robot_model.coordinate_transform.matrix_to_quaternion" title="Permalink to this definition"></a></dt>
+<dd><p>Convert rotations given as rotation matrices to quaternions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>matrix</strong> – Rotation matrices as tensor of shape (…, 3, 3).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>quaternions with real part first, as tensor of shape (…, 4). [qw, qx,qy,qz]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="storm_kit.differentiable_robot_model.coordinate_transform.quaternion_to_matrix">
+<span class="sig-name descname"><span class="pre">quaternion_to_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quaternions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/differentiable_robot_model/coordinate_transform.html#quaternion_to_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.differentiable_robot_model.coordinate_transform.quaternion_to_matrix" title="Permalink to this definition"></a></dt>
+<dd><p>Convert rotations given as quaternions to rotation matrices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>quaternions</strong> – quaternions with real part first,
+as tensor of shape (…, 4).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Rotation matrices as tensor of shape (…, 3, 3).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="storm_kit.differentiable_robot_model.coordinate_transform.rotation_matrix_to_quaternion">
+<span class="sig-name descname"><span class="pre">rotation_matrix_to_quaternion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rotation_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/differentiable_robot_model/coordinate_transform.html#rotation_matrix_to_quaternion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.differentiable_robot_model.coordinate_transform.rotation_matrix_to_quaternion" title="Permalink to this definition"></a></dt>
+<dd><p>Convert 3x4 rotation matrix to 4d quaternion vector</p>
+<p>This algorithm is based on algorithm described in
+<a class="reference external" href="https://github.com/KieranWynn/pyquaternion/blob/master/pyquaternion/quaternion.py#L201">https://github.com/KieranWynn/pyquaternion/blob/master/pyquaternion/quaternion.py#L201</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>rotation_matrix</strong> (<em>Tensor</em>) – the rotation matrix to convert.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the rotation in quaternion</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tensor</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Shape:</dt><dd><ul class="simple">
+<li><p>Input: <span class="math notranslate nohighlight">\((N, 3, 4)\)</span></p></li>
+<li><p>Output: <span class="math notranslate nohighlight">\((N, 4)\)</span></p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>  <span class="c1"># Nx3x4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output</span> <span class="o">=</span> <span class="n">tgm</span><span class="o">.</span><span class="n">rotation_matrix_to_quaternion</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>  <span class="c1"># Nx4</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="storm_kit.differentiable_robot_model.coordinate_transform.rpy_angles_to_matrix">
+<span class="sig-name descname"><span class="pre">rpy_angles_to_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">euler_angles</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/differentiable_robot_model/coordinate_transform.html#rpy_angles_to_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.differentiable_robot_model.coordinate_transform.rpy_angles_to_matrix" title="Permalink to this definition"></a></dt>
+<dd><p>Convert rotations given as RPY euler angles in radians to rotation matrices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>euler_angles</strong> – Euler angles in radians as tensor of shape (…, 3).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Rotation matrices as tensor of shape (…, 3, 3).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="storm_kit.differentiable_robot_model.coordinate_transform.x_rot">
+<span class="sig-name descname"><span class="pre">x_rot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/differentiable_robot_model/coordinate_transform.html#x_rot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.differentiable_robot_model.coordinate_transform.x_rot" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="storm_kit.differentiable_robot_model.coordinate_transform.y_rot">
+<span class="sig-name descname"><span class="pre">y_rot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/differentiable_robot_model/coordinate_transform.html#y_rot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.differentiable_robot_model.coordinate_transform.y_rot" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="storm_kit.differentiable_robot_model.coordinate_transform.z_rot">
+<span class="sig-name descname"><span class="pre">z_rot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/storm_kit/differentiable_robot_model/coordinate_transform.html#z_rot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#storm_kit.differentiable_robot_model.coordinate_transform.z_rot" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="storm_kit.differentiable_robot_model.html" class="btn btn-neutral float-left" title="storm_kit.differentiable_robot_model package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="storm_kit.differentiable_robot_model.differentiable_rigid_body.html" class="btn btn-neutral float-right" title="storm_kit.differentiable_robot_model.differentiable_rigid_body module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

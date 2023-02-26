@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>storm_kit.mpc.control.olgaussian_mpc &mdash; STORM Toolkit  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> STORM Toolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.differentiable_robot_model.html">storm_kit.differentiable_robot_model package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.geom.html">storm_kit.geom package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.gym.html">storm_kit.gym package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.mpc.html">storm_kit.mpc package</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.util_file.html">storm_kit.util_file module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">STORM Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>storm_kit.mpc.control.olgaussian_mpc</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for storm_kit.mpc.control.olgaussian_mpc</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># MIT License</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2020-2021 NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a</span>
+<span class="c1"># copy of this software and associated documentation files (the &quot;Software&quot;),</span>
+<span class="c1"># to deal in the Software without restriction, including without limitation</span>
+<span class="c1"># the rights to use, copy, modify, merge, publish, distribute, sublicense,</span>
+<span class="c1"># and/or sell copies of the Software, and to permit persons to whom the</span>
+<span class="c1"># Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c1"># all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL</span>
+<span class="c1"># THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING</span>
+<span class="c1"># FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER</span>
+<span class="c1"># DEALINGS IN THE SOFTWARE.#</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">MPC with open-loop Gaussian policies</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.distributions.multivariate_normal</span> <span class="kn">import</span> <span class="n">MultivariateNormal</span>
+
+<span class="kn">from</span> <span class="nn">.control_base</span> <span class="kn">import</span> <span class="n">Controller</span>
+<span class="kn">from</span> <span class="nn">.control_utils</span> <span class="kn">import</span> <span class="n">generate_noise</span><span class="p">,</span> <span class="n">scale_ctrl</span><span class="p">,</span> <span class="n">generate_gaussian_halton_samples</span><span class="p">,</span> <span class="n">generate_gaussian_sobol_samples</span><span class="p">,</span> <span class="n">gaussian_entropy</span><span class="p">,</span> <span class="n">matrix_cholesky</span><span class="p">,</span> <span class="n">batch_cholesky</span><span class="p">,</span> <span class="n">get_stomp_cov</span>
+<span class="kn">from</span> <span class="nn">.sample_libs</span> <span class="kn">import</span> <span class="n">StompSampleLib</span><span class="p">,</span> <span class="n">HaltonSampleLib</span><span class="p">,</span> <span class="n">RandomSampleLib</span><span class="p">,</span> <span class="n">HaltonStompSampleLib</span><span class="p">,</span> <span class="n">MultipleSampleLib</span>
+
+<div class="viewcode-block" id="OLGaussianMPC"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC">[docs]</a><span class="k">class</span> <span class="nc">OLGaussianMPC</span><span class="p">(</span><span class="n">Controller</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        .. inheritance-diagram:: OLGaussianMPC</span>
+<span class="sd">           :parts: 1</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                 <span class="n">d_action</span><span class="p">,</span>                
+                 <span class="n">action_lows</span><span class="p">,</span>
+                 <span class="n">action_highs</span><span class="p">,</span>
+                 <span class="n">horizon</span><span class="p">,</span>
+                 <span class="n">init_cov</span><span class="p">,</span>
+                 <span class="n">init_mean</span><span class="p">,</span>
+                 <span class="n">base_action</span><span class="p">,</span>
+                 <span class="n">num_particles</span><span class="p">,</span>
+                 <span class="n">gamma</span><span class="p">,</span>
+                 <span class="n">n_iters</span><span class="p">,</span>
+                 <span class="n">step_size_mean</span><span class="p">,</span>
+                 <span class="n">step_size_cov</span><span class="p">,</span>
+                 <span class="n">null_act_frac</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
+                 <span class="n">rollout_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">sample_mode</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span>
+                 <span class="n">hotstart</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">squash_fn</span><span class="o">=</span><span class="s1">&#39;clamp&#39;</span><span class="p">,</span>
+                 <span class="n">cov_type</span><span class="o">=</span><span class="s1">&#39;sigma_I&#39;</span><span class="p">,</span>
+                 <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                 <span class="n">sample_params</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;halton&#39;</span><span class="p">,</span> <span class="s1">&#39;fixed_samples&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;seed&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;filter_coeffs&#39;</span><span class="p">:</span><span class="kc">None</span><span class="p">},</span>
+                 <span class="n">tensor_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">),</span> <span class="s1">&#39;dtype&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span>
+                 <span class="n">fixed_actions</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        __________</span>
+<span class="sd">        base_action : str</span>
+<span class="sd">            Action to append at the end when shifting solution to next timestep</span>
+<span class="sd">            &#39;random&#39; : appends random action</span>
+<span class="sd">            &#39;null&#39; : appends zero action</span>
+<span class="sd">            &#39;repeat&#39; : repeats second to last action</span>
+<span class="sd">        num_particles : int</span>
+<span class="sd">            Number of action sequences sampled at every iteration</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">OLGaussianMPC</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">d_action</span><span class="p">,</span>
+                                            <span class="n">action_lows</span><span class="p">,</span>
+                                            <span class="n">action_highs</span><span class="p">,</span>
+                                            <span class="n">horizon</span><span class="p">,</span>
+                                            <span class="n">gamma</span><span class="p">,</span>
+                                            <span class="n">n_iters</span><span class="p">,</span>
+                                            <span class="n">rollout_fn</span><span class="p">,</span>
+                                            <span class="n">sample_mode</span><span class="p">,</span>
+                                            <span class="n">hotstart</span><span class="p">,</span>
+                                            <span class="n">seed</span><span class="p">,</span>
+                                            <span class="n">tensor_args</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_cov</span> <span class="o">=</span> <span class="n">init_cov</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_mean</span> <span class="o">=</span> <span class="n">init_mean</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">=</span> <span class="n">cov_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_action</span> <span class="o">=</span> <span class="n">base_action</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_particles</span> <span class="o">=</span> <span class="n">num_particles</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_size_mean</span> <span class="o">=</span> <span class="n">step_size_mean</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_size_cov</span> <span class="o">=</span> <span class="n">step_size_cov</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">squash_fn</span> <span class="o">=</span> <span class="n">squash_fn</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">null_act_frac</span> <span class="o">=</span> <span class="n">null_act_frac</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_null_particles</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">null_act_frac</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_particles</span> <span class="o">*</span> <span class="mf">1.0</span><span class="p">))</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_neg_particles</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">null_act_frac</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_particles</span><span class="p">))</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_null_particles</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_nonzero_particles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_particles</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_null_particles</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_neg_particles</span>
+
+        <span class="c1">#print(self.num_null_particles, self.num_neg_particles)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_params</span> <span class="o">=</span> <span class="n">sample_params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_type</span> <span class="o">=</span> <span class="n">sample_params</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+        <span class="c1"># initialize sampling library:</span>
+        <span class="k">if</span> <span class="n">sample_params</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;stomp&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sample_lib</span> <span class="o">=</span> <span class="n">StompSampleLib</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">horizon</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_action</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sample_shape</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">num_nonzero_particles</span> <span class="o">-</span> <span class="mi">2</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">i_ha</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d_action</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">sample_params</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;halton&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sample_lib</span> <span class="o">=</span> <span class="n">HaltonSampleLib</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">horizon</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_action</span><span class="p">,</span>
+                                              <span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">,</span>
+                                              <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_params</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sample_shape</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">num_nonzero_particles</span> <span class="o">-</span> <span class="mi">2</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">sample_params</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;random&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sample_lib</span> <span class="o">=</span> <span class="n">RandomSampleLib</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">horizon</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_action</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">,</span>
+                                              <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_params</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sample_shape</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">num_nonzero_particles</span> <span class="o">-</span> <span class="mi">2</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">sample_params</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;multiple&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sample_lib</span> <span class="o">=</span> <span class="n">MultipleSampleLib</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">horizon</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_action</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_params</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sample_shape</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">num_nonzero_particles</span> <span class="o">-</span> <span class="mi">2</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">stomp_matrix</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1">#self.sample_lib.stomp_cov_matrix</span>
+        <span class="c1"># initialize covariance types:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;full_HAxHA&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">I</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">horizon</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_action</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+            
+        <span class="k">else</span><span class="p">:</span> <span class="c1"># AxA</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">I</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d_action</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">Z_seq</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_action</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_distribution</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_null_particles</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">null_act_seqs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_null_particles</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_action</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">delta</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="OLGaussianMPC._get_action_seq"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC._get_action_seq">[docs]</a>    <span class="k">def</span> <span class="nf">_get_action_seq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;mean&#39;</span><span class="p">:</span>
+            <span class="n">act_seq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_action</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;sample&#39;</span><span class="p">:</span>
+            <span class="n">delta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_noise</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span><span class="p">)),</span>
+                                        <span class="n">base_seed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">seed_val</span> <span class="o">+</span> <span class="mi">123</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_steps</span><span class="p">)</span>
+            <span class="n">act_seq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_action</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">delta</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">full_scale_tril</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unidentified sampling mode in get_next_action&#39;</span><span class="p">)</span>
+        
+        <span class="n">act_seq</span> <span class="o">=</span> <span class="n">scale_ctrl</span><span class="p">(</span><span class="n">act_seq</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_lows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_highs</span><span class="p">,</span> <span class="n">squash_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">squash_fn</span><span class="p">)</span> <span class="c1"># [horizon, action_dim]</span>
+
+        <span class="k">return</span> <span class="n">act_seq</span></div>
+
+
+<div class="viewcode-block" id="OLGaussianMPC.generate_noise"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC.generate_noise">[docs]</a>    <span class="k">def</span> <span class="nf">generate_noise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">base_seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Generate correlated noisy samples using autoregressive process</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_lib</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="n">sample_shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">base_seed</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">delta</span></div>
+        
+<div class="viewcode-block" id="OLGaussianMPC.sample_actions"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC.sample_actions">[docs]</a>    <span class="k">def</span> <span class="nf">sample_actions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_lib</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="n">sample_shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_shape</span><span class="p">,</span> <span class="n">base_seed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">seed_val</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_steps</span><span class="p">)</span>
+
+
+        <span class="c1">#add zero-noise seq so mean is always a part of samples</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">delta</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Z_seq</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="c1"># samples could be from HAxHA or AxA:</span>
+        <span class="c1"># We reshape them based on covariance type:</span>
+        <span class="c1"># if cov is AxA, then we don&#39;t reshape samples as samples are: N x H x A</span>
+        <span class="c1"># if cov is HAxHA, then we reshape</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;full_HAxHA&#39;</span><span class="p">:</span>
+            <span class="c1"># delta: N * H * A -&gt; N * HA</span>
+            <span class="n">delta</span> <span class="o">=</span> <span class="n">delta</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">delta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_action</span><span class="p">)</span>
+
+            
+        <span class="n">scaled_delta</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">delta</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">full_scale_tril</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">delta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                                                      <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span><span class="p">,</span>
+                                                                      <span class="bp">self</span><span class="o">.</span><span class="n">d_action</span><span class="p">)</span>
+
+
+
+        <span class="c1">#</span>
+        <span class="n">debug_act</span> <span class="o">=</span> <span class="n">delta</span><span class="p">[:,:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+
+        <span class="n">act_seq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_action</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">scaled_delta</span>
+        
+
+        <span class="n">act_seq</span> <span class="o">=</span> <span class="n">scale_ctrl</span><span class="p">(</span><span class="n">act_seq</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_lows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_highs</span><span class="p">,</span> <span class="n">squash_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">squash_fn</span><span class="p">)</span>
+        
+
+        <span class="n">append_acts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">best_traj</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="c1">#append zero actions (for stopping)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_null_particles</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># zero particles:</span>
+
+            <span class="c1"># negative action particles:</span>
+            <span class="n">neg_action</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_action</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">neg_act_seqs</span> <span class="o">=</span> <span class="n">neg_action</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_neg_particles</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">append_acts</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">append_acts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">null_act_seqs</span><span class="p">,</span> <span class="n">neg_act_seqs</span><span class="p">),</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        
+        <span class="n">act_seq</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">act_seq</span><span class="p">,</span> <span class="n">append_acts</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">act_seq</span></div>
+
+<div class="viewcode-block" id="OLGaussianMPC.generate_rollouts"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC.generate_rollouts">[docs]</a>    <span class="k">def</span> <span class="nf">generate_rollouts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Samples a batch of actions, rolls out trajectories for each particle</span>
+<span class="sd">            and returns the resulting observations, costs,  </span>
+<span class="sd">            actions</span>
+
+<span class="sd">            Parameters</span>
+<span class="sd">            ----------</span>
+<span class="sd">            state : dict or np.ndarray</span>
+<span class="sd">                Initial state to set the simulation env to</span>
+<span class="sd">         &quot;&quot;&quot;</span>
+        
+        <span class="n">act_seq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_actions</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">)</span> <span class="c1"># sample noise from covariance of current control distribution</span>
+
+        <span class="n">trajectories</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rollout_fn</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">act_seq</span><span class="p">)</span> <span class="c1"># storm_kit/mpc/rollout/arm_base.py -&gt; dictionary - actions, costs, ee_pos_seq, rollout_time</span>
+        <span class="k">return</span> <span class="n">trajectories</span></div>
+    
+<div class="viewcode-block" id="OLGaussianMPC._shift"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC._shift">[docs]</a>    <span class="k">def</span> <span class="nf">_shift</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shift_steps</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Predict mean for the next time step by</span>
+<span class="sd">            shifting the current mean forward by one step</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">shift_steps</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="c1"># self.new_mean_action = self.mean_action.clone()</span>
+        <span class="c1"># self.new_mean_action[:-1] = #self.mean_action[1:]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean_action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_action</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="o">-</span><span class="n">shift_steps</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best_traj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">best_traj</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="o">-</span><span class="n">shift_steps</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_action</span> <span class="o">==</span> <span class="s1">&#39;random&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mean_action</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_noise</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> 
+                                                       <span class="n">base_seed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">seed_val</span> <span class="o">+</span> <span class="mi">123</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">num_steps</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">best_traj</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_noise</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> 
+                                                     <span class="n">base_seed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">seed_val</span> <span class="o">+</span> <span class="mi">123</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">num_steps</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_action</span> <span class="o">==</span> <span class="s1">&#39;null&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mean_action</span><span class="p">[</span><span class="o">-</span><span class="n">shift_steps</span><span class="p">:]</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">best_traj</span><span class="p">[</span><span class="o">-</span><span class="n">shift_steps</span><span class="p">:]</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_action</span> <span class="o">==</span> <span class="s1">&#39;repeat&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mean_action</span><span class="p">[</span><span class="o">-</span><span class="n">shift_steps</span><span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_action</span><span class="p">[</span><span class="o">-</span><span class="n">shift_steps</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">best_traj</span><span class="p">[</span><span class="o">-</span><span class="n">shift_steps</span><span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">best_traj</span><span class="p">[</span><span class="o">-</span><span class="n">shift_steps</span> <span class="o">-</span><span class="mi">1</span> <span class="p">]</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+            <span class="c1">#self.mean_action[-1] = self.mean_action[-2].clone()</span>
+            <span class="c1">#self.best_traj[-1] = self.best_traj[-2].clone()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;invalid option for base action during shift&quot;</span><span class="p">)</span></div>
+        <span class="c1"># self.mean_action = self.new_mean_action</span>
+
+<div class="viewcode-block" id="OLGaussianMPC.reset_mean"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC.reset_mean">[docs]</a>    <span class="k">def</span> <span class="nf">reset_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean_action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_mean</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best_traj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_action</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="OLGaussianMPC.reset_covariance"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC.reset_covariance">[docs]</a>    <span class="k">def</span> <span class="nf">reset_covariance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;sigma_I&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">init_cov</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init_cov_action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_cov</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inv_cov_action</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_cov</span>  
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale_tril</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span><span class="p">)</span>
+        
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;diag_AxA&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init_cov_action</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">init_cov</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">d_action</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_cov_action</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inv_cov_action</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale_tril</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span><span class="p">)</span>
+
+        
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;full_AxA&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init_cov_action</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">init_cov</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">d_action</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_cov_action</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale_tril</span> <span class="o">=</span> <span class="n">matrix_cholesky</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span><span class="p">)</span> <span class="c1">#torch.cholesky(self.cov_action)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inv_cov_action</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cholesky_inverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scale_tril</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;full_HAxHA&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init_cov_action</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">init_cov</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">horizon</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_action</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">))</span>
+                
+            <span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_cov_action</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale_tril</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inv_cov_action</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cholesky_inverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scale_tril</span><span class="p">)</span>
+            
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unidentified covariance type in update_distribution&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OLGaussianMPC.reset_distribution"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC.reset_distribution">[docs]</a>    <span class="k">def</span> <span class="nf">reset_distribution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Reset control distribution</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_mean</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_covariance</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="OLGaussianMPC._calc_val"><a class="viewcode-back" href="../../../../storm_kit.mpc.control.olgaussian_mpc.html#storm_kit.mpc.control.olgaussian_mpc.OLGaussianMPC._calc_val">[docs]</a>    <span class="k">def</span> <span class="nf">_calc_val</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cost_seq</span><span class="p">,</span> <span class="n">act_seq</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;_calc_val not implemented&quot;</span><span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">squashed_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">scale_ctrl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_action</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_lows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_highs</span><span class="p">,</span> <span class="n">squash_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">squash_fn</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">full_cov</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;sigma_I&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">I</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;diag_AxA&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;full_AxA&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;full_HAxHA&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_action</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">full_inv_cov</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;sigma_I&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">inv_cov_action</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">I</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;diag_AxA&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inv_cov_action</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;full_AxA&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">inv_cov_action</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;full_HAxHA&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">inv_cov_action</span>
+
+            
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">full_scale_tril</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;sigma_I&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_tril</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">I</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;diag_AxA&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scale_tril</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;full_AxA&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_tril</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_type</span> <span class="o">==</span> <span class="s1">&#39;full_HAxHA&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_tril</span>
+            
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">entropy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># ent_cov = gaussian_entropy(cov=self.full_cov)</span>
+        <span class="n">ent_L</span> <span class="o">=</span> <span class="n">gaussian_entropy</span><span class="p">(</span><span class="n">L</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">full_scale_tril</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ent_L</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

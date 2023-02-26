@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>storm_kit.mpc.utils.zmq_robot_interface &mdash; STORM Toolkit  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> STORM Toolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.differentiable_robot_model.html">storm_kit.differentiable_robot_model package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.geom.html">storm_kit.geom package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.gym.html">storm_kit.gym package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.mpc.html">storm_kit.mpc package</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.util_file.html">storm_kit.util_file module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">STORM Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>storm_kit.mpc.utils.zmq_robot_interface</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for storm_kit.mpc.utils.zmq_robot_interface</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># MIT License</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2020-2021 NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a</span>
+<span class="c1"># copy of this software and associated documentation files (the &quot;Software&quot;),</span>
+<span class="c1"># to deal in the Software without restriction, including without limitation</span>
+<span class="c1"># the rights to use, copy, modify, merge, publish, distribute, sublicense,</span>
+<span class="c1"># and/or sell copies of the Software, and to permit persons to whom the</span>
+<span class="c1"># Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c1"># all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL</span>
+<span class="c1"># THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING</span>
+<span class="c1"># FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER</span>
+<span class="c1"># DEALINGS IN THE SOFTWARE.#</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">zmq</span>
+<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Thread</span>
+
+<div class="viewcode-block" id="send_array"><a class="viewcode-back" href="../../../../storm_kit.mpc.utils.zmq_robot_interface.html#storm_kit.mpc.utils.zmq_robot_interface.send_array">[docs]</a><span class="k">def</span> <span class="nf">send_array</span><span class="p">(</span><span class="n">socket</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">track</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;send a numpy array with metadata&quot;&quot;&quot;</span>
+    <span class="n">md</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">socket</span><span class="o">.</span><span class="n">send_json</span><span class="p">(</span><span class="n">md</span><span class="p">,</span> <span class="n">flags</span><span class="o">|</span><span class="n">zmq</span><span class="o">.</span><span class="n">SNDMORE</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">socket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="n">copy</span><span class="p">,</span> <span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="recv_array"><a class="viewcode-back" href="../../../../storm_kit.mpc.utils.zmq_robot_interface.html#storm_kit.mpc.utils.zmq_robot_interface.recv_array">[docs]</a><span class="k">def</span> <span class="nf">recv_array</span><span class="p">(</span><span class="n">socket</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">track</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;recv a numpy array&quot;&quot;&quot;</span>
+    <span class="n">md</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">recv_json</span><span class="p">(</span><span class="n">flags</span><span class="o">=</span><span class="n">flags</span><span class="p">)</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">flags</span><span class="o">=</span><span class="n">flags</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="n">copy</span><span class="p">,</span> <span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">)</span>
+    <span class="n">buf</span> <span class="o">=</span> <span class="nb">memoryview</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">md</span><span class="p">[</span><span class="s1">&#39;dtype&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">A</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">md</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="SimComms"><a class="viewcode-back" href="../../../../storm_kit.mpc.utils.zmq_robot_interface.html#storm_kit.mpc.utils.zmq_robot_interface.SimComms">[docs]</a><span class="k">class</span> <span class="nc">SimComms</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pub_topic</span><span class="o">=</span><span class="s1">&#39;control_traj&#39;</span><span class="p">,</span> <span class="n">sub_topic</span><span class="o">=</span><span class="s1">&#39;robot_state&#39;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="n">pub_port</span><span class="o">=</span><span class="s1">&#39;5001&#39;</span><span class="p">,</span>
+                 <span class="n">sub_port</span><span class="o">=</span><span class="s1">&#39;5002&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="mf">1000.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">done</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pub_socket</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">PUB</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pub_socket</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s2">&quot;tcp://</span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">pub_port</span><span class="p">))</span>
+        
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">pub_topic</span> <span class="o">=</span> <span class="n">pub_topic</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sub_socket</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">SUB</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sub_socket</span><span class="o">.</span><span class="n">setsockopt</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">RCVTIMEO</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sub_socket</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;tcp://</span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">sub_port</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sub_topic</span> <span class="o">=</span> <span class="n">sub_topic</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sub_socket</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_topic</span><span class="p">)</span>
+        <span class="c1">#self.state = None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_message</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_topic</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pub_array</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">t1</span> <span class="o">=</span> <span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">thread_fn_sub</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t1</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t2</span> <span class="o">=</span> <span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">thread_fn_pub</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t2</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="SimComms.thread_fn_sub"><a class="viewcode-back" href="../../../../storm_kit.mpc.utils.zmq_robot_interface.html#storm_kit.mpc.utils.zmq_robot_interface.SimComms.thread_fn_sub">[docs]</a>    <span class="k">def</span> <span class="nf">thread_fn_sub</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">done</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">topic</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_socket</span><span class="o">.</span><span class="n">recv_string</span><span class="p">(</span><span class="n">flags</span><span class="o">=</span><span class="n">zmq</span><span class="o">.</span><span class="n">NOBLOCK</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Again</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="n">recv_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_socket</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">zmq</span><span class="o">.</span><span class="n">NOBLOCK</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">track</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="k">if</span><span class="p">(</span><span class="n">topic</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_topic</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state_message</span> <span class="o">=</span> <span class="n">state</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state_topic</span> <span class="o">=</span> <span class="n">topic</span></div>
+<div class="viewcode-block" id="SimComms.thread_fn_pub"><a class="viewcode-back" href="../../../../storm_kit.mpc.utils.zmq_robot_interface.html#storm_kit.mpc.utils.zmq_robot_interface.SimComms.thread_fn_pub">[docs]</a>    <span class="k">def</span> <span class="nf">thread_fn_pub</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1">#print(self.done)</span>
+        <span class="k">while</span><span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">done</span><span class="p">):</span>
+            <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pub_array</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="c1">#print(self.robot_state_pub)</span>
+                <span class="c1">#print(self.pub_topic, self.pub_array)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pub_socket</span><span class="o">.</span><span class="n">send_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pub_topic</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">zmq</span><span class="o">.</span><span class="n">SNDMORE</span><span class="p">)</span>
+                <span class="n">send_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pub_socket</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">pub_array</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">track</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pub_array</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+        
+<div class="viewcode-block" id="SimComms.close"><a class="viewcode-back" href="../../../../storm_kit.mpc.utils.zmq_robot_interface.html#storm_kit.mpc.utils.zmq_robot_interface.SimComms.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">done</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sub_socket</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pub_socket</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">term</span><span class="p">()</span></div>
+<div class="viewcode-block" id="SimComms.send_command"><a class="viewcode-back" href="../../../../storm_kit.mpc.utils.zmq_robot_interface.html#storm_kit.mpc.utils.zmq_robot_interface.SimComms.send_command">[docs]</a>    <span class="k">def</span> <span class="nf">send_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+        <span class="c1">#print(&quot;setting command...&quot;)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pub_array</span> <span class="o">=</span> <span class="n">cmd</span></div>
+        <span class="c1">#print(self.done)</span>
+        <span class="c1">#print(self.pub_array)</span>
+        
+<div class="viewcode-block" id="SimComms.get_state"><a class="viewcode-back" href="../../../../storm_kit.mpc.utils.zmq_robot_interface.html#storm_kit.mpc.utils.zmq_robot_interface.SimComms.get_state">[docs]</a>    <span class="k">def</span> <span class="nf">get_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">state_message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_message</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_message</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">state_message</span></div></div>
+
+
+
+
+<div class="viewcode-block" id="RobotInterface"><a class="viewcode-back" href="../../../../storm_kit.mpc.utils.zmq_robot_interface.html#storm_kit.mpc.utils.zmq_robot_interface.RobotInterface">[docs]</a><span class="k">class</span> <span class="nc">RobotInterface</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pub_topic</span><span class="o">=</span><span class="s1">&#39;control_traj&#39;</span><span class="p">,</span> <span class="n">sub_topic</span><span class="o">=</span><span class="s1">&#39;robot_state&#39;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="n">pub_port</span><span class="o">=</span><span class="s1">&#39;5001&#39;</span><span class="p">,</span> <span class="n">sub_port</span><span class="o">=</span><span class="s1">&#39;5002&#39;</span><span class="p">,</span><span class="n">pair_port</span><span class="o">=</span><span class="s1">&#39;5003&#39;</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sub_hz</span> <span class="o">=</span> <span class="mf">500.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pub_topic</span> <span class="o">=</span> <span class="n">pub_topic</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sub_topic</span> <span class="o">=</span> <span class="n">sub_topic</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">host</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pub_port</span> <span class="o">=</span> <span class="n">pub_port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sub_port</span> <span class="o">=</span> <span class="n">sub_port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_topic</span> <span class="o">=</span> <span class="n">sub_topic</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zmq_comms</span> <span class="o">=</span> <span class="n">SimComms</span><span class="p">(</span><span class="n">sub_topic</span><span class="o">=</span><span class="n">sub_topic</span><span class="p">,</span>
+                                  <span class="n">pub_topic</span><span class="o">=</span><span class="n">pub_topic</span><span class="p">,</span>
+                                  <span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">,</span>
+                                  <span class="n">sub_port</span><span class="o">=</span><span class="n">sub_port</span><span class="p">,</span>
+                                  <span class="n">pub_port</span><span class="o">=</span><span class="n">pub_port</span><span class="p">)</span>
+        
+        
+<div class="viewcode-block" id="RobotInterface.get_state"><a class="viewcode-back" href="../../../../storm_kit.mpc.utils.zmq_robot_interface.html#storm_kit.mpc.utils.zmq_robot_interface.RobotInterface.get_state">[docs]</a>    <span class="k">def</span> <span class="nf">get_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1">#print(&quot;waiting on state&quot;)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zmq_comms</span><span class="o">.</span><span class="n">get_state</span><span class="p">()</span>
+        <span class="k">while</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zmq_comms</span><span class="o">.</span><span class="n">get_state</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+                <span class="n">exit</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
+        
+        <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">6</span><span class="o">*</span><span class="mi">3</span><span class="p">):</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[:</span><span class="o">-</span><span class="mi">9</span><span class="p">]</span>
+            <span class="n">goal_pose</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="o">-</span><span class="mi">9</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+            <span class="c1">#print(self.state)</span>
+            <span class="n">t_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">open_loop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span>
+            <span class="n">goal_pose</span><span class="p">,</span> <span class="n">t_idx</span><span class="p">,</span> <span class="n">open_loop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">0</span>
+            
+        <span class="n">state_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;robot_state&#39;</span><span class="p">:</span> <span class="n">state</span><span class="p">,</span><span class="s1">&#39;goal_pose&#39;</span><span class="p">:</span> <span class="n">goal_pose</span><span class="p">,</span> <span class="s1">&#39;t_idx&#39;</span><span class="p">:</span> <span class="n">t_idx</span><span class="p">,</span> <span class="s1">&#39;open_loop&#39;</span><span class="p">:</span>
+                      <span class="nb">bool</span><span class="p">(</span><span class="n">open_loop</span><span class="p">)}</span>    
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">state_dict</span></div>
+
+<div class="viewcode-block" id="RobotInterface.publish_state"><a class="viewcode-back" href="../../../../storm_kit.mpc.utils.zmq_robot_interface.html#storm_kit.mpc.utils.zmq_robot_interface.RobotInterface.publish_state">[docs]</a>    <span class="k">def</span> <span class="nf">publish_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+ 
+<div class="viewcode-block" id="RobotInterface.publish_action"><a class="viewcode-back" href="../../../../storm_kit.mpc.utils.zmq_robot_interface.html#storm_kit.mpc.utils.zmq_robot_interface.RobotInterface.publish_action">[docs]</a>    <span class="k">def</span> <span class="nf">publish_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action_traj</span><span class="p">,</span> <span class="n">append_time</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+        <span class="n">num_commands</span> <span class="o">=</span> <span class="n">action_traj</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="k">if</span> <span class="n">append_time</span><span class="p">:</span>
+            <span class="n">command_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="n">stop</span><span class="o">=</span><span class="n">dt</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">action_traj</span><span class="p">),</span> <span class="n">step</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">action_traj</span><span class="p">),</span><span class="mi">1</span><span class="p">)</span>
+            <span class="c1">#print(command_times)</span>
+        <span class="n">command</span> <span class="o">=</span> <span class="n">action_traj</span>
+        <span class="k">if</span> <span class="n">append_time</span><span class="p">:</span>        
+            <span class="n">command</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">command</span><span class="p">,</span> <span class="n">command_times</span><span class="p">),</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1">#print(command)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zmq_comms</span><span class="o">.</span><span class="n">send_command</span><span class="p">(</span><span class="n">command</span><span class="p">)</span></div>
+    
+   
+<div class="viewcode-block" id="RobotInterface.publish_command"><a class="viewcode-back" href="../../../../storm_kit.mpc.utils.zmq_robot_interface.html#storm_kit.mpc.utils.zmq_robot_interface.RobotInterface.publish_command">[docs]</a>    <span class="k">def</span> <span class="nf">publish_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command_state_seq</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;acc&#39;</span><span class="p">,</span> <span class="n">append_time</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">num_commands</span> <span class="o">=</span> <span class="n">command_state_seq</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">command_state_seq</span><span class="p">[:,:</span><span class="mi">6</span><span class="p">])</span> <span class="c1">#TODO: Remove hardode!</span>
+        <span class="n">qd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">command_state_seq</span><span class="p">[:,</span><span class="mi">6</span><span class="p">:</span><span class="mi">12</span><span class="p">])</span>
+        <span class="n">qdd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">command_state_seq</span><span class="p">[:,</span> <span class="mi">12</span><span class="p">:</span><span class="mi">18</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">append_time</span><span class="p">:</span>
+            <span class="n">command_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">command_state_seq</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">num_commands</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;pos&#39;</span><span class="p">:</span>
+            <span class="n">command</span> <span class="o">=</span> <span class="n">q</span>
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;vel&#39;</span><span class="p">:</span>
+            <span class="n">command</span> <span class="o">=</span> <span class="n">qd</span>
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;acc&#39;</span><span class="p">:</span>
+            <span class="n">command</span> <span class="o">=</span> <span class="n">qdd</span>
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;full&#39;</span><span class="p">:</span>
+            <span class="n">command</span> <span class="o">=</span> <span class="n">command_state_seq</span>
+        <span class="k">if</span> <span class="n">append_time</span><span class="p">:</span>        
+            <span class="n">command</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">command</span><span class="p">,</span> <span class="n">command_times</span><span class="p">),</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Publishing plan&#39;</span><span class="p">,</span> <span class="n">command</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zmq_comms</span><span class="o">.</span><span class="n">send_command</span><span class="p">(</span><span class="n">command</span><span class="p">)</span></div>
+    
+        
+<div class="viewcode-block" id="RobotInterface.close"><a class="viewcode-back" href="../../../../storm_kit.mpc.utils.zmq_robot_interface.html#storm_kit.mpc.utils.zmq_robot_interface.RobotInterface.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1">#close thread</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zmq_comms</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>storm_kit.geom.sdf.world &mdash; STORM Toolkit  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> STORM Toolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.differentiable_robot_model.html">storm_kit.differentiable_robot_model package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.geom.html">storm_kit.geom package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.gym.html">storm_kit.gym package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.mpc.html">storm_kit.mpc package</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../storm_kit.util_file.html">storm_kit.util_file module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">STORM Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>storm_kit.geom.sdf.world</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for storm_kit.geom.sdf.world</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># MIT License</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2020-2021 NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a</span>
+<span class="c1"># copy of this software and associated documentation files (the &quot;Software&quot;),</span>
+<span class="c1"># to deal in the Software without restriction, including without limitation</span>
+<span class="c1"># the rights to use, copy, modify, merge, publish, distribute, sublicense,</span>
+<span class="c1"># and/or sell copies of the Software, and to permit persons to whom the</span>
+<span class="c1"># Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c1"># all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL</span>
+<span class="c1"># THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING</span>
+<span class="c1"># FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER</span>
+<span class="c1"># DEALINGS IN THE SOFTWARE.#</span>
+
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">trimesh</span>
+<span class="kn">from</span> <span class="nn">trimesh.voxel.creation</span> <span class="kn">import</span> <span class="n">voxelize</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;tkagg&#39;</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+
+<span class="kn">from</span> <span class="nn">...differentiable_robot_model.coordinate_transform</span> <span class="kn">import</span> <span class="n">CoordinateTransform</span><span class="p">,</span> <span class="n">rpy_angles_to_matrix</span><span class="p">,</span> <span class="n">transform_point</span>
+<span class="kn">from</span> <span class="nn">...geom.geom_types</span> <span class="kn">import</span> <span class="n">tensor_capsule</span><span class="p">,</span> <span class="n">tensor_sphere</span><span class="p">,</span> <span class="n">tensor_cube</span>
+<span class="kn">from</span> <span class="nn">...geom.sdf.primitives</span> <span class="kn">import</span> <span class="n">get_pt_primitive_distance</span><span class="p">,</span> <span class="n">get_sphere_primitive_distance</span>
+
+<div class="viewcode-block" id="WorldCollision"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldCollision">[docs]</a><span class="k">class</span> <span class="nc">WorldCollision</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">}):</span>
+        <span class="c1"># read capsules</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span> <span class="o">=</span> <span class="n">tensor_args</span>
+        
+<div class="viewcode-block" id="WorldCollision.load_collision_model"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldCollision.load_collision_model">[docs]</a>    <span class="k">def</span> <span class="nf">load_collision_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
+
+
+<div class="viewcode-block" id="WorldGridCollision"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldGridCollision">[docs]</a><span class="k">class</span> <span class="nc">WorldGridCollision</span><span class="p">(</span><span class="n">WorldCollision</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This template class can be used to build a sdf grid using a signed distance function for fast lookup.</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span><span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">grid_resolution</span><span class="o">=</span><span class="mf">0.05</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">bounds</span><span class="p">,</span> <span class="o">**</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid_resolution</span> <span class="o">=</span> <span class="n">grid_resolution</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pitch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_resolution</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene_sdf</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene_sdf_matrix</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="WorldGridCollision.update_world_sdf"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldGridCollision.update_world_sdf">[docs]</a>    <span class="k">def</span> <span class="nf">update_world_sdf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">sdf_grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_sdfgrid</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene_sdf_matrix</span> <span class="o">=</span> <span class="n">sdf_grid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene_sdf</span> <span class="o">=</span> <span class="n">sdf_grid</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="WorldGridCollision.get_signed_distance"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldGridCollision.get_signed_distance">[docs]</a>    <span class="k">def</span> <span class="nf">get_signed_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pts</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This needs to be implemented</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            pts (tensor): [b,3]</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: Raises error as this function needs to be implemented in a child class</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tensor: distance [b,1]</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">dist</span></div>
+<div class="viewcode-block" id="WorldGridCollision.view_sdf_grid"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldGridCollision.view_sdf_grid">[docs]</a>    <span class="k">def</span> <span class="nf">view_sdf_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sdf_grid</span><span class="p">):</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">(</span><span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">)</span>
+        <span class="n">ind_matrix</span> <span class="o">=</span> <span class="p">[[</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sdf_grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sdf_grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sdf_grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])]</span>
+        <span class="n">ind_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">ind_matrix</span><span class="p">)</span>
+        <span class="n">xdata</span> <span class="o">=</span> <span class="n">ind_matrix</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">ydata</span> <span class="o">=</span> <span class="n">ind_matrix</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">zdata</span> <span class="o">=</span> <span class="n">ind_matrix</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span>
+        
+        <span class="n">c_data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">sdf_grid</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">scatter3D</span><span class="p">(</span><span class="n">xdata</span><span class="p">,</span> <span class="n">ydata</span><span class="p">,</span> <span class="n">zdata</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">c_data</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;coolwarm&#39;</span><span class="p">)</span><span class="c1">#, vmin=-0.1, vmax=0.1)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="WorldGridCollision.build_transform_matrices"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldGridCollision.build_transform_matrices">[docs]</a>    <span class="k">def</span> <span class="nf">build_transform_matrices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">pitch</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Args:</span>
+<span class="sd">        bounds: [[min_x, min_y, min_z], [max_x, max_y, max_z]]</span>
+<span class="sd">        pitch: float</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">origin</span> <span class="o">=</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># build pt to idx</span>
+        <span class="c1"># given a point (x,y,z), convert to an index assuming pt is within bounds</span>
+        <span class="n">rot</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">pitch</span><span class="p">)</span>
+        <span class="n">trans</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">origin</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proj_pt_idx</span> <span class="o">=</span> <span class="n">CoordinateTransform</span><span class="p">(</span><span class="n">trans</span><span class="o">=-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">trans</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">pitch</span><span class="p">),</span> <span class="n">rot</span><span class="o">=</span><span class="n">rot</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        
+        
+        <span class="c1"># build idx to pt</span>
+        <span class="n">rot</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">pitch</span><span class="p">)</span>
+        <span class="c1">#trans = torch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proj_idx_pt</span> <span class="o">=</span> <span class="n">CoordinateTransform</span><span class="p">(</span><span class="n">trans</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">trans</span><span class="p">,</span> <span class="n">rot</span><span class="o">=</span><span class="n">rot</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="WorldGridCollision._compute_sdfgrid"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldGridCollision._compute_sdfgrid">[docs]</a>    <span class="k">def</span> <span class="nf">_compute_sdfgrid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># voxel grid has different bounds</span>
+
+        <span class="c1"># create a sdf grid for scene bounds and pitch:</span>
+        <span class="n">sdf_grid_dims</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">(((</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_resolution</span><span class="p">)</span><span class="o">.</span><span class="n">int</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">build_transform_matrices</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_resolution</span><span class="p">)</span>
+
+        <span class="n">sdf_grid</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">sdf_grid_dims</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_voxels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">sdf_grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sdf_grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                        <span class="n">sdf_grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
+                                       <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+
+        <span class="c1"># get indices</span>
+
+        <span class="n">ind_matrix</span> <span class="o">=</span> <span class="p">[[</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sdf_grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sdf_grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sdf_grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])]</span>
+        
+        <span class="n">ind_matrix</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">ind_matrix</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ind_matrix</span> <span class="o">=</span> <span class="n">ind_matrix</span>
+        <span class="n">pt_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proj_idx_pt</span><span class="o">.</span><span class="n">transform_point</span><span class="p">(</span><span class="n">ind_matrix</span><span class="p">)</span>
+
+        <span class="n">dist_matrix</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_signed_distance</span><span class="p">(</span><span class="n">pt_matrix</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dist_matrix</span> <span class="o">=</span> <span class="n">dist_matrix</span>
+        
+        <span class="c1"># get corresponding points</span>
+        <span class="c1"># Get closest distance from indice points to points in pointcloud:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sdf_grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sdf_grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sdf_grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
+                    <span class="n">sdf_grid</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">dist_matrix</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="p">(</span><span class="n">sdf_grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">sdf_grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">+</span> <span class="n">j</span> <span class="o">*</span> <span class="p">(</span><span class="n">sdf_grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">+</span> <span class="n">k</span><span class="p">]</span>
+                    
+                    
+        <span class="k">return</span> <span class="n">sdf_grid</span></div>
+    
+<div class="viewcode-block" id="WorldGridCollision.check_pts_sdf"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldGridCollision.check_pts_sdf">[docs]</a>    <span class="k">def</span> <span class="nf">check_pts_sdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pts</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        finds the signed distance for the points from the stored grid</span>
+<span class="sd">        Args:</span>
+<span class="sd">        pts: [n,3]</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1">#print(self.bounds, self.pitch)</span>
+        <span class="n">in_bounds</span> <span class="o">=</span> <span class="p">(</span><span class="n">pts</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">pitch</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">in_bounds</span> <span class="o">&amp;=</span> <span class="p">(</span><span class="n">pts</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">pitch</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1">#pts[~in_bounds] = self.bounds[0]</span>
+        <span class="n">pt_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">voxel_inds</span><span class="p">(</span><span class="n">pts</span><span class="p">)</span>
+        
+        <span class="n">pt_idx</span><span class="p">[</span><span class="o">~</span><span class="n">in_bounds</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="c1"># remove points outside voxel region:</span>
+        <span class="c1"># check collisions:</span>
+        <span class="c1"># batch * n_links, n_pts</span>
+        <span class="c1"># get sdf from scene voxels:</span>
+        <span class="c1"># negative distance is outside mesh:</span>
+        <span class="n">sdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene_sdf</span><span class="p">[</span><span class="n">pt_idx</span><span class="p">]</span>
+        <span class="n">sdf</span><span class="p">[</span><span class="o">~</span><span class="n">in_bounds</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">10.0</span>
+        <span class="k">return</span> <span class="n">sdf</span></div>
+
+<div class="viewcode-block" id="WorldGridCollision.voxel_inds"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldGridCollision.voxel_inds">[docs]</a>    <span class="k">def</span> <span class="nf">voxel_inds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pt</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+
+        <span class="n">pt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proj_pt_idx</span><span class="o">.</span><span class="n">transform_point</span><span class="p">(</span><span class="n">pt</span><span class="p">)</span>
+
+        <span class="n">pt</span> <span class="o">=</span> <span class="p">(</span><span class="n">pt</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+
+        
+        <span class="n">ind_pt</span> <span class="o">=</span> <span class="p">(</span><span class="n">pt</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_voxels</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_voxels</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">+</span> <span class="n">pt</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_voxels</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">pt</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
+        
+        <span class="n">ind_pt</span> <span class="o">=</span> <span class="n">ind_pt</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">ind_pt</span> <span class="o">=</span> <span class="n">ind_pt</span>
+        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ind_pt</span></div></div>
+
+<div class="viewcode-block" id="WorldPrimitiveCollision"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPrimitiveCollision">[docs]</a><span class="k">class</span> <span class="nc">WorldPrimitiveCollision</span><span class="p">(</span><span class="n">WorldGridCollision</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; This class holds a batched collision model</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">world_collision_params</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">grid_resolution</span><span class="o">=</span><span class="mf">0.05</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">tensor_args</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">grid_resolution</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_world_spheres</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_world_cubes</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_objs</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_T_c</span> <span class="o">=</span> <span class="n">CoordinateTransform</span><span class="p">(</span><span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_collision_model</span><span class="p">(</span><span class="n">world_collision_params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dist</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="n">bounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_world_sdf</span><span class="p">()</span>
+
+<div class="viewcode-block" id="WorldPrimitiveCollision.load_collision_model"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPrimitiveCollision.load_collision_model">[docs]</a>    <span class="k">def</span> <span class="nf">load_collision_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">world_collision_params</span><span class="p">):</span>
+        
+        <span class="n">world_objs</span> <span class="o">=</span> <span class="n">world_collision_params</span><span class="p">[</span><span class="s1">&#39;coll_objs&#39;</span><span class="p">]</span>
+        <span class="n">sphere_objs</span> <span class="o">=</span> <span class="n">world_objs</span><span class="p">[</span><span class="s1">&#39;sphere&#39;</span><span class="p">]</span>
+        <span class="k">if</span><span class="p">(</span><span class="s1">&#39;cube&#39;</span> <span class="ow">in</span> <span class="n">world_objs</span><span class="p">):</span>
+            <span class="n">cube_objs</span> <span class="o">=</span> <span class="n">world_objs</span><span class="p">[</span><span class="s1">&#39;cube&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cube_objs</span> <span class="o">=</span> <span class="p">[]</span>
+            
+
+        <span class="c1"># we store as [Batch, n_link, 7]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_world_spheres</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">sphere_objs</span><span class="p">),</span> <span class="mi">4</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_world_cubes</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">j_idx</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sphere_objs</span><span class="p">):</span>
+            <span class="n">position</span> <span class="o">=</span> <span class="n">sphere_objs</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="s1">&#39;position&#39;</span><span class="p">]</span>
+            
+            <span class="n">r</span> <span class="o">=</span> <span class="n">sphere_objs</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="s1">&#39;radius&#39;</span><span class="p">]</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">_world_spheres</span><span class="p">[:,</span> <span class="n">j_idx</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">tensor_sphere</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">j_idx</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cube_objs</span><span class="p">):</span>
+            <span class="n">pose</span> <span class="o">=</span> <span class="n">cube_objs</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="s1">&#39;pose&#39;</span><span class="p">]</span>
+            <span class="n">pose_fixed</span> <span class="o">=</span> <span class="p">[</span><span class="n">pose</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pose</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">pose</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">pose</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span> <span class="n">pose</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">pose</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">pose</span><span class="p">[</span><span class="mi">5</span><span class="p">]]</span>
+            <span class="n">dims</span> <span class="o">=</span> <span class="n">cube_objs</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="s1">&#39;dims&#39;</span><span class="p">]</span>
+            <span class="n">cube</span> <span class="o">=</span> <span class="n">tensor_cube</span><span class="p">(</span><span class="n">pose_fixed</span><span class="p">,</span> <span class="n">dims</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_world_cubes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cube</span><span class="p">)</span>
+
+            
+            
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_objs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world_spheres</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_world_cubes</span><span class="p">)</span></div>
+        
+    
+<div class="viewcode-block" id="WorldPrimitiveCollision.update_obj_poses"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPrimitiveCollision.update_obj_poses">[docs]</a>    <span class="k">def</span> <span class="nf">update_obj_poses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">objs_pos</span><span class="p">,</span> <span class="n">objs_rot</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update collision object poses</span>
+<span class="sd">        Args:</span>
+<span class="sd">           link_pos: [batch, n_links , 3]</span>
+<span class="sd">           link_rot: [batch, n_links , 3 , 3]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1"># This contains coordinate tranforms as [batch_size * n_links ]</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_T_c</span><span class="o">.</span><span class="n">set_translation</span><span class="p">(</span><span class="n">objs_pos</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_T_c</span><span class="o">.</span><span class="n">set_rotation</span><span class="p">(</span><span class="n">objs_rot</span><span class="p">)</span>
+        
+        <span class="c1"># Update tranform of link points:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_world_spheres</span><span class="p">[:,:,:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">l_T_c</span><span class="o">.</span><span class="n">transform_point</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_world_spheres</span><span class="p">[:,:,:</span><span class="mi">3</span><span class="p">])</span></div>
+
+        <span class="c1"># TODO for cube:</span>
+        
+
+<div class="viewcode-block" id="WorldPrimitiveCollision.update_reference_frame"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPrimitiveCollision.update_reference_frame">[docs]</a>    <span class="k">def</span> <span class="nf">update_reference_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r_pos</span><span class="p">,</span> <span class="n">r_rot</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update world collision poses</span>
+<span class="sd">        Args:</span>
+<span class="sd">           link_pos: [batch, n_links , 3]</span>
+<span class="sd">           link_rot: [batch, n_links , 3 , 3]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1"># This contains coordinate tranforms as [batch_size * n_links ]</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_T_c</span><span class="o">.</span><span class="n">set_translation</span><span class="p">(</span><span class="n">r_pos</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_T_c</span><span class="o">.</span><span class="n">set_rotation</span><span class="p">(</span><span class="n">r_rot</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_world_spheres</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_world_spheres</span><span class="p">[:,</span><span class="n">i</span><span class="p">,:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">l_T_c</span><span class="o">.</span><span class="n">transform_point</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_world_spheres</span><span class="p">[:,</span><span class="n">i</span><span class="p">,:</span><span class="mi">3</span><span class="p">])</span></div>
+            
+<div class="viewcode-block" id="WorldPrimitiveCollision.get_sphere_objs"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPrimitiveCollision.get_sphere_objs">[docs]</a>    <span class="k">def</span> <span class="nf">get_sphere_objs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># return capsule spheres in world frame</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world_spheres</span></div>
+
+<div class="viewcode-block" id="WorldPrimitiveCollision.get_cube_objs"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPrimitiveCollision.get_cube_objs">[docs]</a>    <span class="k">def</span> <span class="nf">get_cube_objs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># return capsule spheres in world frame</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world_cubes</span></div>
+
+<div class="viewcode-block" id="WorldPrimitiveCollision.get_sphere_distance"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPrimitiveCollision.get_sphere_distance">[docs]</a>    <span class="k">def</span> <span class="nf">get_sphere_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">w_sphere</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the signed distance via analytic function</span>
+<span class="sd">        Args:</span>
+<span class="sd">        tensor_sphere: b, n, 4</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">w_sphere</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_objs</span><span class="p">,</span> <span class="n">w_sphere</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">get_sphere_primitive_distance</span><span class="p">(</span><span class="n">w_sphere</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world_spheres</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world_cubes</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dist</span></div>
+
+<div class="viewcode-block" id="WorldPrimitiveCollision.get_pt_distance"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPrimitiveCollision.get_pt_distance">[docs]</a>    <span class="k">def</span> <span class="nf">get_pt_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">w_pts</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">        w_pts: b, n, 3</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">w_pts</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="n">w_pts</span> <span class="o">=</span> <span class="n">w_pts</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">w_pts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">w_pts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_objs</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist_shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="n">w_pts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dist</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">w_pts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_objs</span><span class="p">,</span> <span class="n">w_pts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">get_pt_primitive_distance</span><span class="p">(</span><span class="n">w_pts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world_spheres</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world_cubes</span><span class="p">,</span> <span class="n">dist</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dist</span></div>
+
+<div class="viewcode-block" id="WorldPrimitiveCollision.get_signed_distance"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPrimitiveCollision.get_signed_distance">[docs]</a>    <span class="k">def</span> <span class="nf">get_signed_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">w_pts</span><span class="p">):</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_pt_distance</span><span class="p">(</span><span class="n">w_pts</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">dist</span></div></div>
+    
+
+<div class="viewcode-block" id="WorldPointCloudCollision"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPointCloudCollision">[docs]</a><span class="k">class</span> <span class="nc">WorldPointCloudCollision</span><span class="p">(</span><span class="n">WorldGridCollision</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label_map</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">grid_resolution</span><span class="o">=</span><span class="mf">0.02</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">tensor_args</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">grid_resolution</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">label_map</span> <span class="o">=</span> <span class="n">label_map</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">camera_transform</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene_pc</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flat_tensor</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proj_pt_idx</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trimesh_scene_voxel</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ind_pt</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="WorldPointCloudCollision.update_camera_transform"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPointCloudCollision.update_camera_transform">[docs]</a>    <span class="k">def</span> <span class="nf">update_camera_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">w_c_trans</span><span class="p">,</span> <span class="n">w_R_c</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">camera_transform</span> <span class="o">=</span> <span class="n">CoordinateTransform</span><span class="p">(</span><span class="n">trans</span><span class="o">=</span><span class="n">w_c_trans</span><span class="p">,</span>
+                                                    <span class="n">rot</span><span class="o">=</span><span class="n">w_R_c</span><span class="p">,</span>
+                                                    <span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span><span class="c1">#.inverse()</span></div>
+        
+<div class="viewcode-block" id="WorldPointCloudCollision.update_world_pc"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPointCloudCollision.update_world_pc">[docs]</a>    <span class="k">def</span> <span class="nf">update_world_pc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pointcloud</span><span class="p">,</span> <span class="n">seg_labels</span><span class="p">):</span>
+        <span class="c1"># Fill pointcloud in tensor:</span>
+        <span class="n">orig_scene_pc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">pointcloud</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="c1"># filter seg labels:</span>
+        <span class="n">scene_labels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">seg_labels</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">[</span><span class="s1">&#39;device&#39;</span><span class="p">])</span>
+
+        <span class="n">scene_pc_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">scene_labels</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_map</span><span class="p">[</span><span class="s2">&quot;robot&quot;</span><span class="p">],</span>
+                                          <span class="n">scene_labels</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_map</span><span class="p">[</span><span class="s2">&quot;ground&quot;</span><span class="p">])</span>
+
+        <span class="n">vis_mask</span> <span class="o">=</span> <span class="n">scene_pc_mask</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="n">scene_pc</span> <span class="o">=</span> <span class="n">orig_scene_pc</span><span class="p">[</span><span class="n">vis_mask</span><span class="p">]</span>
+
+        <span class="n">scene_pc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera_transform</span><span class="o">.</span><span class="n">transform_point</span><span class="p">(</span><span class="n">scene_pc</span><span class="p">)</span>
+        <span class="n">min_bound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">max_bound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">mask_bound</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">scene_pc</span> <span class="o">&gt;</span> <span class="n">min_bound</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">scene_pc</span> <span class="o">&lt;</span> <span class="n">max_bound</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
+
+        
+        <span class="n">scene_pc</span> <span class="o">=</span> <span class="n">scene_pc</span><span class="p">[</span><span class="n">mask_bound</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene_pc</span> <span class="o">=</span> <span class="n">scene_pc</span></div>
+        
+        
+<div class="viewcode-block" id="WorldPointCloudCollision.update_world_voxel"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPointCloudCollision.update_world_voxel">[docs]</a>    <span class="k">def</span> <span class="nf">update_world_voxel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene_pc</span><span class="p">):</span>
+        
+        <span class="c1"># Fill pointcloud in tensor:</span>
+
+        <span class="c1"># marching cubes:</span>
+
+
+        <span class="n">scene_pc</span> <span class="o">=</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">PointCloud</span><span class="p">(</span><span class="n">scene_pc</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+
+        <span class="n">pitch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_resolution</span> <span class="c1">#scene_pc.extents.max() / self.voxel_scale</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pitch</span> <span class="o">=</span> <span class="n">pitch</span>
+        <span class="n">scene_mesh</span> <span class="o">=</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">voxel</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">points_to_marching_cubes</span><span class="p">(</span><span class="n">scene_pc</span><span class="o">.</span><span class="n">vertices</span><span class="p">,</span> <span class="n">pitch</span><span class="o">=</span><span class="n">pitch</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trimesh_scene_mesh</span> <span class="o">=</span> <span class="n">scene_mesh</span>
+        <span class="n">scene_voxel</span> <span class="o">=</span> <span class="n">voxelize</span><span class="p">(</span><span class="n">scene_mesh</span><span class="p">,</span> <span class="n">pitch</span><span class="o">=</span><span class="n">pitch</span><span class="p">,</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;subdivide&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trimesh_scene_voxel</span> <span class="o">=</span> <span class="n">scene_voxel</span>
+        <span class="n">scene_voxel_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">scene_voxel</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene_voxel_matrix</span> <span class="o">=</span> <span class="n">scene_voxel_tensor</span>
+        <span class="c1"># this pushes the sdf to be only available close to the voxel grid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trimesh_bounds</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trimesh_scene_voxel</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span></div>
+
+        
+<div class="viewcode-block" id="WorldPointCloudCollision.update_world_sdf"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPointCloudCollision.update_world_sdf">[docs]</a>    <span class="k">def</span> <span class="nf">update_world_sdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene_pc</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_world_voxel</span><span class="p">(</span><span class="n">scene_pc</span><span class="p">)</span>
+        
+        <span class="n">sdf_grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_sdfgrid</span><span class="p">()</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene_sdf_matrix</span> <span class="o">=</span> <span class="n">sdf_grid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene_sdf</span> <span class="o">=</span> <span class="n">sdf_grid</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span></div>
+        
+<div class="viewcode-block" id="WorldPointCloudCollision._update_trimesh_projection"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPointCloudCollision._update_trimesh_projection">[docs]</a>    <span class="k">def</span> <span class="nf">_update_trimesh_projection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">scene_voxel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trimesh_scene_voxel</span>
+        <span class="n">scene_voxel_tensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene_voxel_matrix</span>
+        <span class="n">ind_matrix</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">scene_voxel</span><span class="o">.</span><span class="n">_transform</span><span class="o">.</span><span class="n">inverse_matrix</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">pt_matrix</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">scene_voxel</span><span class="o">.</span><span class="n">_transform</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">proj_pt_idx</span> <span class="o">=</span> <span class="n">CoordinateTransform</span><span class="p">(</span><span class="n">trans</span><span class="o">=</span><span class="n">ind_matrix</span><span class="p">[:,:</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="n">rot</span><span class="o">=</span><span class="n">ind_matrix</span><span class="p">[:,:</span><span class="mi">3</span><span class="p">,:</span><span class="mi">3</span><span class="p">],</span> <span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">proj_idx_pt</span> <span class="o">=</span> <span class="n">CoordinateTransform</span><span class="p">(</span><span class="n">trans</span><span class="o">=</span><span class="n">pt_matrix</span><span class="p">[:,:</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="n">rot</span><span class="o">=</span><span class="n">pt_matrix</span><span class="p">[:,:</span><span class="mi">3</span><span class="p">,:</span><span class="mi">3</span><span class="p">],</span> <span class="n">tensor_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+
+        <span class="n">num_voxels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">scene_voxel_tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">scene_voxel_tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                   <span class="n">scene_voxel_tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
+                                  <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+
+        
+        <span class="n">flat_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">num_voxels</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">prod</span><span class="p">(),</span><span class="c1"># // (self.scale ** 2),</span>
+                                    <span class="n">num_voxels</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="c1"># // self.scale,</span>
+                                    <span class="mi">1</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">[</span><span class="s1">&#39;device&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene_voxels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">scene_voxel_tensor</span><span class="p">)</span>
+        
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_voxels</span> <span class="o">=</span> <span class="n">num_voxels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flat_tensor</span> <span class="o">=</span> <span class="n">flat_tensor</span></div>
+        
+<div class="viewcode-block" id="WorldPointCloudCollision.get_signed_distance"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPointCloudCollision.get_signed_distance">[docs]</a>    <span class="k">def</span> <span class="nf">get_signed_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pts</span><span class="p">):</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">proximity</span><span class="o">.</span><span class="n">signed_distance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trimesh_scene_mesh</span><span class="p">,</span> <span class="n">pts</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">dist</span></div>
+    
+<div class="viewcode-block" id="WorldPointCloudCollision.get_scene_pts_from_voxelgrid"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPointCloudCollision.get_scene_pts_from_voxelgrid">[docs]</a>    <span class="k">def</span> <span class="nf">get_scene_pts_from_voxelgrid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">pts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trimesh_scene_voxel</span><span class="o">.</span><span class="n">points</span>
+        <span class="k">return</span> <span class="n">pts</span></div>
+
+<div class="viewcode-block" id="WorldPointCloudCollision.get_scene_mesh_from_voxelgrid"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldPointCloudCollision.get_scene_mesh_from_voxelgrid">[docs]</a>    <span class="k">def</span> <span class="nf">get_scene_mesh_from_voxelgrid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        
+        <span class="n">mesh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trimesh_scene_voxel</span><span class="o">.</span><span class="n">as_boxes</span><span class="p">()</span> <span class="c1"># marching_cubes</span>
+        <span class="k">return</span> <span class="n">mesh</span></div></div>
+        
+<div class="viewcode-block" id="WorldImageCollision"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldImageCollision">[docs]</a><span class="k">class</span> <span class="nc">WorldImageCollision</span><span class="p">(</span><span class="n">WorldCollision</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">tensor_args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">}):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">bounds</span><span class="p">,</span> <span class="o">**</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene_im</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flat_tensor</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proj_pt_idx</span> <span class="o">=</span> <span class="kc">None</span>
+        
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ind_pt</span> <span class="o">=</span> <span class="kc">None</span>
+    
+<div class="viewcode-block" id="WorldImageCollision.update_world"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldImageCollision.update_world">[docs]</a>    <span class="k">def</span> <span class="nf">update_world</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_path</span><span class="p">):</span>
+        <span class="n">im</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">image_path</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span><span class="n">im</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">threshold</span><span class="p">(</span><span class="n">im</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">255</span><span class="p">,</span><span class="n">cv2</span><span class="o">.</span><span class="n">THRESH_BINARY</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">im</span> <span class="o">=</span> <span class="n">im</span>
+        <span class="c1"># cv2.imshow(&#39;im&#39;, im)</span>
+        <span class="c1"># cv2.waitKey(0)</span>
+        <span class="c1"># cv2.destroyAllWindows()</span>
+        
+        <span class="c1">#load image</span>
+        <span class="n">im_obstacle</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">bitwise_not</span><span class="p">(</span><span class="n">im</span><span class="p">)</span> <span class="c1"># obstacle 부분을 255로 해서 저장</span>
+        <span class="c1"># cv2.imshow(&#39;im_obstacle&#39;, im_obstacle)</span>
+        <span class="c1"># cv2.waitKey(0)</span>
+        <span class="c1"># cv2.destroyAllWindows()</span>
+        
+        <span class="n">dist_obstacle</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">distanceTransform</span><span class="p">(</span><span class="n">im_obstacle</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">DIST_L2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span> <span class="c1"># https://webnautes.tistory.com/1280</span>
+        <span class="c1"># result = cv2.normalize(dist_obstacle, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1) # dist_transform  함수를 사용하면 실수 타입(float32)의 이미지가 생성됩니다. 화면에 보여주려면 normalize 함수를 사용해야 합니다.</span>
+        <span class="c1"># cv2.imshow(&#39;dist_obstacle&#39;, result)</span>
+        <span class="c1"># cv2.waitKey(0)</span>
+        <span class="c1"># cv2.destroyAllWindows()</span>
+        
+        <span class="n">dist_outside</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">distanceTransform</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">DIST_L2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+        <span class="c1"># result = cv2.normalize(dist_outside, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)</span>
+        <span class="c1"># cv2.imshow(&#39;dist_outside&#39;, result)</span>
+        <span class="c1"># cv2.waitKey(0)</span>
+        <span class="c1"># cv2.destroyAllWindows()</span>
+        
+        <span class="n">dist_map</span> <span class="o">=</span> <span class="n">dist_obstacle</span> <span class="o">-</span> <span class="n">dist_outside</span>
+        <span class="c1"># result = cv2.normalize(dist_map, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)</span>
+        <span class="c1"># cv2.imshow(&#39;dist_map&#39;, result)</span>
+        <span class="c1"># cv2.waitKey(0)</span>
+        <span class="c1"># cv2.destroyAllWindows()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dist_map</span> <span class="o">=</span> <span class="n">dist_map</span>
+        
+        <span class="c1"># transpose and flip to get the map to normal x, y axis</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">dist_map</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="c1"># transpose</span>
+        <span class="n">scene_im</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene_im</span> <span class="o">=</span> <span class="n">scene_im</span>
+
+        <span class="c1"># get pixel range and rescale to meter bounds</span>
+        <span class="n">x_range</span><span class="p">,</span><span class="n">y_range</span> <span class="o">=</span> <span class="n">scene_im</span><span class="o">.</span><span class="n">shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">im_dims</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">x_range</span><span class="p">,</span> <span class="n">y_range</span><span class="p">],</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">)</span>
+        <span class="n">pitch</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">im_dims</span><span class="p">)</span> <span class="o">/</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]))</span> <span class="c1"># 0.5 - 0 = 0.5</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;pitch&#39;</span><span class="p">,</span> <span class="n">pitch</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pitch</span> <span class="o">=</span> <span class="n">pitch</span>
+
+        
+        <span class="n">num_voxels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">im_dims</span>
+        
+        <span class="n">flat_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">num_voxels</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor_args</span><span class="p">[</span><span class="s1">&#39;device&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">flat_tensor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene_voxels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene_im</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">pitch</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene_voxels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene_voxels</span><span class="o">.</span><span class="n">size</span><span class="p">())</span>
+
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_voxels</span> <span class="o">=</span> <span class="n">num_voxels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flat_tensor</span> <span class="o">=</span> <span class="n">flat_tensor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">im_bounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_voxels</span> <span class="o">=</span> <span class="n">num_voxels</span></div>
+<div class="viewcode-block" id="WorldImageCollision.voxel_inds"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldImageCollision.voxel_inds">[docs]</a>    <span class="k">def</span> <span class="nf">voxel_inds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pt</span><span class="p">):</span>
+        <span class="n">pt</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pitch</span> <span class="o">*</span> <span class="n">pt</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        
+        <span class="n">ind_pt</span> <span class="o">=</span> <span class="p">(</span><span class="n">pt</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_voxels</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">pt</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">ind_pt</span> <span class="o">=</span> <span class="n">ind_pt</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ind_pt</span></div>
+<div class="viewcode-block" id="WorldImageCollision.get_pt_value"><a class="viewcode-back" href="../../../../storm_kit.geom.sdf.world.html#storm_kit.geom.sdf.world.WorldImageCollision.get_pt_value">[docs]</a>    <span class="k">def</span> <span class="nf">get_pt_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pt</span><span class="p">):</span>
+        <span class="n">bound_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">pt</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">im_bounds</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">pitch</span><span class="p">),</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span>
+                                       <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">pt</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">im_bounds</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">pitch</span><span class="p">),</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">flat_mask</span> <span class="o">=</span> <span class="n">bound_mask</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="n">ind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">voxel_inds</span><span class="p">(</span><span class="n">pt</span><span class="p">)</span>
+        <span class="n">ind</span><span class="p">[</span><span class="o">~</span><span class="n">flat_mask</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">pt_coll</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene_voxels</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span>
+        
+        <span class="c1"># values are signed distance: positive inside object, negative outside</span>
+        <span class="n">pt_coll</span><span class="p">[</span><span class="o">~</span><span class="n">flat_mask</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">10.0</span>
+        
+        <span class="k">return</span> <span class="n">pt_coll</span></div></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
