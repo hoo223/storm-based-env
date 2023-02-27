@@ -291,7 +291,7 @@ class RobotWorldCollisionVoxel():
         
         n_links = len(w_link_spheres)
         
-        for i in range(n_links):
+        for i in range(n_links): # 각 링크마다
             spheres = w_link_spheres[i]
             b, n, _ = spheres.shape
             spheres_arr = spheres.view(b * n, 4)

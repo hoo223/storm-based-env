@@ -13,7 +13,6 @@
     <axis xyz="1 0 0"/>
     <limit effort="1" lower="-2" upper="2.0" velocity="1"/>
   </joint>
-
   <joint name="y_joint" type="prismatic">
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <parent link="base1"/>
@@ -21,7 +20,6 @@
     <axis xyz="0 1 0"/>
     <limit effort="1" lower="-2.0" upper="2.0" velocity="1"/>
   </joint>
-
   <joint name="z_joint" type="prismatic">
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <parent link="base2"/>
